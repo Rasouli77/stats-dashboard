@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>شمارشگر فروشگاه</title>
+</head>
+<body>
+    <form action="" method="get">
+        <label for="branch">شعبه</label><br>
+        <input type="text" name="branch" id="branch" required><br>
+        <label for="start-date">از تاریخ</label><br>
+        <input type="text" name="start-date" id="start-date" required><br>
+        <label for="end-date">تا</label><br>
+        <input type="text" name="end-date" id="end-date" required><br>
+        <button type="submit">اعمال فیلتر</button>
+    </form>
+    {% for item in queryset %}
+    <p> {{item.date}} | {{ item.total }}</p>
+    {% endfor %}
+</body>
+</html>
