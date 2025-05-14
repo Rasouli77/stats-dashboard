@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from datetime import datetime, timedelta
+from datetime import datetime, date
 from .models import Stats
 from django.db.models import Sum
 import jdatetime
@@ -35,6 +35,8 @@ def people_counter(request):
             queryset = queryset.filter(branch=branch)
         except Exception as e:
             print(e)
-    return render(request, "people-counter.html", {"queryset": queryset})
+    dates = [str(row["date"].strftime("%Y-%m-%d")) for row in queryset]
+    entry_totals = [float(row["total"]) for row in queryset]
+    return render(request, "people-counter.html", {"dates": json.dumps(dates), "entry_totals": json.dumps(entry_totals)})
 
 

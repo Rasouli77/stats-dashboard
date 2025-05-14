@@ -8,15 +8,96 @@
 <body>
     <form action="" method="get">
         <label for="branch">شعبه</label><br>
-        <input type="text" name="branch" id="branch" required><br>
+        <input type="text" name="branch" id="branch"><br>
         <label for="start-date">از تاریخ</label><br>
-        <input type="text" name="start-date" id="start-date" required><br>
+        <input type="text" name="start-date" id="start-date"><br>
         <label for="end-date">تا</label><br>
-        <input type="text" name="end-date" id="end-date" required><br>
+        <input type="text" name="end-date" id="end-date"><br>
         <button type="submit">اعمال فیلتر</button>
     </form>
-    {% for item in queryset %}
+    <!-- {% for item in queryset %}
     <p> {{item.date}} | {{ item.total }}</p>
-    {% endfor %}
+    {% endfor %} -->
+    <div id="container" style="width: 100%; height: 400px;"></div>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/export-data.js"></script>
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+    <script>
+        const rawCategories = JSON.parse('{{ dates|safe }}');  
+
+        // Convert to Persian-formatted labels using locale
+        const categories = rawCategories.map(dateStr => {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('fa-IR', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            });
+        });
+
+        const totals = JSON.parse('{{ entry_totals|safe }}');
+        lineChart = Highcharts.chart(
+            'container', {
+                chart: {
+                    type: 'line'
+                },
+                title: {
+                    text: 'ورود'
+                },
+                xAxis: {
+                    categories : categories,
+                    title: {
+                        text: "تاریخ"
+                    }
+                },
+                yAxis: {
+                    title: {
+                        text: "ورود"
+                    }
+                },
+                series: [
+                    {
+                        name: "ورود",
+                        data: totals
+                    }
+                ]
+            }
+        );
+    </script>
+    <script>
+        // Observe the DOM for new menu items
+        const observer = new MutationObserver(() => {
+            const buttons = document.querySelectorAll(".highcharts-menu-item");
+            const listContainer = document.querySelector(".highcharts-menu");
+            const hrs = listContainer.querySelectorAll("hr");
+            if (buttons.length >= 5) {
+                // Hide unwanted buttons
+                buttons[2].style.display = 'none';
+                buttons[3].style.display = 'none';
+                buttons[4].style.display = 'none';
+                buttons[0].textContent = 'نمایش تمام صفحه';
+                buttons[1].textContent = 'PDF خروجی';
+                buttons[5].textContent = 'CSV خروجی';
+                buttons[6].textContent = 'XLS خروجی';
+                buttons[7].textContent = 'نمایش جدول';
+                hrs[0].style.display = 'none';
+                hrs[1].style.display = 'none';
+                observer.disconnect(); // Stop observing after changes are made
+            }
+        });
+    
+        // Start observing changes in the body subtree (where Highcharts injects elements)
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+        // hide all credits
+        const highChartCredits = document.querySelectorAll(".highcharts-credits")
+        highChartCredits.forEach((item) => {
+            item.style.display = 'none';
+        });   
+    </script>
+    
 </body>
 </html>
