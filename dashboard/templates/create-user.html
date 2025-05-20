@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}
+	ساخت کاربر جدید
+{% endblock %}
+{% block meta_description %}
+	ساخت کاربر جدید
+{% endblock %}
+{% block content %}
+{% if request.user.is_authenticated %}
+    {% if request.user.is_superuser %}
+    <h4 class="py-3 breadcrumb-wrapper mb-4">ساخت کاربر جدید</h4>
+    <form action="" method="post">
+        {% csrf_token %}
+        <div class="row">
+            <div class="col-md-6">
+              <div class="card mb-4">
+                <h5 class="card-header heading-color">برای ساخت کاربر جدید موارد زیر را تکمیل کنید.</h5>
+                <div class="card-body">
+                  <div>
+                    <label for="id_first_name" class="form-label">نام</label>
+                    <input type="text" class="form-control" name="first_name" id="id_first_name" aria-describedby="defaultFormControlHelp">
+                    <label for="id_last_name" class="form-label">نام خانوادگی</label>
+                    <input type="text" class="form-control" name="last_name" id="id_last_name" aria-describedby="defaultFormControlHelp">
+                    <label for="id_username" class="form-label">نام کاربری</label>
+                    <input type="text" class="form-control" name="username" id="id_username" aria-describedby="defaultFormControlHelp">
+                    <div id="defaultFormControlHelp" class="form-text">
+                        الزامی. 150 کاراکتر یا کمتر. فقط شامل حروف، اعداد، و علامات @/./+/-/_
+                    </div>
+                    <label for="id_password" class="form-label">رمز عبور</label>
+                    <input type="text" class="form-control" name="password" id="id_password" aria-describedby="defaultFormControlHelp">
+                    <label for="id_email" class="form-label">ایمیل</label>
+                    <input type="text" class="form-control" name="email" id="id_email" aria-describedby="defaultFormControlHelp"><br>
+                    <div class="form-check form-switch mb-2">
+                        <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" name="is_staff">
+                        <label class="form-check-label" for="id_is_staff">وضعیت کارمندی</label>
+                    </div>
+                    <div id="defaultFormControlHelp" class="form-text">
+                        نشان می‌دهد که آیا این کاربر می‌تواند وارد این وبگاه مدیریت شود یا خیر.
+                    </div><br>
+                    <div class="form-check form-switch mb-2">
+                        <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" name="is_active">
+                        <label class="form-check-label" for="id_is_active">فعال</label>
+                    </div>
+                    <div id="defaultFormControlHelp" class="form-text">
+                        نشان می‌دهد که آیا این کاربر اجازهٔ فعالیت دارد یا خیر. به جای حذف کاربر این تیک را بردارید.
+                    </div><br>
+                    <button class="btn btn-primary" type="submit">ثبت</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+        </div>
+        
+    </form>
+    
+    {% else %}
+    <p>You do not have the permission.</p>
+    {% endif %}
+{% endif %}
+{% endblock %}

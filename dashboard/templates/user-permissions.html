@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Permissions</title>
+</head>
+<body>
+    {{ user }}
+    <form action="" method="get">
+        {% csrf_token %}
+        <input type="text" name="permission" id="permission" placeholder="add, delete, view or change...">
+        <button type="submit">ثبت</button>
+    </form>
+</body>
+</html>
