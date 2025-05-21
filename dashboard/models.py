@@ -12,3 +12,19 @@ class Stats(models.Model):
     class Meta:
         verbose_name = "شمارشگر"
         verbose_name_plural = "شمارشگر"
+
+class Campaign(models.Model):
+    name = models.CharField(max_length=255, verbose_name="نام کمپین")
+    date = models.DateField(verbose_name="تاریخ")
+
+    class Meta:
+        verbose_name = "کمپین"
+        verbose_name_plural = "کمپین"
+
+class DefaultDate(models.Model):
+    start_date = models.DateField(verbose_name="تاریخ شروع")
+    end_date = models.DateField(verbose_name="تاریخ پایان")
+
+    class Meta:
+        verbose_name = "تاریخ پیش فرض"
+        verbose_name_plural = "تاریخ پیش فرض"

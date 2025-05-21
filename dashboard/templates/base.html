@@ -295,6 +295,7 @@
     <script src="{% static 'assets/vendor/libs/flatpickr/flatpickr-jdate.js' %}"></script>
     <script src="{% static 'assets/vendor/libs/flatpickr/l10n/fa-jdate.js' %}"></script>
     <script src="{% static 'assets/vendor/libs/moment/moment.js' %}"></script>
+    <script src="{% static 'assets/vendor/libs/sortablejs/sortable.js' %}"></script>
 
     <!-- Main JS -->
     <script src="{% static 'assets/js/main.js' %}"></script>
@@ -302,6 +303,7 @@
     <!-- Page JS -->
     <script src="{% static 'assets/js/app-calendar-events.js' %}"></script>
     <script src="{% static 'assets/js/app-calendar.js' %}"></script>
+    <script src="{% static 'assets/js/extended-ui-drag-and-drop.js' %}"></script>
     <script>
       const rawCategories = JSON.parse('{{ dates|safe }}');  
 
@@ -319,25 +321,42 @@
       lineChart = Highcharts.chart(
           'container', {
               chart: {
-                  type: 'line'
+                  type: 'line',
+                  backgroundColor: '#f9f9f9',
+                  style: {
+                      fontFamily: 'tahoma',
+                      fontSize: '20px'
+                  }
               },
               title: {
-                  text: 'ورود'
+                  text: "ترافیک",
+                  style: {
+                      fontSize: '25px',
+                      color: '#333'
+                  }
               },
               xAxis: {
                   categories : categories,
                   title: {
-                      text: "تاریخ"
+                      text: "تاریخ",
+                      style: {
+                        fontSize: '20px',
+                        fontWeight: 'bold'
+                      }
                   }
               },
               yAxis: {
                   title: {
-                      text: "ورود"
+                      text: "ترافیک",
+                      style: {
+                        fontSize: '20px',
+                        fontWeight: 'bold'
+                      }
                   }
               },
               series: [
                   {
-                      name: "ورود",
+                      name: "ترافیک",
                       data: totals
                   }
               ]
@@ -349,9 +368,7 @@
         const observer = new MutationObserver(() => {
             const buttons = document.querySelectorAll(".highcharts-menu-item");
             const listContainer = document.querySelector(".highcharts-menu");
-            // const hrs = listContainer.querySelectorAll("hr");
             if (buttons.length >= 5) {
-                // Hide unwanted buttons
                 buttons[2].style.display = 'none';
                 buttons[3].style.display = 'none';
                 buttons[4].style.display = 'none';
@@ -360,13 +377,11 @@
                 buttons[5].textContent = 'CSV خروجی';
                 buttons[6].textContent = 'XLS خروجی';
                 buttons[7].textContent = 'نمایش جدول';
-                hrs[0].style.display = 'none';
-                hrs[1].style.display = 'none';
-                observer.disconnect(); // Stop observing after changes are made
+                observer.disconnect();
             }
         });
     
-        // Start observing changes in the body subtree (where Highcharts injects elements)
+      
         observer.observe(document.body, {
             childList: true,
             subtree: true
@@ -393,6 +408,8 @@
     <script>
         const filterProxyButton = document.getElementById("filter-proxy-button");
         const realFilterForm = document.getElementById("filter-form");
+        const branch = document.getElementById("branch");
+        const filterProxyBranch = document.getElementById("largeSelect");
         filterProxyButton.addEventListener("click", () => {
             function parsePersianDate(ariaLabel) {
             const persianMonths = {
@@ -433,10 +450,31 @@
           const realJalaliEndDate = document.getElementById("end-date");
           realJalaliStartDate.value = startJalaiDate;
           realJalaliEndDate.value = endJalaliDate;
-          console.log(realJalaliStartDate.value)
-          console.log(realJalaliEndDate.value)
-          realFilterForm.submit()
+          branch.value = filterProxyBranch.value;
+          realFilterForm.submit();
         })
+    </script>
+    <script>
+      const testBtn = document.getElementById("test");
+      testBtn.addEventListener("click", () => {
+        const hasNoPermissions = []
+        const viewStats = document.getElementById("permission-to-view-stats");
+        const form = document.getElementById("test-form");
+        document.querySelectorAll("#pending-tasks .list-group-item").forEach((item) => {
+        hasNoPermissions.push(item.getAttribute("aria-label"))
+        });
+        if (hasNoPermissions.includes("view_stats")) {
+          viewStats.value = "view_stats";
+        }
+        form.submit()
+      }
+      );
+      
+      
+      // const hasPermissions = []
+      // document.querySelectorAll("#completed-tasks .list-group-item").forEach((item) => {
+      //   item.getAttribute("aria-label")
+      // });
     </script>
     <!-- Page JS -->
   </body>
