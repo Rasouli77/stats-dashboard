@@ -23,6 +23,6 @@ urlpatterns = [
     path('dashboard/people-counter/', people_counter, name="people_counter"),
     path('dashboard/users/', users_list, name="users"),
     path('dashboard/generate-user/', generate_user, name="generate_user"),
-    path('dashboard/user-permissions/<int:user_id>/', user_permissions, name="user-permissions"),
+    path('dashboard/add-user-permissions/<int:user_id>/', user_permissions, name="user-permissions"),
     path('dashboard/calendar', calender, name="calendar"),
 ]

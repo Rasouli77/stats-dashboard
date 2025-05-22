@@ -9,14 +9,14 @@
 {% endblock %}
 {% block content %}
 <h4 class="py-3 breadcrumb-wrapper mb-4">
-    <span class="text-muted fw-light">دسترسی‌ها
+    <span class="text-muted fw-light">اضافه کردن دسترسی‌ها
   </h4>
 
   <!-- Multiple Lists Draggable -->
   <div class="row mb-4">
     <div class="col-12">
       <div class="card">
-        <h5 class="card-header heading-color">ویرایش / ایجاد دسترسی</h5>
+        <h5 class="card-header heading-color">اضافه کردن دسترسی به کاربر</h5>
         <div class="card-body">
           <div class="row">
             <div class="col-md-6 col-12 mb-md-0 mb-4">
@@ -65,7 +65,7 @@
               </ul>
             </div>
             <div class="col-md-6 col-12 mb-md-0 mb-4">
-              <p>دسترسی های زیر میتواند به این کاربر داده شود:</p>
+              <p>می‌توانید دسترسی های زیر را به کاربر دهید (موارد پایین را به ستون سمت راست بکشید تا دسترسی‌ها داده شوند):</p>
               <ul class="list-group list-group-flush" id="completed-tasks">
                 {% if not user|has_permission:"dashboard.view_stats" %}
                 <li aria-label="view_stats" class="list-group-item drag-item cursor-move d-flex justify-content-between align-items-center">
@@ -109,12 +109,16 @@
                 {% endif %}
               </ul>
             </div>
+            <div class="col-12">
+              <button class="btn btn-primary" style="margin-top: 30px;" id="submit-permission-changes"> ثبت تغییرات </button>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
-  <form action="" method="get" id="test-form">
+  <form action="" method="get" id="form" style="display: none;">
+    <label for="">add</label>
     <input type="text" name="permission-to-add-stats" id="permission-to-add-stats">
     <input type="text" name="permission-to-delete-stats" id="permission-to-delete-stats">
     <input type="text" name="permission-to-view-stats" id="permission-to-view-stats">
@@ -123,7 +127,7 @@
     <input type="text" name="permission-to-delete-user" id="permission-to-delete-user">
     <input type="text" name="permission-to-view-user" id="permission-to-view-user">
     <input type="text" name="permission-to-change-user" id="permission-to-change-user">
-    <button type="submit" id="test">submit</button>
   </form>
+
   <!-- /Multiple Lists Draggable ends -->
 {% endblock %}

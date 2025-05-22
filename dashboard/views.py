@@ -100,7 +100,7 @@ def user_permissions(request, user_id):
     )
     permission_to_add_stats = request.GET.get("permission-to-add-stats")
     if permission_to_add_stats == "add_stats":
-        user.user_permissions.add(permission_add_stats) 
+        user.user_permissions.add(permission_add_stats)
     
     permission_to_delete_stats = request.GET.get("permission-to-delete-stats")
     if permission_to_delete_stats == "delete_stats":

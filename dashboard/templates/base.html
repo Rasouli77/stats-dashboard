@@ -112,7 +112,7 @@
 
           <ul class="menu-inner py-1">
             <!-- Page -->
-            <li class="menu-item active">
+            <li class="menu-item">
               <a href="{% url 'people_counter' %}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-chart"></i>
                 <div data-i18n="Page 1">شمارنده مشتریان</div>
@@ -132,7 +132,7 @@
                 <ul class="menu-sub">
                   <li class="menu-item">
                     <a href="{% url 'users' %}" class="menu-link">
-                      <div data-i18n="List">دسترسی‌ها</div>
+                      <div data-i18n="List">لیست کاربران</div>
                     </a>
                   </li>
                   <li class="menu-item">
@@ -455,26 +455,56 @@
         })
     </script>
     <script>
-      const testBtn = document.getElementById("test");
-      testBtn.addEventListener("click", () => {
+      const addBtn = document.getElementById("submit-permission-changes");
+      addBtn.addEventListener("click", () => {
+        // Add permission
         const hasNoPermissions = []
         const viewStats = document.getElementById("permission-to-view-stats");
-        const form = document.getElementById("test-form");
+        const changeStats = document.getElementById("permission-to-change-stats");
+        const addStats = document.getElementById("permission-to-add-stats");
+        const deleteStats = document.getElementById("permission-to-delete-stats");
+        const viewUser = document.getElementById("permission-to-view-user");
+        const changeUser = document.getElementById("permission-to-change-user");
+        const addUser = document.getElementById("permission-to-add-user");
+        const deleteUser = document.getElementById("permission-to-delete-user");
+        const form = document.getElementById("form");
         document.querySelectorAll("#pending-tasks .list-group-item").forEach((item) => {
-        hasNoPermissions.push(item.getAttribute("aria-label"))
+        hasNoPermissions.push(item.getAttribute("aria-label"));
         });
         if (hasNoPermissions.includes("view_stats")) {
           viewStats.value = "view_stats";
+        }
+        if (hasNoPermissions.includes("change_stats")) {
+          changeStats.value = "change_stats";
+        }
+        if (hasNoPermissions.includes("add_stats")) {
+          addStats.value = "add_stats";
+        }
+        if (hasNoPermissions.includes("delete_stats")) {
+          deleteStats.value = "delete_stats";
+        }
+        if (hasNoPermissions.includes("view_user")) {
+          viewUser.value = "view_user"
+        }
+        if (hasNoPermissions.includes("change_user")) {
+          changeUser.value = "change_user"
+        }
+        if (hasNoPermissions.includes("add_user")) {
+          addUser.value = "add_user"
+        }
+        if (hasNoPermissions.includes("delete_user")) {
+          deleteUser.value = "delete_user"
         }
         form.submit()
       }
       );
       
       
-      // const hasPermissions = []
-      // document.querySelectorAll("#completed-tasks .list-group-item").forEach((item) => {
-      //   item.getAttribute("aria-label")
-      // });
+      const hasPermissions = []
+      document.querySelectorAll("#completed-tasks .list-group-item").forEach((item) => {
+        hasPermissions.push(item.getAttribute("aria-label"));
+      });
+
     </script>
     <!-- Page JS -->
   </body>
