@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from datetime import datetime, date
-from .models import Stats
+from .models import PeopleCounting
 from django.db.models import Sum
 from django.contrib.auth.models import User, Permission
 from django.contrib.auth.decorators import login_required
@@ -21,8 +21,8 @@ def jalali_to_gregorian(date_str: str):
         return None
 
 def people_counter(request):
-    queryset = Stats.objects.values("date").annotate(total=Sum("entry")).order_by("date")
-    branches = Stats.objects.values_list("branch", flat=True).distinct()
+    queryset = PeopleCounting.objects.values("date").annotate(total=Sum("entry")).order_by("date")
+    branches = PeopleCounting.objects.values_list("branch", flat=True).distinct()
     branch = request.GET.get("branch")
     start_date_str = str(jalali_to_gregorian(request.GET.get("start-date")))
     end_date_str = str(jalali_to_gregorian(request.GET.get("end-date")))
@@ -64,22 +64,22 @@ def user_permissions(request, user_id):
         return HttpResponseForbidden("شما اجازه دسترسی به این قسمت را ندارید")
     if not request.user.is_active:
         return HttpResponseForbidden("شما اجازه دسترسی به این قسمت را ندارید")
-    content_type_stats = ContentType.objects.get_for_model(Stats)
-    permission_view_stats = Permission.objects.get(
-        codename="view_stats",
-        content_type=content_type_stats,
+    content_type_PeopleCounting = ContentType.objects.get_for_model(PeopleCounting)
+    permission_view_PeopleCounting = Permission.objects.get(
+        codename="view_PeopleCounting",
+        content_type=content_type_PeopleCounting,
     )
-    permission_change_stats = Permission.objects.get(
-        codename="change_stats",
-        content_type=content_type_stats,
+    permission_change_PeopleCounting = Permission.objects.get(
+        codename="change_PeopleCounting",
+        content_type=content_type_PeopleCounting,
     )
-    permission_delete_stats = Permission.objects.get(
-        codename="delete_stats",
-        content_type=content_type_stats,
+    permission_delete_PeopleCounting = Permission.objects.get(
+        codename="delete_PeopleCounting",
+        content_type=content_type_PeopleCounting,
     )
-    permission_add_stats = Permission.objects.get(
-        codename="add_stats",
-        content_type=content_type_stats,
+    permission_add_PeopleCounting = Permission.objects.get(
+        codename="add_PeopleCounting",
+        content_type=content_type_PeopleCounting,
     )
     content_type_user = ContentType.objects.get_for_model(User)
     permission_add_user = Permission.objects.get(
@@ -98,21 +98,21 @@ def user_permissions(request, user_id):
         codename="change_user",
         content_type=content_type_user,
     )
-    permission_to_add_stats = request.GET.get("permission-to-add-stats")
-    if permission_to_add_stats == "add_stats":
-        user.user_permissions.add(permission_add_stats)
+    permission_to_add_PeopleCounting = request.GET.get("permission-to-add-PeopleCounting")
+    if permission_to_add_PeopleCounting == "add_PeopleCounting":
+        user.user_permissions.add(permission_add_PeopleCounting)
     
-    permission_to_delete_stats = request.GET.get("permission-to-delete-stats")
-    if permission_to_delete_stats == "delete_stats":
-        user.user_permissions.add(permission_delete_stats)
+    permission_to_delete_PeopleCounting = request.GET.get("permission-to-delete-PeopleCounting")
+    if permission_to_delete_PeopleCounting == "delete_PeopleCounting":
+        user.user_permissions.add(permission_delete_PeopleCounting)
 
-    permission_to_view_stats = request.GET.get("permission-to-view-stats")
-    if permission_to_view_stats == "view_stats":
-        user.user_permissions.add(permission_view_stats)
+    permission_to_view_PeopleCounting = request.GET.get("permission-to-view-PeopleCounting")
+    if permission_to_view_PeopleCounting == "view_PeopleCounting":
+        user.user_permissions.add(permission_view_PeopleCounting)
 
-    permission_to_change_stats = request.GET.get("permission-to-change-stats")
-    if permission_to_change_stats == "change_stats":
-        user.user_permissions.add(permission_change_stats)
+    permission_to_change_PeopleCounting = request.GET.get("permission-to-change-PeopleCounting")
+    if permission_to_change_PeopleCounting == "change_PeopleCounting":
+        user.user_permissions.add(permission_change_PeopleCounting)
     
     permission_to_add_user = request.GET.get("permission-to-add-user")
     if permission_to_add_user == "add_user":

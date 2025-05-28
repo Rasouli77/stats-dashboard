@@ -393,59 +393,32 @@
         });   
     </script>
     <script>
-      flatpickr("#calendar-start", {
-        inline: true,
-        locale: "fa",
-        dateFormat: "Y-m-d"
-      });
-
-      flatpickr("#calendar-end", {
-        inline: true,
-        locale: "fa",
-        dateFormat: "Y-m-d"
-      });
-    </script>
-    <script>
+        flatpickr("#date-range", {
+          inline: true,
+          locale: "fa",
+          mode: "range",
+          dateFormat: "Y-m-d",
+          onChange: function(selectedDates, dateStr, instance) {
+            selectedRange = selectedDates;
+          }
+        });
         const filterProxyButton = document.getElementById("filter-proxy-button");
         const realFilterForm = document.getElementById("filter-form");
         const branch = document.getElementById("branch");
         const filterProxyBranch = document.getElementById("largeSelect");
         filterProxyButton.addEventListener("click", () => {
-            function parsePersianDate(ariaLabel) {
-            const persianMonths = {
-                "فروردین": "01",
-                "اردیبهشت": "02",
-                "خرداد": "03",
-                "تیر": "04",
-                "مرداد": "05",
-                "شهریور": "06",
-                "مهر": "07",
-                "آبان": "08",
-                "آذر": "09",
-                "دی": "10",
-                "بهمن": "11",
-                "اسفند": "12"
-            };
-
-            try {
-                const cleaned = ariaLabel.replace(",", "").split(" ");
-                const monthName = cleaned[0];
-                const day = parseInt(cleaned[1]);
-                const year = parseInt(cleaned[2]);
-                const month = persianMonths[monthName];
-
-                return `${year}-${month}-${String(day).padStart(2, '0')}`;
-            } catch (e) {
-                console.error("Error parsing Persian date:", e);
-                return null;
-            }
+          function formatJalaliDate(jdateObj) {
+            if (!jdateObj || !jdateObj._cached_date) return "";
+            const [year, month, day] = jdateObj._cached_date;
+            return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
           }
-          let startDate = document.querySelectorAll('.flatpickr-calendar')[0]
-          .querySelector('.flatpickr-day.selected').getAttribute("aria-label");
-          let endDate = document.querySelectorAll('.flatpickr-calendar')[1]
-          .querySelector('.flatpickr-day.selected').getAttribute("aria-label");
-          let startJalaiDate = parsePersianDate(startDate);
-          let endJalaliDate = parsePersianDate(endDate);
+
+
+
+          let startDate = selectedRange[0]
+          let endDate = selectedRange[1]
+          let startJalaiDate = formatJalaliDate(startDate);
+          let endJalaliDate = formatJalaliDate(endDate);
           const realJalaliStartDate = document.getElementById("start-date");
           const realJalaliEndDate = document.getElementById("end-date");
           realJalaliStartDate.value = startJalaiDate;
