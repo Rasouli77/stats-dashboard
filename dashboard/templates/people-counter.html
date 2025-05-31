@@ -7,24 +7,57 @@
 	شمارشگر
 {% endblock %}
 {% block content %}
-    <h6>انتخاب تاریخ شروع و پایان</h6>
+    <h6>شمارشگر</h6>
     <div class="calendar-container">
     <div class="container">
         <div class="row">
             <div class="col-xl-4 col-lg-3 col-md-12 col-sm-12" style="margin-bottom: 10px; margin-top: 10px;">
-                <p>تاریخ</p>
-                <div id="date-range"></div>
+                <div class="accordion mt-3 accordion-header-primary" id="accordionWithIcon">
+                    <div class="card accordion-item">
+                      <h2 class="accordion-header d-flex align-items-center">
+                        <button type="button" class="accordion-button" data-bs-toggle="collapse" data-bs-target="#accordionWithIcon-1" aria-expanded="true">
+                          <i class="menu-icon tf-icons bx bx-calendar"></i>
+                            انتخاب تاریخ
+                        </button>
+                      </h2>
+
+                      <div id="accordionWithIcon-1" class="accordion-collapse collapse" style="">
+                        <div class="accordion-body" style="display: flex; justify-content: center; align-items: center;">
+                        <div id="date-range"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>              
             </div>
             <div class="col-xl-4 col-lg-6 col-md-12 col-sm-12" style="margin-bottom: 10px; margin-top: 10px;">
-                <label for="largeSelect" class="form-label"><h6>انتخاب شعبه</h6></label>
-                <select id="largeSelect" class="form-select form-select-lg">
+                <div class="accordion mt-3 accordion-header-primary" id="accordionWithIcon">
+                    <div class="card accordion-item">
+                      <h2 class="accordion-header d-flex align-items-center">
+                        <button type="button" class="accordion-button" data-bs-toggle="collapse" data-bs-target="#accordionWithIcon-1" aria-expanded="true">
+                          <i class="menu-icon tf-icons bx bx-calendar"></i>
+                            انتخاب به تفکیک شعب
+                        </button>
+                      </h2>
+
+                      <div id="accordionWithIcon-1" class="accordion-collapse collapse" style="">
+                        <div class="accordion-body" style="display: flex; justify-content: center; align-items: center;">
+                        
+                            <select id="largeSelect" class="form-select form-select-lg">
                     <option value="">همه شعب</option>
                     {% for branch in branches %}
                     <option value="{{branch.pk}}">{{branch.name}}</option>
                     {% endfor %}
-                </select><br>
-                <button class="btn btn-primary btn-lg" style="width: 100%;" id="filter-proxy-button">اعمال فیلتر</button>
-            </div>
+                </select>
+
+                        </div>
+                      </div>
+                    </div>
+                  </div> 
+                
+                
+                
+            </div><br>
+            <button class="btn btn-primary btn-lg" style="width: 50%;" id="filter-proxy-button">اعمال فیلتر</button>
         </div>
     </div>
     </div><br>
