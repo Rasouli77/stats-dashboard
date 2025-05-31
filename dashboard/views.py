@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import render, get_object_or_404, redirect, HttpResponse
 from datetime import datetime, date
 from .models import PeopleCounting
 from django.db.models import Sum
@@ -9,6 +9,7 @@ from .forms import Generate_User
 import jdatetime
 import json
 from django.http import HttpResponseForbidden
+from .camera_data import create_camera_data_record, get_custom_date_camera_data
 # Create your views here.
 
 def jalali_to_gregorian(date_str: str):
@@ -136,3 +137,8 @@ def user_permissions(request, user_id):
 def calender(request):
     return render(request, "calendar.html")
 
+def test(request):
+    x = get_custom_date_camera_data("172.16.20.103", "2025-05-01", "2025-05-05")
+    print(x)
+    create_camera_data_record(x)
+    return HttpResponse("<p>test</p>")

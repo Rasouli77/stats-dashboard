@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from dashboard.views import people_counter, users_list, generate_user, user_permissions, calender
+from dashboard.views import people_counter, users_list, generate_user, user_permissions, calender, test
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -25,4 +25,5 @@ urlpatterns = [
     path('dashboard/generate-user/', generate_user, name="generate_user"),
     path('dashboard/add-user-permissions/<int:user_id>/', user_permissions, name="user-permissions"),
     path('dashboard/calendar', calender, name="calendar"),
+    path('test', test, name="test"),
 ]

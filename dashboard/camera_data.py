@@ -28,18 +28,16 @@ def merge_camera_data(entries_one:dict, entries_two:dict):
     """
     return {key: entries_one[key] + entries_two[key] for key in entries_one}
 
-def create_camera_data_record(data:dict, vendor_id: int, branch_id: int):
+def create_camera_data_record(data:dict):
     """
     This function takes a dictionary, vendor and branch, then it turns into a PeopleCounting Object.
     """
-    for date, entry in data.items():
-        PeopleCounting.objects.update_or_create(
-            date=date,
-            entry=entry,
-            vendor=vendor_id,
-            branch=branch_id
-        )
-
+    for date in data.items():
+        print(date[1]["date"], date[1]["entry"], date[1]["exit"])
+        
+        
+        
+        
 def get_custom_date_camera_data(ip:str, start_date_str: str, end_date_str:str):
     """
     This function takes an IP, a start date and an end date. It returns a dictionary of dates and total entries for a date
@@ -49,16 +47,24 @@ def get_custom_date_camera_data(ip:str, start_date_str: str, end_date_str:str):
     dahua.current_time()
     dahua.request(method="magicBox.getSerialNo")
     object_id = dahua.get_people_counting_info()
-    sum_of_entries = {}
+    dicts = {}
     start_date = datetime.strptime(start_date_str, "%Y-%m-%d").date()
     end_date = datetime.strptime(end_date_str, "%Y-%m-%d").date()
     dates = [(start_date + timedelta(days=i)).strftime("%Y-%m-%d") for i in range((end_date - start_date).days + 1)]
     for date in dates:
         totalCount = dahua.start_find_statistics_data(object_id, f"{date}T00:00:00Z", f"{date}T23:59:59Z", 1)
         items = dahua.do_find_statistics_data(object_id)
-        sum = 0
+        sum_entry = 0
+        sum_exit = 0
         for item in items:
-            sum += item['EnteredSubtotal']
-            key_date = datetime.strptime(f"{date}", "%Y-%m-%d").strftime("%Y-%m-%d")
-            sum_of_entries[key_date] = sum
-    return sum_of_entries
+            sum_entry += item['EnteredSubtotal']
+            sum_exit += item['ExitedSubtotal']
+            each_date = datetime.strptime(f"{date}", "%Y-%m-%d").strftime("%Y-%m-%d")
+            dicts[each_date] = {
+                "date": each_date,
+                "entry": sum_entry,
+                "exit": sum_exit
+            }
+    return dicts
+
+# {"2025-02-01": {"entry": 50, "exit": 25}, }
