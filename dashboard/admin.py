@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import PeopleCounting, Merchant, Cam, Country, Province, City, District, Branch, CampaignCalendar, DefaultDate
+from .models import PeopleCounting, Merchant, Cam, Country, Province, City, District, Branch, CampaignCalendar, DefaultDate, UserProfile
 
 # Register your models here.
 
@@ -9,7 +9,7 @@ class PeopleCountingAdmin(admin.ModelAdmin):
     exclude = ["date_created"]
     
 class CamAdmin(admin.ModelAdmin):
-    list_display = ["country", "province", "city", "district", "branch", "zone", "entry", "ip", "cam_name", "merchant"]
+    list_display = ["pk", "country", "province", "city", "district", "branch", "zone", "entry", "ip", "cam_name", "merchant"]
     autocomplete_fields = ["country", "province", "city", "district", "branch", "merchant"]
     exclude = ["date_created"]
     
@@ -37,7 +37,7 @@ class DistrictAdmin(admin.ModelAdmin):
     exclude = ["date_created"]
 
 class BranchAdmin(admin.ModelAdmin):
-    list_display = ["name", "district", "merchant"]
+    list_display = ["pk", "name", "district", "merchant"]
     search_fields = ["name"]
     autocomplete_fields = ["district"]
     exclude = ["date_created"]
@@ -51,10 +51,19 @@ class DefaultDateAdmin(admin.ModelAdmin):
     list_display = ["start_date", "end_date"]
     exclude = ["date_created"]
 
+class UserProfileInline(admin.TabularInline):
+    model = UserProfile
+    extra = 0
+
 class MerchantAdmin(admin.ModelAdmin):
-    list_display = ["name", "rep_first_name", "rep_last_name", "rep_mobile_number", "contract_start_date", "contract_expiration_date"]
+    list_display = ["pk", "name", "rep_first_name", "rep_last_name", "rep_mobile_number", "contract_start_date", "contract_expiration_date"]
     search_fields = ["name"]
     exclude = ["date_created"]
+    inlines = [UserProfileInline]
+
+class UserProfileAdmin(admin.ModelAdmin):
+    list_display = ["user", "merchant"]
+    autocomplete_fields = ["merchant", "user"]
 
 admin.site.register(PeopleCounting, PeopleCountingAdmin)
 admin.site.register(Cam, CamAdmin)
@@ -66,3 +75,4 @@ admin.site.register(Branch, BranchAdmin)
 admin.site.register(CampaignCalendar, CampaignCalendarAdmin)
 admin.site.register(DefaultDate, DefaultDateAdmin)
 admin.site.register(Merchant, MerchantAdmin)
+admin.site.register(UserProfile, UserProfileAdmin)

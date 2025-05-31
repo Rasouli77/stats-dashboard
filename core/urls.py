@@ -16,14 +16,17 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from dashboard.views import people_counter, users_list, generate_user, user_permissions, calender, test
+from accounts.views import custom_login
+from dashboard.views import people_counter, users_list, generate_user, user_permissions, calender, home
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('dashboard/people-counter/', people_counter, name="people_counter"),
-    path('dashboard/users/', users_list, name="users"),
-    path('dashboard/generate-user/', generate_user, name="generate_user"),
-    path('dashboard/add-user-permissions/<int:user_id>/', user_permissions, name="user-permissions"),
-    path('dashboard/calendar', calender, name="calendar"),
-    path('test', test, name="test"),
+    path('dashboard/people-counter/<str:url_hash>', people_counter, name="people_counter"),
+    path('dashboard/users/<str:url_hash>', users_list, name="users"),
+    path('dashboard/generate-user/<str:url_hash>', generate_user, name="generate_user"),
+    path('dashboard/add-user-permissions/<str:url_hash>/<int:user_id>/', user_permissions, name="user-permissions"),
+    path('dashboard/calendar/<str:url_hash>', calender, name="calendar"),
+    path('dashboard/<str:url_hash>', home, name="home"),
+    path('dashboard/login', custom_login, name="login"),
 ]

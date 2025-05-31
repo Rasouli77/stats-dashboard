@@ -20,7 +20,7 @@
                 <select id="largeSelect" class="form-select form-select-lg">
                     <option value="">همه شعب</option>
                     {% for branch in branches %}
-                    <option value="{{branch}}">{{branch}}</option>
+                    <option value="{{branch.pk}}">{{branch.name}}</option>
                     {% endfor %}
                 </select><br>
                 <button class="btn btn-primary btn-lg" style="width: 100%;" id="filter-proxy-button">اعمال فیلتر</button>

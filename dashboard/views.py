@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect, HttpResponse
 from datetime import datetime, date
-from .models import PeopleCounting
+from .models import PeopleCounting, Branch
 from django.db.models import Sum
 from django.contrib.auth.models import User, Permission
 from django.contrib.auth.decorators import login_required
@@ -9,7 +9,7 @@ from .forms import Generate_User
 import jdatetime
 import json
 from django.http import HttpResponseForbidden
-from .camera_data import create_camera_data_record, get_custom_date_camera_data
+from .camera_data import get_custom_date_camera_data, update_or_create_camera_data
 # Create your views here.
 
 def jalali_to_gregorian(date_str: str):
@@ -21,9 +21,9 @@ def jalali_to_gregorian(date_str: str):
         print(e)
         return None
 
-def people_counter(request):
-    queryset = PeopleCounting.objects.values("date").annotate(total=Sum("entry")).order_by("date")
-    branches = PeopleCounting.objects.values_list("branch", flat=True).distinct()
+def people_counter(request, url_hash):
+    queryset = PeopleCounting.objects.filter(merchant__url_hash=url_hash).values("date").annotate(total=Sum("entry")).order_by("date")
+    branches = Branch.objects.only("name", "pk")
     branch = request.GET.get("branch")
     start_date_str = str(jalali_to_gregorian(request.GET.get("start-date")))
     end_date_str = str(jalali_to_gregorian(request.GET.get("end-date")))
@@ -47,19 +47,19 @@ def people_counter(request):
     return render(request, "people-counter.html", {"dates": json.dumps(dates), "entry_totals": json.dumps(entry_totals), "branches": branches})
 
 @login_required
-def users_list(request):
+def users_list(request, url_hash):
     users = User.objects.all()
     return render(request, "users.html", {"users":users})
 
 @login_required
-def generate_user(request):
+def generate_user(request, url_hash):
     form = Generate_User(request.POST)
     if form.is_valid():
         form.save()
     return render(request, "create-user.html", {"form": form})
 
 @login_required
-def user_permissions(request, user_id):
+def user_permissions(request, user_id, url_hash):
     user = get_object_or_404(User, pk=user_id)
     if not request.user.is_staff:
         return HttpResponseForbidden("شما اجازه دسترسی به این قسمت را ندارید")
@@ -134,11 +134,16 @@ def user_permissions(request, user_id):
     
     return render(request, "user-permissions.html", {"user":user})
 
-def calender(request):
+def calender(request, url_hash):
     return render(request, "calendar.html")
 
+def home(request, url_hash):
+    return render(request, "home.html")
+
 def test(request):
-    x = get_custom_date_camera_data("172.16.20.103", "2025-05-01", "2025-05-05")
-    print(x)
-    create_camera_data_record(x)
-    return HttpResponse("<p>test</p>")
+    pass
+
+    # data = get_custom_date_camera_data("172.16.40.175", "2024-12-21", "2025-05-30")
+
+    # update_or_create_camera_data(data, 4, 1, 3)
+    # return HttpResponse("<p>test</p>")

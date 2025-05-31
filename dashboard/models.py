@@ -9,6 +9,7 @@ class Merchant(models.Model):
     rep_mobile_number = models.CharField(max_length=11, verbose_name="شماره موبایل نماینده")
     contract_start_date = models.DateField(verbose_name="تاریخ شروع قرارداد")
     contract_expiration_date = models.DateField(verbose_name="تاریخ انقضای قرارداد")
+    url_hash = models.CharField(max_length=25, verbose_name="نامک", null=True) # remove null True in Production
     date_created = models.DateTimeField(null=True, default=datetime.now, verbose_name="تاریخ ساخت")
     last_modified = models.DateTimeField(auto_now=True, verbose_name="تاریخ آخرین تغییر")
 
@@ -112,9 +113,9 @@ class PeopleCounting(models.Model): # former name: Stats
     date = models.DateField(verbose_name="تاریخ")
     entry = models.IntegerField(default=0, verbose_name="ورودی")
     exit = models.IntegerField(default=0, verbose_name="خروجی")
-    cam = models.ForeignKey(Cam, on_delete=models.CASCADE, verbose_name="دوربین")
-    merchant = models.ForeignKey(Merchant, on_delete=models.CASCADE, verbose_name="مرچنت")
-    branch = models.ForeignKey(Branch, on_delete=models.CASCADE, verbose_name="شعبه")
+    cam = models.ForeignKey(Cam, on_delete=models.CASCADE, verbose_name="دوربین", related_name="people_counts")
+    merchant = models.ForeignKey(Merchant, on_delete=models.CASCADE, verbose_name="مرچنت", related_name="people_counts")
+    branch = models.ForeignKey(Branch, on_delete=models.CASCADE, verbose_name="شعبه", related_name="people_counts")
     date_created = models.DateTimeField(null=True, default=datetime.now, verbose_name="تاریخ ساخت")
     last_modified = models.DateTimeField(auto_now=True, verbose_name="تاریخ آخرین تغییر")
 
@@ -153,3 +154,16 @@ class DefaultDate(models.Model):
     class Meta:
         verbose_name = "تاریخ پیش فرض"
         verbose_name_plural = "تاریخ پیش فرض"
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile", verbose_name="کاربر")
+    merchant = models.ForeignKey(Merchant, on_delete=models.CASCADE, related_name="profile", verbose_name="مرچنت")
+
+    def __str__(self):
+        return f"{self.user.first_name} {self.user.last_name}"
+    
+    class Meta:
+        verbose_name = "نمای کاربر"
+        verbose_name_plural = "نمای کاربر"
+    
+

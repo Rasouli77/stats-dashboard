@@ -113,13 +113,13 @@
           <ul class="menu-inner py-1">
             <!-- Page -->
             <li class="menu-item">
-              <a href="{% url 'people_counter' %}" class="menu-link">
+              <a href="{% url 'people_counter' url_hash=request.user.profile.merchant.url_hash %}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-chart"></i>
                 <div data-i18n="Page 1">شمارنده مشتریان</div>
               </a>
             </li>
             <li class="menu-item">
-              <a href="{% url 'calendar' %}" class="menu-link">
+              <a href="{% url 'calendar' url_hash=request.user.profile.merchant.url_hash %}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-calendar"></i>
                 <div data-i18n="Page 2">تقویم رویدادها</div>
               </a>
@@ -131,12 +131,12 @@
                 </a>
                 <ul class="menu-sub">
                   <li class="menu-item">
-                    <a href="{% url 'users' %}" class="menu-link">
+                    <a href="{% url 'users' url_hash=request.user.profile.merchant.url_hash %}" class="menu-link">
                       <div data-i18n="List">لیست کاربران</div>
                     </a>
                   </li>
                   <li class="menu-item">
-                    <a href="{% url 'generate_user' %}" class="menu-link">
+                    <a href="{% url 'generate_user' url_hash=request.user.profile.merchant.url_hash %}" class="menu-link">
                       <div data-i18n="Preview">ساخت کاربر</div>
                     </a>
                   </li>
