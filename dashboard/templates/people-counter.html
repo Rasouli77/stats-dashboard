@@ -46,7 +46,7 @@
                 <h6>مقایسه شعب</h6>
                 {% for branch in branches %}
                 <div class="form-check mt-3">
-                    <input class="form-check-input" type="checkbox" value="{{ branch.value }}">
+                    <input class="form-check-input fake-check" type="checkbox" value="{{ branch.pk }}">
                     <label class="form-check-label" for="defaultCheck1">{{ branch.name }}</label>
                 </div>
                 {% endfor %}
@@ -63,7 +63,7 @@
         <input type="text" name="end-date" id="end-date" style="display: none;">
         {% for branch in branches %}
         <div class="form-check mt-3" style="display: none;">
-            <input class="form-check-input" type="checkbox" value="{{ branch.value }}">
+            <input class="form-check-input real-check" type="checkbox" value="{{ branch.pk }}">
             <label class="form-check-label" for="defaultCheck1">{{ branch.name }}</label>
         </div>
         {% endfor %}
@@ -85,7 +85,8 @@
                 });
             });
 
-            const totals = JSON.parse('{{ entry_totals|safe }}');
+            const entry_totals = JSON.parse('{{ entry_totals|safe }}');
+            const exit_totals = JSON.parse('{{ exit_totals|safe }}')
             lineChart = Highcharts.chart(
                 'container', {
                     chart: {
@@ -124,8 +125,12 @@
                     },
                     series: [
                         {
-                            name: "ترافیک",
-                            data: totals
+                            name: "ورودی",
+                            data: entry_totals
+                        },
+                        {
+                            name: "خروجی",
+                            data: exit_totals
                         }
                     ]
                 }
@@ -164,7 +169,9 @@
                     // Update chart
                     lineChart.update({
                         xAxis: { categories: newCategories },
-                        series: [{ data: data.entry_totals }]
+                        series: [{ data: data.entry_totals},
+                        {data: data.exit_totals}
+                        ],
                     });
                     // Hide loading animation
                     loadingOverlay.style.display = 'none';

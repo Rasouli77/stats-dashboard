@@ -23,7 +23,7 @@ def jalali_to_gregorian(date_str: str):
         return None
 
 def people_counter(request, url_hash):
-    queryset = PeopleCounting.objects.filter(merchant__url_hash=url_hash).values("date").annotate(total=Sum("entry")).order_by("date")
+    queryset = PeopleCounting.objects.filter(merchant__url_hash=url_hash).values("date").annotate(total_entry=Sum("entry")).annotate(total_exit=Sum("exit")).order_by("date")
     branches = Branch.objects.only("name", "pk")
     branch = request.GET.get("branch")
     start_date_str = str(jalali_to_gregorian(request.GET.get("start-date")))
@@ -44,13 +44,16 @@ def people_counter(request, url_hash):
         except Exception as e:
             print(e)
     dates = [str(row["date"].strftime("%Y-%m-%d")) for row in queryset]
-    entry_totals = [float(row["total"]) for row in queryset]
+    entry_totals = [float(row["total_entry"]) for row in queryset]
+    exit_totals = [float(row["total_exit"]) for row in queryset]
+
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
         return JsonResponse({
             "dates":dates,
-            "entry_totals":entry_totals
+            "entry_totals":entry_totals,
+            "exit_totals":exit_totals
         })
-    return render(request, "people-counter.html", {"dates": json.dumps(dates), "entry_totals": json.dumps(entry_totals), "branches": branches})
+    return render(request, "people-counter.html", {"dates": json.dumps(dates),"entry_totals": json.dumps(entry_totals),"exit_totals":json.dumps(exit_totals) ,"branches": branches})
 
 @login_required
 def users_list(request, url_hash):
