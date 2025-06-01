@@ -1,4 +1,5 @@
-from django.shortcuts import render, get_object_or_404, redirect, HttpResponse
+from django.shortcuts import render, get_object_or_404, redirect
+from django.http import JsonResponse
 from datetime import datetime, date
 from .models import PeopleCounting, Branch
 from django.db.models import Sum
@@ -44,6 +45,11 @@ def people_counter(request, url_hash):
             print(e)
     dates = [str(row["date"].strftime("%Y-%m-%d")) for row in queryset]
     entry_totals = [float(row["total"]) for row in queryset]
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return JsonResponse({
+            "dates":dates,
+            "entry_totals":entry_totals
+        })
     return render(request, "people-counter.html", {"dates": json.dumps(dates), "entry_totals": json.dumps(entry_totals), "branches": branches})
 
 @login_required

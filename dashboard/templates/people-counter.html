@@ -8,10 +8,14 @@
 {% endblock %}
 {% block content %}
     <h6>شمارشگر</h6>
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loader"></div>
+    </div>
     <div class="calendar-container">
     <div class="container">
         <div class="row">
-            <div class="col-xl-4 col-lg-3 col-md-12 col-sm-12" style="margin-bottom: 10px; margin-top: 10px;">
+            <div class="col-xl-4 col-lg-3 col-md-12 col-sm-12" style="margin-bottom: 10px;">
+                <h6>تاریخ</h6>
                 <div class="accordion mt-3 accordion-header-primary" id="accordionWithIcon">
                     <div class="card accordion-item">
                       <h2 class="accordion-header d-flex align-items-center">
@@ -21,7 +25,7 @@
                         </button>
                       </h2>
 
-                      <div id="accordionWithIcon-1" class="accordion-collapse collapse" style="">
+                      <div id="accordionWithIcon-1" class="accordion-collapse collapse">
                         <div class="accordion-body" style="display: flex; justify-content: center; align-items: center;">
                         <div id="date-range"></div>
                         </div>
@@ -29,46 +33,148 @@
                     </div>
                   </div>              
             </div>
-            <div class="col-xl-4 col-lg-6 col-md-12 col-sm-12" style="margin-bottom: 10px; margin-top: 10px;">
-                <div class="accordion mt-3 accordion-header-primary" id="accordionWithIcon">
-                    <div class="card accordion-item">
-                      <h2 class="accordion-header d-flex align-items-center">
-                        <button type="button" class="accordion-button" data-bs-toggle="collapse" data-bs-target="#accordionWithIcon-1" aria-expanded="true">
-                          <i class="menu-icon tf-icons bx bx-calendar"></i>
-                            انتخاب به تفکیک شعب
-                        </button>
-                      </h2>
-
-                      <div id="accordionWithIcon-1" class="accordion-collapse collapse" style="">
-                        <div class="accordion-body" style="display: flex; justify-content: center; align-items: center;">
-                        
-                            <select id="largeSelect" class="form-select form-select-lg">
+            <div class="col-xl-4 col-lg-6 col-md-12 col-sm-12" style="margin-bottom: 10px;">
+                <h6>شعب</h6>
+                <select id="largeSelect" class="form-select form-select-lg">
                     <option value="">همه شعب</option>
                     {% for branch in branches %}
                     <option value="{{branch.pk}}">{{branch.name}}</option>
                     {% endfor %}
-                </select>
-
-                        </div>
-                      </div>
-                    </div>
-                  </div> 
-                
-                
-                
-            </div><br>
-            <button class="btn btn-primary btn-lg" style="width: 50%;" id="filter-proxy-button">اعمال فیلتر</button>
+                </select><br>
+            </div>
+            <div class="col-xl-4 col-lg-6 col-md-12 col-sm-12" style="margin-bottom: 10px;">
+                <h6>مقایسه شعب</h6>
+                {% for branch in branches %}
+                <div class="form-check mt-3">
+                    <input class="form-check-input" type="checkbox" value="{{ branch.value }}">
+                    <label class="form-check-label" for="defaultCheck1">{{ branch.name }}</label>
+                </div>
+                {% endfor %}
+            </div>
         </div>
     </div>
     </div><br>
-    <form action="" method="get" id="filter-form" style="display: none;">
-        <label for="branch">شعبه</label><br>
-        <input type="text" name="branch" id="branch"><br>
-        <label for="start-date">از تاریخ</label><br>
-        <input type="text" name="start-date" id="start-date"><br>
-        <label for="end-date">تا</label><br>
-        <input type="text" name="end-date" id="end-date"><br>
-        <button type="submit">اعمال فیلتر</button>
+    <form action="" method="get" id="filter-form">
+        <label style="display: none;" for="branch">شعبه</label>
+        <input type="text" name="branch" id="branch" style="display: none;">
+        <label style="display: none;" for="start-date">از تاریخ</label>
+        <input type="text" name="start-date" id="start-date" style="display: none;">
+        <label style="display: none;" for="end-date">تا</label>
+        <input type="text" name="end-date" id="end-date" style="display: none;">
+        {% for branch in branches %}
+        <div class="form-check mt-3" style="display: none;">
+            <input class="form-check-input" type="checkbox" value="{{ branch.value }}">
+            <label class="form-check-label" for="defaultCheck1">{{ branch.name }}</label>
+        </div>
+        {% endfor %}
+        <button class="btn btn-primary btn-lg" type="submit" id="filter-proxy-button">اعمال فیلتر</button>
     </form>
     <div id="container" style="width: 100%; height: 400px; margin-top: 45px;"></div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            const rawCategories = JSON.parse('{{ dates|safe }}');  
+
+            // Convert to Persian-formatted labels using locale
+            const categories = rawCategories.map(dateStr => {
+                const date = new Date(dateStr);
+                return date.toLocaleDateString('fa-IR', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit'
+                });
+            });
+
+            const totals = JSON.parse('{{ entry_totals|safe }}');
+            lineChart = Highcharts.chart(
+                'container', {
+                    chart: {
+                        type: 'line',
+                        backgroundColor: '#f9f9f9',
+                        style: {
+                            fontFamily: 'tahoma',
+                            fontSize: '20px'
+                        }
+                    },
+                    title: {
+                        text: "ترافیک",
+                        style: {
+                            fontSize: '25px',
+                            color: '#333'
+                        }
+                    },
+                    xAxis: {
+                        categories : categories,
+                        title: {
+                            text: "تاریخ",
+                            style: {
+                            fontSize: '20px',
+                            fontWeight: 'bold'
+                            }
+                        }
+                    },
+                    yAxis: {
+                        title: {
+                            text: "ترافیک",
+                            style: {
+                            fontSize: '20px',
+                            fontWeight: 'bold'
+                            }
+                        }
+                    },
+                    series: [
+                        {
+                            name: "ترافیک",
+                            data: totals
+                        }
+                    ]
+                }
+            );
+
+            // Handle form submission with AJAX
+            document.getElementById('filter-form').addEventListener('submit', function(event) {
+                event.preventDefault(); // Prevent page refresh
+                const form = this;
+                const formData = new FormData(form);
+                const queryString = new URLSearchParams(formData).toString();
+                const loadingOverlay = document.getElementById('loading-overlay');
+
+                // Show loading animation
+                loadingOverlay.style.display = 'flex';
+
+                // Make AJAX request
+                fetch(`{% url 'people_counter' url_hash=request.user.profile.merchant.url_hash %}?${queryString}`, {
+                    method: 'GET',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.json();
+                })
+                .then(data => {
+                    // Convert dates to Persian format
+                    const newCategories = data.dates.map(dateStr => {
+                        const date = new Date(dateStr);
+                        return date.toLocaleDateString('fa-IR', {
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit'
+                        });
+                    });
+                    // Update chart
+                    lineChart.update({
+                        xAxis: { categories: newCategories },
+                        series: [{ data: data.entry_totals }]
+                    });
+                    // Hide loading animation
+                    loadingOverlay.style.display = 'none';
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    loadingOverlay.style.display = 'none';
+                    alert('خطا در بارگذاری داده‌ها. لطفاً دوباره تلاش کنید.');
+                });
+            });
+        });
+    </script>
 {% endblock %}
