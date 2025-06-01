@@ -143,10 +143,8 @@
                 const formData = new FormData(form);
                 const queryString = new URLSearchParams(formData).toString();
                 const loadingOverlay = document.getElementById('loading-overlay');
-
-                // Show loading animation
                 loadingOverlay.style.display = 'flex';
-
+            
                 // Make AJAX request
                 fetch(`{% url 'people_counter' url_hash=request.user.profile.merchant.url_hash %}?${queryString}`, {
                     method: 'GET',
