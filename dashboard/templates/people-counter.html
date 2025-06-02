@@ -35,15 +35,10 @@
             </div>
             <div class="col-xl-4 col-lg-6 col-md-12 col-sm-12" style="margin-bottom: 10px;">
                 <h6>شعب</h6>
-                <select id="largeSelect" class="form-select form-select-lg">
-                    <option value="">همه شعب</option>
-                    {% for branch in branches %}
-                    <option value="{{branch.pk}}">{{branch.name}}</option>
-                    {% endfor %}
-                </select><br>
-            </div>
-            <div class="col-xl-4 col-lg-6 col-md-12 col-sm-12" style="margin-bottom: 10px;">
-                <h6>مقایسه شعب</h6>
+                <div class="form-check mt-3">
+                    <input class="form-check-input" type="checkbox" id="select-all">
+                    <label class="form-check-label" for="defaultCheck1">انتخاب همه</label>
+                </div>
                 {% for branch in branches %}
                 <div class="form-check mt-3">
                     <input class="form-check-input fake-check" type="checkbox" value="{{ branch.pk }}">
@@ -55,15 +50,13 @@
     </div>
     </div><br>
     <form action="" method="get" id="filter-form">
-        <label style="display: none;" for="branch">شعبه</label>
-        <input type="text" name="branch" id="branch" style="display: none;">
         <label style="display: none;" for="start-date">از تاریخ</label>
         <input type="text" name="start-date" id="start-date" style="display: none;">
         <label style="display: none;" for="end-date">تا</label>
         <input type="text" name="end-date" id="end-date" style="display: none;">
         {% for branch in branches %}
         <div class="form-check mt-3" style="display: none;">
-            <input class="form-check-input real-check" type="checkbox" value="{{ branch.pk }}">
+            <input class="form-check-input real-check" type="checkbox" value="{{ branch.pk }}" name="branch">
             <label class="form-check-label" for="defaultCheck1">{{ branch.name }}</label>
         </div>
         {% endfor %}
@@ -181,5 +174,13 @@
                 });
             });
         });
+
+        // select all box
+        document.getElementById("select-all").addEventListener("change", () => {
+            const isChecked = document.getElementById("select-all").checked
+            document.querySelectorAll(".fake-check").forEach((item) => {
+                item.checked = isChecked
+            })
+        })
     </script>
 {% endblock %}

@@ -10,6 +10,8 @@ from .forms import Generate_User
 import jdatetime
 import json
 from django.http import HttpResponseForbidden
+from django.db.models import F
+from collections import defaultdict
 from .camera_data import get_custom_date_camera_data, update_or_create_camera_data
 # Create your views here.
 
@@ -24,12 +26,15 @@ def jalali_to_gregorian(date_str: str):
 
 def people_counter(request, url_hash):
     queryset = PeopleCounting.objects.filter(merchant__url_hash=url_hash).values("date").annotate(total_entry=Sum("entry")).annotate(total_exit=Sum("exit")).order_by("date")
-    branches = Branch.objects.only("name", "pk")
-    branch = request.GET.get("branch")
+    branches = Branch.objects.filter(merchant__url_hash=url_hash).only("name", "pk")
+    selected_branches = request.GET.getlist("branch")
     start_date_str = str(jalali_to_gregorian(request.GET.get("start-date")))
     end_date_str = str(jalali_to_gregorian(request.GET.get("end-date")))
     start_date = 0
     end_date = 0
+    branch_count = branches.count()
+    entry_totals = []
+    exit_totals = []
     if start_date_str and end_date_str:
         try:
             start_date = datetime.strptime(start_date_str, "%Y-%m-%d").date()
@@ -37,22 +42,57 @@ def people_counter(request, url_hash):
             queryset = queryset.filter(date__range=(start_date, end_date))
         except Exception as e:
             print(e)
+
     
-    if branch:
+    # If there is one branch
+    if len(selected_branches) == 1:
         try:
-            queryset = queryset.filter(branch=branch)
+            queryset = queryset.filter(branch=selected_branches[0])
+            entry_totals = [float(row["total_entry"]) for row in queryset]
+            exit_totals = [float(row["total_exit"]) for row in queryset]
         except Exception as e:
             print(e)
+
+    # If all of them are selected 
+    if len(selected_branches) == branch_count:
+        try:
+            queryset = queryset
+            entry_totals = [float(row["total_entry"]) for row in queryset]
+            exit_totals = [float(row["total_exit"]) for row in queryset]
+        except Exception as e:
+            print(e)
+
+    # If there is more than one branch
+    if len(selected_branches) > 1 and len(selected_branches) < branch_count:
+        branches_stats = defaultdict(lambda: {"date": [], "entry_totals": []})
+        try: 
+            queryset = queryset.filter(branch__in=selected_branches).annotate(branch=F("branch__pk"))
+            for row in queryset:
+                branch_id = row["branch"]
+                branches_stats[branch_id]["date"].append(row["date"].strftime("%Y-%m-%d"))
+                branches_stats[branch_id]["entry_totals"].append(row["total_entry"])
+
+            print(branches_stats)
+            
+            
+        except Exception as e:
+            print(e)
+
     dates = [str(row["date"].strftime("%Y-%m-%d")) for row in queryset]
-    entry_totals = [float(row["total_entry"]) for row in queryset]
-    exit_totals = [float(row["total_exit"]) for row in queryset]
+    
 
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-        return JsonResponse({
-            "dates":dates,
-            "entry_totals":entry_totals,
-            "exit_totals":exit_totals
-        })
+        if len(selected_branches) > 1 and len(selected_branches) < branch_count:
+            return JsonResponse({
+                "dates":dates,
+                "branches_data":branches_stats
+            })
+        else:
+            return JsonResponse({
+                "dates":dates,
+                "entry_totals":entry_totals,
+                "exit_totals":exit_totals
+            })
     return render(request, "people-counter.html", {"dates": json.dumps(dates),"entry_totals": json.dumps(entry_totals),"exit_totals":json.dumps(exit_totals) ,"branches": branches})
 
 @login_required

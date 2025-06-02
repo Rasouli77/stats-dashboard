@@ -349,8 +349,6 @@
         });
         const filterProxyButton = document.getElementById("filter-proxy-button");
         const realFilterForm = document.getElementById("filter-form");
-        const branch = document.getElementById("branch");
-        const filterProxyBranch = document.getElementById("largeSelect");
         filterProxyButton.addEventListener("click", () => {
           function formatJalaliDate(jdateObj) {
             if (!jdateObj || !jdateObj._cached_date) return "";
@@ -368,7 +366,6 @@
           const realJalaliEndDate = document.getElementById("end-date");
           realJalaliStartDate.value = startJalaiDate;
           realJalaliEndDate.value = endJalaliDate;
-          branch.value = filterProxyBranch.value;
           fakeChecks.forEach((item) => {
             if (item.checked == true) {
               realChecks.forEach((sitem) => {
