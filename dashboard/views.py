@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
 from datetime import datetime, date
-from .models import PeopleCounting, Branch
+from .models import PeopleCounting, Branch, UserProfile
 from django.db.models import Sum
 from django.contrib.auth.models import User, Permission
 from django.contrib.auth.decorators import login_required
@@ -100,7 +100,7 @@ def people_counter(request, url_hash):
 
 @login_required
 def users_list(request, url_hash):
-    users = User.objects.all()
+    users = UserProfile.objects.filter(merchant__url_hash=url_hash)
     return render(request, "users.html", {"users": users})
 
 

@@ -161,6 +161,8 @@ class DefaultDate(models.Model):
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile", verbose_name="کاربر")
     merchant = models.ForeignKey(Merchant, on_delete=models.CASCADE, related_name="profile", verbose_name="مرچنت")
+    mobile = models.CharField(max_length=11, verbose_name="شماره تلفن", null=True, blank=True)
+    is_manager = models.BooleanField(default=False, verbose_name="مدیر")
 
     def __str__(self):
         return f"{self.user.first_name} {self.user.last_name}"
