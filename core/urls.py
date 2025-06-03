@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.urls import path
 from accounts.views import custom_login
 from dashboard.views import people_counter, users_list, generate_user, user_permissions, calender, home
+from dashboard.api_views import MultipleBranches
 
 
 urlpatterns = [
@@ -29,4 +30,5 @@ urlpatterns = [
     path('dashboard/calendar/<str:url_hash>', calender, name="calendar"),
     path('dashboard/<str:url_hash>', home, name="home"),
     path('dashboard/login', custom_login, name="login"),
+    path('api/multi-branch-data', MultipleBranches.as_view(), name="multi_branch_data")
 ]

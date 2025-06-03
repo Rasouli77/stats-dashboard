@@ -68,9 +68,7 @@ def people_counter(request, url_hash):
         try:
             queryset = queryset.filter(branch__in=selected_branches)
             for row in queryset:
-                branches_stats["date"].append(
-                    row["date"].strftime("%Y-%m-%d")
-                )
+                branches_stats["date"].append(row["date"].strftime("%Y-%m-%d"))
                 branches_stats["entry_totals"].append(float(row["total_entry"]))
         except Exception as e:
             print(e)
@@ -80,13 +78,13 @@ def people_counter(request, url_hash):
     dates = [str(row["date"].strftime("%Y-%m-%d")) for row in queryset]
 
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-            return JsonResponse(
-                {
-                    "dates": dates,
-                    "entry_totals": entry_totals,
-                    "exit_totals": exit_totals,
-                }
-            )
+        return JsonResponse(
+            {
+                "dates": dates,
+                "entry_totals": entry_totals,
+                "exit_totals": exit_totals,
+            }
+        )
     return render(
         request,
         "people-counter.html",
@@ -95,7 +93,7 @@ def people_counter(request, url_hash):
             "entry_totals": json.dumps(entry_totals),
             "exit_totals": json.dumps(exit_totals),
             "branches": branches,
-            "branches_data": json.dumps(dict(branches_stats))
+            "branches_data": json.dumps(dict(branches_stats)),
         },
     )
 
@@ -206,10 +204,3 @@ def home(request, url_hash):
     return render(request, "home.html")
 
 
-def test(request):
-    pass
-
-    # data = get_custom_date_camera_data("172.16.40.175", "2024-12-21", "2025-05-30")
-
-    # update_or_create_camera_data(data, 4, 1, 3)
-    # return HttpResponse("<p>test</p>")
