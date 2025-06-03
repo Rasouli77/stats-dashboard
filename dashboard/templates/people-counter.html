@@ -62,13 +62,16 @@
         {% endfor %}
         <button class="btn btn-primary btn-lg" type="submit" id="filter-proxy-button">اعمال فیلتر</button>
     </form>
+    {% for branch in branches %}
+    <div class="branch-name" id="{{ branch.pk }}" style="display: none;">{{ branch.name }}</div>
+    {% endfor %}
     <div id="container" style="width: 100%; height: 400px; margin-top: 45px;"></div>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
 
             const rawCategories = JSON.parse('{{ dates|safe }}');  
 
-            // Convert to Persian-formatted labels using locale
+            
             const categories = rawCategories.map(dateStr => {
                 const date = new Date(dateStr);
                 return date.toLocaleDateString('fa-IR', {
@@ -129,16 +132,16 @@
                 }
             );
 
-            // Handle form submission with AJAX
+            
             document.getElementById('filter-form').addEventListener('submit', function(event) {
-                event.preventDefault(); // Prevent page refresh
+                event.preventDefault(); 
                 const form = this;
                 const formData = new FormData(form);
                 const queryString = new URLSearchParams(formData).toString();
                 const loadingOverlay = document.getElementById('loading-overlay');
                 loadingOverlay.style.display = 'flex';
             
-                // Make AJAX request
+                
                 fetch(`{% url 'people_counter' url_hash=request.user.profile.merchant.url_hash %}?${queryString}`, {
                     method: 'GET',
                     headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -148,7 +151,7 @@
                     return response.json();
                 })
                 .then(data => {
-                    // Convert dates to Persian format
+
                     const newCategories = data.dates.map(dateStr => {
                         const date = new Date(dateStr);
                         return date.toLocaleDateString('fa-IR', {
@@ -157,14 +160,14 @@
                             day: '2-digit'
                         });
                     });
-                    // Update chart
+
                     lineChart.update({
                         xAxis: { categories: newCategories },
                         series: [{ data: data.entry_totals},
                         {data: data.exit_totals}
                         ],
                     });
-                    // Hide loading animation
+                   
                     loadingOverlay.style.display = 'none';
                 })
                 .catch(error => {
@@ -175,7 +178,7 @@
             });
         });
 
-        // select all box
+        
         document.getElementById("select-all").addEventListener("change", () => {
             const isChecked = document.getElementById("select-all").checked
             document.querySelectorAll(".fake-check").forEach((item) => {

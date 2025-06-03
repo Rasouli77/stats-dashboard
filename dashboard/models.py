@@ -1,6 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import User
 from datetime import datetime
+
+
+
 # Create your models here.
 class Merchant(models.Model):
     name = models.CharField(max_length=255, verbose_name="نام")
