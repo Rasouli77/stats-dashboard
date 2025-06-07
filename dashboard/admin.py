@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import PeopleCounting, Merchant, Cam, Country, Province, City, District, Branch, CampaignCalendar, DefaultDate, UserProfile
+from .models import PeopleCounting, Merchant, Cam, Country, Province, City, District, Branch, CampaignCalendar, DefaultDate, UserProfile, PermissionToViewBranch
 
 # Register your models here.
 
@@ -38,7 +38,7 @@ class DistrictAdmin(admin.ModelAdmin):
 
 class BranchAdmin(admin.ModelAdmin):
     list_display = ["pk", "name", "district", "merchant"]
-    search_fields = ["name"]
+    search_fields = ["name", "pk"]
     autocomplete_fields = ["district"]
     exclude = ["date_created"]
 
@@ -61,9 +61,22 @@ class MerchantAdmin(admin.ModelAdmin):
     exclude = ["date_created"]
     inlines = [UserProfileInline]
 
+class PermissionToViewBranchAdmin(admin.ModelAdmin):
+    list_display = ["user", "branch"]
+    autocomplete_fields = ["branch"]
+
+class PermissionToViewBranchInline(admin.TabularInline):
+    model = PermissionToViewBranch
+    autocomplete_fields = ["branch"]
+    extra = 0
+
 class UserProfileAdmin(admin.ModelAdmin):
     list_display = ["user", "merchant"]
     autocomplete_fields = ["merchant", "user"]
+    inlines = [PermissionToViewBranchInline]
+
+
+    
 
 admin.site.register(PeopleCounting, PeopleCountingAdmin)
 admin.site.register(Cam, CamAdmin)
@@ -76,3 +89,4 @@ admin.site.register(CampaignCalendar, CampaignCalendarAdmin)
 admin.site.register(DefaultDate, DefaultDateAdmin)
 admin.site.register(Merchant, MerchantAdmin)
 admin.site.register(UserProfile, UserProfileAdmin)
+admin.site.register(PermissionToViewBranch, PermissionToViewBranchAdmin)

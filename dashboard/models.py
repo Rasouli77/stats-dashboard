@@ -83,7 +83,7 @@ class Branch(models.Model):
     last_modified = models.DateTimeField(auto_now=True, verbose_name="تاریخ آخرین تغییر")
 
     def __str__(self):
-        return self.name
+        return f"{self.merchant.name} | {self.name}"
     
     class Meta:
         verbose_name = "شعبه"
@@ -170,5 +170,17 @@ class UserProfile(models.Model):
     class Meta:
         verbose_name = "نمای کاربر"
         verbose_name_plural = "نمای کاربر"
+
+class PermissionToViewBranch(models.Model):
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name="permissiontoviewbranch", verbose_name="کاربر")
+    branch = models.ForeignKey(Branch, on_delete=models.CASCADE,related_name="permissiontoviewbranch", verbose_name="شعبه")
+    date_created = models.DateTimeField(null=True, default=datetime.now, verbose_name="تاریخ ساخت")
+    last_modified = models.DateTimeField(auto_now=True, verbose_name="تاریخ آخرین تغییر")
+
+    def __str__(self):
+        return f"{self.pk}"
     
+    class Meta:
+        verbose_name = "مجوز شعبه"
+        verbose_name_plural = "مجوز شعبه"
 

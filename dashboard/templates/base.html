@@ -59,6 +59,26 @@
         .highcharts-credits {
           display: none;
         }
+
+        .branches-grid {
+          display: grid;
+          grid-template-columns: repeat(7, 1fr);
+          gap: 10px;
+        }
+
+        /* Tablets */
+        @media (max-width: 992px) {
+          .branches-grid {
+            grid-template-columns: repeat(4, 1fr);
+          }
+        }
+
+        /* Phones */
+        @media (max-width: 576px) {
+          .branches-grid {
+            grid-template-columns: repeat(2, 1fr);
+          }
+        }
     </style>
 
     <!-- Vendors CSS -->
@@ -122,17 +142,18 @@
           <ul class="menu-inner py-1">
             <!-- Page -->
             <li class="menu-item">
-              <a href="{% url 'people_counter' url_hash=request.user.profile.merchant.url_hash %}" class="menu-link">
+              <a href="{% url 'people_counter' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-chart"></i>
                 <div data-i18n="Page 1">شمارنده مشتریان</div>
               </a>
             </li>
             <li class="menu-item">
-              <a href="{% url 'calendar' url_hash=request.user.profile.merchant.url_hash %}" class="menu-link">
+              <a href="{% url 'calendar' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-calendar"></i>
                 <div data-i18n="Page 2">تقویم رویدادها</div>
               </a>
             </li>
+            {% if request.user.profile.is_manager %}
             <li class="menu-item">
                 <a href="javascript:void(0);" class="menu-link menu-toggle">
                   <i class="menu-icon tf-icons bx bx-user"></i>
@@ -140,17 +161,18 @@
                 </a>
                 <ul class="menu-sub">
                   <li class="menu-item">
-                    <a href="{% url 'users' url_hash=request.user.profile.merchant.url_hash %}" class="menu-link">
+                    <a href="{% url 'users' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
                       <div data-i18n="List">لیست کاربران</div>
                     </a>
                   </li>
                   <li class="menu-item">
-                    <a href="{% url 'generate_user' url_hash=request.user.profile.merchant.url_hash %}" class="menu-link">
+                    <a href="{% url 'generate_user' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
                       <div data-i18n="Preview">ساخت کاربر</div>
                     </a>
                   </li>
                 </ul>
               </li>
+            {% endif %}
           </ul>
         </aside>
         <!-- / Menu -->
@@ -180,21 +202,20 @@
                   <li class="nav-item navbar-dropdown dropdown-user dropdown">
                     <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
                       <div class="avatar avatar-online">
-                        <img src="{% static 'assets/img/avatars/1.png' %}" alt class="rounded-circle">
+                        <img src="{% static 'assets/img/avatars/defaul-avatar.webp' %}" alt class="rounded-circle">
                       </div>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
                       <li>
                         <a class="dropdown-item" href="#">
                           <div class="d-flex">
-                            <div class="flex-shrink-0 me-3">
-                              <div class="avatar avatar-online">
-                                <img src="{% static 'assets/img/avatars/1.png' %}" alt class="rounded-circle">
-                              </div>
-                            </div>
                             <div class="flex-grow-1">
-                              <span class="fw-semibold d-block">جان اسنو</span>
+                              <span class="fw-semibold d-block">{{ request.user.first_name }} {{ request.user.last_name }}</span>
+                              {% if request.user.profile.is_manager %}
                               <small>مدیر</small>
+                              {% else %}
+                              <small>کاربر</small>
+                              {% endif %}
                             </div>
                           </div>
                         </a>
@@ -215,19 +236,13 @@
                         </a>
                       </li>
                       <li>
-                        <a class="dropdown-item" href="#">
-                          <span class="d-flex align-items-center align-middle">
-                            <i class="flex-shrink-0 bx bx-credit-card me-2"></i>
-                            <span class="flex-grow-1 align-middle">صورتحساب</span>
-                            <span class="flex-shrink-0 badge badge-center rounded-pill bg-danger w-px-20 h-px-20">4</span>
-                          </span>
-                        </a>
-                      </li>
-                      <li>
                         <div class="dropdown-divider"></div>
                       </li>
                       <li>
-                        <a class="dropdown-item" href="#">
+                        <form id="logout-form" method="post" action="{% url 'logout' %}" style="display: none;">
+                          {% csrf_token %}
+                        </form>
+                        <a id="fake-logout" class="dropdown-item">
                           <i class="bx bx-power-off me-2"></i>
                           <span class="align-middle">خروج</span>
                         </a>
@@ -380,7 +395,6 @@
               }); 
             }
           });
-          // realFilterForm.submit();
         })
     </script>
     <script>
@@ -434,6 +448,13 @@
         hasPermissions.push(item.getAttribute("aria-label"));
       });
 
+    </script>
+    <script>
+      buttonLogout = document.getElementById("fake-logout")
+      form = document.getElementById("logout-form")
+      buttonLogout.addEventListener("click", () => {
+        form.submit()
+      })
     </script>
     <!-- Page JS -->
   </body>

@@ -17,8 +17,9 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from accounts.views import custom_login
-from dashboard.views import people_counter, users_list, generate_user, user_permissions, calender, home
+from dashboard.views import people_counter, users_list, generate_user, user_permissions, calender, home, test
 from dashboard.api_views import MultipleBranches
+from django.contrib.auth import views as auth_views
 
 
 urlpatterns = [
@@ -28,7 +29,9 @@ urlpatterns = [
     path('dashboard/generate-user/<str:url_hash>', generate_user, name="generate_user"),
     path('dashboard/add-user-permissions/<str:url_hash>/<int:user_id>/', user_permissions, name="user-permissions"),
     path('dashboard/calendar/<str:url_hash>', calender, name="calendar"),
+    path('dashboard/account/login', custom_login, name="login"),
+    path('dashboard/account/logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
     path('dashboard/<str:url_hash>', home, name="home"),
-    path('dashboard/login', custom_login, name="login"),
-    path('api/multi-branch-data', MultipleBranches.as_view(), name="multi_branch_data")
+    path('api/multi-branch-data', MultipleBranches.as_view(), name="multi_branch_data"),
+    path('test/', test, name="test"),
 ]

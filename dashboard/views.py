@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
 from datetime import datetime, date
-from .models import PeopleCounting, Branch, UserProfile
+from .models import PeopleCounting, Branch, UserProfile, PermissionToViewBranch
 from django.db.models import Sum
 from django.contrib.auth.models import User, Permission
 from django.contrib.auth.decorators import login_required
@@ -35,7 +35,15 @@ def people_counter(request, url_hash):
         .annotate(total_exit=Sum("exit"))
         .order_by("date")
     )
-    branches = Branch.objects.filter(merchant__url_hash=url_hash).only("name", "pk")
+    if request.user.profile.is_manager == True:
+        branches = Branch.objects.filter(merchant__url_hash=url_hash).only("name", "pk")
+    else:
+        permitted_branches = PermissionToViewBranch.objects.filter(user__merchant__url_hash=url_hash, user__pk=request.user.profile.pk)
+        permitted_branches_list = []
+        for permitted_branch in permitted_branches:
+            permitted_branches_list.append(permitted_branch.branch.pk)
+        branches = Branch.objects.filter(merchant__url_hash=url_hash, pk__in=permitted_branches_list).only("name", "pk")
+    
     selected_branches = request.GET.getlist("branch")
     start_date_str = str(jalali_to_gregorian(request.GET.get("start-date")))
     end_date_str = str(jalali_to_gregorian(request.GET.get("end-date")))
@@ -202,5 +210,20 @@ def calender(request, url_hash):
 
 def home(request, url_hash):
     return render(request, "home.html")
+
+def test(self):
+    # aghdasieh = get_custom_date_camera_data("172.16.20.103", "2025-05-31", "2025-06-06")
+    # iranmallone = get_custom_date_camera_data("172.16.70.75", "2025-05-31", "2025-06-06")
+    # iranmalltwo = get_custom_date_camera_data("172.16.70.128", "2025-05-31", "2025-06-06")
+    # mehrad = get_custom_date_camera_data("172.16.90.241", "2025-05-31", "2025-06-06")
+    # hadish_one = get_custom_date_camera_data("172.16.40.174", "2025-05-31", "2025-06-06")
+    # hadish_two = get_custom_date_camera_data("172.16.40.175", "2025-05-31", "2025-06-06")
+    # update_or_create_camera_data(aghdasieh, 1, 1, 1)
+    # update_or_create_camera_data(iranmallone, 5, 1, 4)
+    # update_or_create_camera_data(iranmalltwo, 6, 1, 4)
+    # update_or_create_camera_data(mehrad, 2, 1, 2)
+    # update_or_create_camera_data(hadish_one, 3, 1, 3)
+    # update_or_create_camera_data(hadish_two, 4, 1, 3)
+    pass
 
 
