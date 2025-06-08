@@ -24,68 +24,9 @@
     <link rel="stylesheet" href="{% static 'assets/css/demo.css' %}">
     <link rel="stylesheet" href="{% static 'assets/vendor/css/rtl/rtl.css' %}">
 
-    <style>
-        .light-style .flatpickr-calendar {
-        box-shadow: none !important;
-        }
-    </style>
-    <style>
-        /* Loading overlay */
-        .loading-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-        .loader {
-            border: 8px solid #f3f3f3;
-            border-top: 8px solid #3498db;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .highcharts-credits {
-          display: none;
-        }
-
-        .branches-grid {
-          display: grid;
-          grid-template-columns: repeat(7, 1fr);
-          gap: 10px;
-        }
-
-        /* Tablets */
-        @media (max-width: 992px) {
-          .branches-grid {
-            grid-template-columns: repeat(4, 1fr);
-          }
-        }
-
-        /* Phones */
-        @media (max-width: 576px) {
-          .branches-grid {
-            grid-template-columns: repeat(2, 1fr);
-          }
-        }
-    </style>
-
     <!-- Vendors CSS -->
     <link rel="stylesheet" href="{% static 'assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css' %}">
     <link rel="stylesheet" href="{% static 'assets/vendor/libs/typeahead-js/typeahead.css' %}">
-    <link rel="stylesheet" href="{% static 'assets/vendor/libs/fullcalendar/fullcalendar.css' %}">
-    <link rel="stylesheet" href="{% static 'assets/vendor/libs/flatpickr/flatpickr.css' %}">
     <link rel="stylesheet" href="{% static 'assets/vendor/libs/select2/select2.css' %}">
     <link rel="stylesheet" href="{% static 'assets/vendor/libs/quill/editor-fa.css' %}">
     <link rel="stylesheet" href="{% static 'assets/vendor/libs/formvalidation/dist/css/formValidation.min.css' %}">
@@ -107,14 +48,15 @@
         border-radius: 10px;
       }
     </style>
-    <!-- Page CSS -->
-    <link rel="stylesheet" href="{% static 'assets/vendor/css/pages/app-calendar.css' %}">
+    {% block extra_css %}
+    {% endblock %}
     <!-- Helpers -->
     <script src="{% static 'assets/vendor/js/helpers.js' %}"></script>
 
     <!--! Template customizer & Theme config files MUST be included after core stylesheets and helpers.js in the <head> section -->
     <!--? Config:  Mandatory theme config file contain global vars & default theme options, Set your preferred theme option in this file.  -->
     <script src="{% static 'assets/js/config.js' %}"></script>
+    
   </head>
 
   <body>
@@ -288,11 +230,10 @@
       <div class="drag-target"></div>
     </div>
     <!-- / Layout wrapper -->
+    <!-- JavaScript -->
     <!-- HighChart JS -->
-    <script src="https://code.highcharts.com/highcharts.js"></script>
-    <script src="https://code.highcharts.com/modules/exporting.js"></script>
-    <script src="https://code.highcharts.com/modules/export-data.js"></script>
-    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+    {% block extra_js %}
+    {% endblock %}
     <!-- Core JS -->
     <!-- build:js assets/vendor/js/core.js -->
     <script src="{% static 'assets/vendor/libs/jquery/jquery.js' %}"></script>
@@ -309,23 +250,16 @@
     <!-- endbuild -->
 
     <!-- Vendors JS -->
-    <script src="{% static 'assets/vendor/libs/fullcalendar/fullcalendar.js' %}"></script>
     <script src="{% static 'assets/vendor/libs/formvalidation/dist/js/FormValidation.min.js' %}"></script>
     <script src="{% static 'assets/vendor/libs/formvalidation/dist/js/plugins/Bootstrap5.min.js' %}"></script>
     <script src="{% static 'assets/vendor/libs/formvalidation/dist/js/plugins/AutoFocus.min.js' %}"></script>
     <script src="{% static 'assets/vendor/libs/select2/select2.js' %}"></script>
     <script src="{% static 'assets/vendor/libs/select2/i18n/fa.js' %}"></script>
-    <script src="{% static 'assets/vendor/libs/jdate/jdate.js' %}"></script>
-    <script src="{% static 'assets/vendor/libs/flatpickr/flatpickr-jdate.js' %}"></script>
-    <script src="{% static 'assets/vendor/libs/flatpickr/l10n/fa-jdate.js' %}"></script>
-    <script src="{% static 'assets/vendor/libs/moment/moment.js' %}"></script>
     <script src="{% static 'assets/vendor/libs/sortablejs/sortable.js' %}"></script>
 
     <!-- Main JS -->
     <script src="{% static 'assets/js/main.js' %}"></script>
     <!-- Page JS -->
-    <script src="{% static 'assets/js/app-calendar-events.js' %}"></script>
-    <script src="{% static 'assets/js/app-calendar.js' %}"></script>
     <script src="{% static 'assets/js/extended-ui-drag-and-drop.js' %}"></script>
     <script>
         // Observe the DOM for new menu items

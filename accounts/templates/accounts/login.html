@@ -79,7 +79,7 @@
       <div class="authentication-wrapper authentication-basic container-p-y">
         <div class="authentication-inner py-4" style="display: flex; justify-content: center; align-items: center;">
           <!-- Register -->
-          <div class="card" style="width: 60%;">
+          <div class="card" style="width: 50%;">
             <div class="card-body">
               <!-- Logo -->
               <!-- <div class="app-brand justify-content-center">
@@ -116,8 +116,7 @@
                 </a>
               </div> -->
               <!-- /Logo -->
-              <h4 class="mb-3 secondary-font">به فرست خوش آمدید!</h4>
-              <p class="mb-4">لطفا وارد حساب خود شده و ماجراجویی را شروع کنید</p>
+              <h4 class="mb-3 secondary-font">ورود</h4>
 
               <form id="formAuthentication" class="mb-3" method="post">
                 {% csrf_token %}
@@ -147,8 +146,8 @@
                     <label class="form-check-label" for="remember-me"> به خاطر سپاری </label>
                   </div>
                 </div>
-                <div class="mb-3">
-                  <button class="btn btn-primary d-grid w-100" type="submit">ورود</button>
+                <div class="mb-3" style="display: flex; justify-content: center; align-items: center;">
+                  <button class="btn btn-primary d-grid w-50" type="submit">ورود</button>
                 </div>
               </form>
               </div>

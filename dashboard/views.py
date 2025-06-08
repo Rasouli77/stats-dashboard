@@ -38,12 +38,16 @@ def people_counter(request, url_hash):
     if request.user.profile.is_manager == True:
         branches = Branch.objects.filter(merchant__url_hash=url_hash).only("name", "pk")
     else:
-        permitted_branches = PermissionToViewBranch.objects.filter(user__merchant__url_hash=url_hash, user__pk=request.user.profile.pk)
+        permitted_branches = PermissionToViewBranch.objects.filter(
+            user__merchant__url_hash=url_hash, user__pk=request.user.profile.pk
+        )
         permitted_branches_list = []
         for permitted_branch in permitted_branches:
             permitted_branches_list.append(permitted_branch.branch.pk)
-        branches = Branch.objects.filter(merchant__url_hash=url_hash, pk__in=permitted_branches_list).only("name", "pk")
-    
+        branches = Branch.objects.filter(
+            merchant__url_hash=url_hash, pk__in=permitted_branches_list
+        ).only("name", "pk")
+
     selected_branches = request.GET.getlist("branch")
     start_date_str = str(jalali_to_gregorian(request.GET.get("start-date")))
     end_date_str = str(jalali_to_gregorian(request.GET.get("end-date")))
@@ -211,6 +215,7 @@ def calender(request, url_hash):
 def home(request, url_hash):
     return render(request, "home.html")
 
+
 def test(self):
     # aghdasieh = get_custom_date_camera_data("172.16.20.103", "2025-05-31", "2025-06-06")
     # iranmallone = get_custom_date_camera_data("172.16.70.75", "2025-05-31", "2025-06-06")
@@ -225,5 +230,3 @@ def test(self):
     # update_or_create_camera_data(hadish_one, 3, 1, 3)
     # update_or_create_camera_data(hadish_two, 4, 1, 3)
     pass
-
-

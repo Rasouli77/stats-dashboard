@@ -6,6 +6,68 @@
 {% block meta_description %}
 	شمارشگر
 {% endblock %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'assets/vendor/libs/fullcalendar/fullcalendar.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/vendor/libs/flatpickr/flatpickr.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/vendor/css/pages/app-calendar.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/vendor/libs/toastr/toastr.css' %}" />
+    <style>
+        .light-style .flatpickr-calendar {
+        box-shadow: none !important;
+        }
+    </style>
+    <style>
+        /* Loading overlay */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .loader {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .highcharts-credits {
+          display: none;
+        }
+
+        .branches-grid {
+          display: grid;
+          grid-template-columns: repeat(7, 1fr);
+          gap: 10px;
+        }
+
+        /* Tablets */
+        @media (max-width: 992px) {
+          .branches-grid {
+            grid-template-columns: repeat(4, 1fr);
+          }
+        }
+
+        /* Phones */
+        @media (max-width: 576px) {
+          .branches-grid {
+            grid-template-columns: repeat(2, 1fr);
+          }
+        }
+    </style>
+{% endblock %}
 {% block content %}
     <h6>شمارشگر</h6>
     <div class="loading-overlay" id="loading-overlay">
@@ -102,8 +164,12 @@
         </div>
     </div>
     </div><br>
-    
-    <script>
+{% endblock %}
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="{% static 'assets/vendor/libs/toastr/toastr.js' %}"></script>
+<script src="{% static 'assets/js/ui-toasts.js' %}"></script>
+<script>
         document.addEventListener('DOMContentLoaded', () => {
 
             const rawCategories = JSON.parse('{{ dates|safe }}');  
@@ -221,13 +287,8 @@
                 item.checked = isChecked
             })
         })
-    </script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <link rel="stylesheet" href="{% static 'assets/vendor/libs/toastr/toastr.css' %}" />
-    <script src="{% static 'assets/vendor/libs/toastr/toastr.js' %}"></script>
-    <script src="{% static 'assets/js/ui-toasts.js' %}"></script>
-
-    <script>
+</script>
+<script>
         $("#filter-form").on("submit", function (e) {
             
 
@@ -304,8 +365,19 @@
                 }
             });
         });
-    </script>
-    
+</script>
+<!-- HighChart JS -->
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/modules/export-data.js"></script>
+<script src="https://code.highcharts.com/modules/accessibility.js"></script>
+
+<script src="{% static 'assets/vendor/libs/jdate/jdate.js' %}"></script>
+<script src="{% static 'assets/vendor/libs/flatpickr/flatpickr-jdate.js' %}"></script>
+<script src="{% static 'assets/vendor/libs/moment/moment.js' %}"></script>
+<script src="{% static 'assets/vendor/libs/flatpickr/l10n/fa-jdate.js' %}"></script>
+<script src="{% static 'assets/js/app-calendar-events.js' %}"></script>
+<script src="{% static 'assets/js/app-calendar.js' %}"></script>
 {% endblock %}
 
 

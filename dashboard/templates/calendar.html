@@ -6,6 +6,23 @@
 {% block meta_description %}
 	تقویم کمپین‌ها
 {% endblock %}
+{% block extra_css %}
+    <!-- Vendors CSS -->
+    <link rel="stylesheet" href="{% static 'assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/vendor/libs/typeahead-js/typeahead.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/vendor/libs/fullcalendar/fullcalendar.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/vendor/libs/flatpickr/flatpickr.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/vendor/libs/select2/select2.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/vendor/libs/quill/editor-fa.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/vendor/libs/formvalidation/dist/css/formValidation.min.css' %}">
+
+    <!-- Page CSS -->
+
+    <link rel="stylesheet" href="{% static 'assets/vendor/css/pages/app-calendar.css' %}">
+    <!-- Helpers -->
+    <script src="{% static 'assets/vendor/js/helpers.js' %}"></script>
+    
+{% endblock %}
 {% block content %}
 <div class="card app-calendar-wrapper">
     <div class="row g-0">
@@ -151,4 +168,39 @@
       <!-- /Calendar & Modal -->
     </div>
 </div>
+{% endblock %}
+{% block extra_js %}
+<!-- Core JS -->
+    <!-- build:js assets/vendor/js/core.js -->
+    <script src="{% static 'assets/vendor/libs/jquery/jquery.js' %}"></script>
+    <script src="{% static 'assets/vendor/libs/popper/popper.js' %}"></script>
+    <script src="{% static 'assets/vendor/js/bootstrap.js' %}"></script>
+    <script src="{% static 'assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js' %}"></script>
+
+    <script src="{% static 'assets/vendor/libs/hammer/hammer.js' %}"></script>
+
+    <script src="{% static 'assets/vendor/libs/i18n/i18n.js' %}"></script>
+    <script src="{% static 'assets/vendor/libs/typeahead-js/typeahead.js' %}"></script>
+
+    <script src="{% static 'assets/vendor/js/menu.js' %}"></script>
+    <!-- endbuild -->
+
+    <!-- Vendors JS -->
+    <script src="{% static 'assets/vendor/libs/fullcalendar/fullcalendar.js' %}"></script>
+    <script src="{% static 'assets/vendor/libs/formvalidation/dist/js/FormValidation.min.js' %}"></script>
+    <script src="{% static 'assets/vendor/libs/formvalidation/dist/js/plugins/Bootstrap5.min.js' %}"></script>
+    <script src="{% static 'assets/vendor/libs/formvalidation/dist/js/plugins/AutoFocus.min.js' %}"></script>
+    <script src="{% static 'assets/vendor/libs/select2/select2.js' %}"></script>
+    <script src="{% static 'assets/vendor/libs/select2/i18n/fa.js' %}"></script>
+    <script src="{% static 'assets/vendor/libs/jdate/jdate.js' %}"></script>
+    <script src="{% static 'assets/vendor/libs/flatpickr/flatpickr-jdate.js' %}"></script>
+    <script src="{% static 'assets/vendor/libs/flatpickr/l10n/fa-jdate.js' %}"></script>
+    <script src="{% static 'assets/vendor/libs/moment/moment.js' %}"></script>
+
+    <!-- Main JS -->
+    <script src="{% static 'assets/js/main.js' %}"></script>
+
+    <!-- Page JS -->
+    <script src="{% static 'assets/js/app-calendar-events.js' %}"></script>
+    <script src="{% static 'assets/js/app-calendar.js' %}"></script>
 {% endblock %}
