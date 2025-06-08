@@ -16,7 +16,7 @@ class Merchant(models.Model):
     contract_start_date = models.DateField(verbose_name="تاریخ شروع قرارداد")
     contract_expiration_date = models.DateField(verbose_name="تاریخ انقضای قرارداد")
     url_hash = models.CharField(
-        max_length=25, verbose_name="نامک", null=True
+        max_length=25, verbose_name="نامک", null=True, db_index=True, unique=True
     )  # remove null True in Production
     date_created = models.DateTimeField(
         null=True, default=datetime.now, verbose_name="تاریخ ساخت"
@@ -122,7 +122,7 @@ class Branch(models.Model):
     district = models.ForeignKey(
         District, on_delete=models.CASCADE, verbose_name="منطقه", null=True, blank=True
     )
-    name = models.CharField(max_length=255, verbose_name="نام")
+    name = models.CharField(max_length=255, verbose_name="نام", db_index=True)
     date_created = models.DateTimeField(
         null=True, default=datetime.now, verbose_name="تاریخ ساخت"
     )
@@ -173,7 +173,7 @@ class Cam(models.Model):
 
 
 class PeopleCounting(models.Model):  # former name: Stats
-    date = models.DateField(verbose_name="تاریخ")
+    date = models.DateField(verbose_name="تاریخ", db_index=True)
     entry = models.IntegerField(default=0, verbose_name="ورودی")
     exit = models.IntegerField(default=0, verbose_name="خروجی")
     cam = models.ForeignKey(
@@ -187,12 +187,14 @@ class PeopleCounting(models.Model):  # former name: Stats
         on_delete=models.CASCADE,
         verbose_name="مرچنت",
         related_name="people_counts",
+        db_index=True
     )
     branch = models.ForeignKey(
         Branch,
         on_delete=models.CASCADE,
         verbose_name="شعبه",
         related_name="people_counts",
+        db_index=True
     )
     date_created = models.DateTimeField(
         null=True, default=datetime.now, verbose_name="تاریخ ساخت"
@@ -230,33 +232,12 @@ class CampaignCalendar(models.Model):
         verbose_name_plural = "کمپین"
 
 
-class DefaultDate(models.Model):
-    user = models.ForeignKey(
-        User, null=True, on_delete=models.CASCADE, verbose_name="کاربر"
-    )
-    start_date = models.DateField(verbose_name="تاریخ شروع")
-    end_date = models.DateField(verbose_name="تاریخ پایان")
-    date_created = models.DateTimeField(
-        null=True, default=datetime.now, verbose_name="تاریخ ساخت"
-    )
-    last_modified = models.DateTimeField(
-        auto_now=True, verbose_name="تاریخ آخرین تغییر"
-    )
-
-    def __str__(self):
-        return f"{self.user.first_name} {self.user.last_name} {self.start_date} {self.end_date}"
-
-    class Meta:
-        verbose_name = "تاریخ پیش فرض"
-        verbose_name_plural = "تاریخ پیش فرض"
-
-
 class UserProfile(models.Model):
     user = models.OneToOneField(
         User, on_delete=models.CASCADE, related_name="profile", verbose_name="کاربر"
     )
     merchant = models.ForeignKey(
-        Merchant, on_delete=models.CASCADE, related_name="profile", verbose_name="مرچنت"
+        Merchant, on_delete=models.CASCADE, related_name="profile", verbose_name="مرچنت", db_index=True
     )
     mobile = models.CharField(
         max_length=11, verbose_name="شماره تلفن", null=True, blank=True

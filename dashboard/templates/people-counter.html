@@ -7,17 +7,19 @@
 	شمارشگر
 {% endblock %}
 {% block extra_css %}
+    <!-- Style for Calendar, FlatPicker and Toastr -->
     <link rel="stylesheet" href="{% static 'assets/vendor/libs/fullcalendar/fullcalendar.css' %}">
     <link rel="stylesheet" href="{% static 'assets/vendor/libs/flatpickr/flatpickr.css' %}">
     <link rel="stylesheet" href="{% static 'assets/vendor/css/pages/app-calendar.css' %}">
     <link rel="stylesheet" href="{% static 'assets/vendor/libs/toastr/toastr.css' %}" />
+    <!-- Custom Style for FlatPicker Calendar -->
     <style>
         .light-style .flatpickr-calendar {
         box-shadow: none !important;
         }
     </style>
+    <!-- Custom Style for the Loading Overlay -->
     <style>
-        /* Loading overlay */
         .loading-overlay {
             display: none;
             position: fixed;
@@ -166,212 +168,211 @@
     </div><br>
 {% endblock %}
 {% block extra_js %}
+<!-- JQuery and Toastr Scripts -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="{% static 'assets/vendor/libs/toastr/toastr.js' %}"></script>
 <script src="{% static 'assets/js/ui-toasts.js' %}"></script>
+<!-- HighChart chart paint and Ajax for the traffic section of the page -->
 <script>
-        document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', () => {
 
-            const rawCategories = JSON.parse('{{ dates|safe }}');  
+        const rawCategories = JSON.parse('{{ dates|safe }}');  
 
-            
-            const categories = rawCategories.map(dateStr => {
-                const date = new Date(dateStr);
-                return date.toLocaleDateString('fa-IR', {
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit'
-                });
+        const categories = rawCategories.map(dateStr => {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('fa-IR', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
             });
+        });
 
-            const entry_totals = JSON.parse('{{ entry_totals|safe }}');
-            const exit_totals = JSON.parse('{{ exit_totals|safe }}')
-            lineChart = Highcharts.chart(
-                'container', {
-                    chart: {
-                        type: 'line',
-                        backgroundColor: '#f9f9f9',
+        const entry_totals = JSON.parse('{{ entry_totals|safe }}');
+        const exit_totals = JSON.parse('{{ exit_totals|safe }}')
+        lineChart = Highcharts.chart(
+            'container', {
+                chart: {
+                    type: 'line',
+                    backgroundColor: '#f9f9f9',
+                    style: {
+                        fontFamily: 'tahoma',
+                        fontSize: '20px'
+                    }
+                },
+                title: {
+                    text: "ترافیک",
+                    style: {
+                        fontSize: '25px',
+                        color: '#333'
+                    }
+                },
+                xAxis: {
+                    categories : categories,
+                    title: {
+                        text: "تاریخ",
                         style: {
-                            fontFamily: 'tahoma',
-                            fontSize: '20px'
+                        fontSize: '20px',
+                        fontWeight: 'bold'
                         }
-                    },
+                    }
+                },
+                yAxis: {
                     title: {
                         text: "ترافیک",
                         style: {
-                            fontSize: '25px',
-                            color: '#333'
+                        fontSize: '20px',
+                        fontWeight: 'bold'
                         }
-                    },
-                    xAxis: {
-                        categories : categories,
-                        title: {
-                            text: "تاریخ",
-                            style: {
-                            fontSize: '20px',
-                            fontWeight: 'bold'
-                            }
-                        }
-                    },
-                    yAxis: {
-                        title: {
-                            text: "ترافیک",
-                            style: {
-                            fontSize: '20px',
-                            fontWeight: 'bold'
-                            }
-                        }
-                    },
-                    series: [
-                        {
-                            name: "ورودی",
-                            data: entry_totals
-                        },
-                        {
-                            name: "خروجی",
-                            data: exit_totals
-                        }
-                    ]
-                }
-            );
-
-            
-            document.getElementById('filter-form').addEventListener('submit', function(event) {
-                event.preventDefault(); 
-                const form = this;
-                const formData = new FormData(form);
-                const queryString = new URLSearchParams(formData).toString();
-                const loadingOverlay = document.getElementById('loading-overlay');
-                loadingOverlay.style.display = 'flex';
-            
-                
-                fetch(`{% url 'people_counter' url_hash=request.user.profile.merchant.url_hash %}?${queryString}`, {
-                    method: 'GET',
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                })
-                .then(response => {
-                    if (!response.ok) throw new Error('Network response was not ok');
-                    return response.json();
-                })
-                .then(data => {
-
-                    const newCategories = data.dates.map(dateStr => {
-                        const date = new Date(dateStr);
-                        return date.toLocaleDateString('fa-IR', {
-                            year: 'numeric',
-                            month: '2-digit',
-                            day: '2-digit'
-                        });
-                    });
-
-                    lineChart.update({
-                        xAxis: { categories: newCategories },
-                        series: [{ data: data.entry_totals},
-                        {data: data.exit_totals}
-                        ],
-                    });
-                   
-                    loadingOverlay.style.display = 'none';
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    loadingOverlay.style.display = 'none';
-                    alert('خطا در بارگذاری داده‌ها. لطفاً دوباره تلاش کنید.');
-                });
-            });
-        });
-        
-        document.getElementById("select-all").addEventListener("change", () => {
-            const isChecked = document.getElementById("select-all").checked
-            document.querySelectorAll(".fake-check").forEach((item) => {
-                item.checked = isChecked
-            })
-        })
-</script>
-<script>
-        $("#filter-form").on("submit", function (e) {
-            
-
-            const startDate = $("#start-date").val();
-            const endDate = $("#end-date").val();
-
-            const selectedBranches = $(".real-check:checked").map(function () {
-                return $(this).val();
-            }).get();  // convert to array
-
-            $.ajax({
-                url: "/api/multi-branch-data",
-                data: {
-                    "start-date": startDate,
-                    "end-date": endDate,
-                    "branch": selectedBranches
+                    }
                 },
-                traditional: true, 
-                success: function (data) {
-                    const rawCategories = data.dates;
-                    const categories = rawCategories.map(dateStr => {
+                series: [
+                    {
+                        name: "ورودی",
+                        data: entry_totals
+                    },
+                    {
+                        name: "خروجی",
+                        data: exit_totals
+                    }
+                ]
+            }
+        );
+        
+        document.getElementById('filter-form').addEventListener('submit', function(event) {
+            event.preventDefault(); 
+            const form = this;
+            const formData = new FormData(form);
+            const queryString = new URLSearchParams(formData).toString();
+            const loadingOverlay = document.getElementById('loading-overlay');
+            loadingOverlay.style.display = 'flex';
+        
+            fetch(`{% url 'people_counter' url_hash=request.user.profile.merchant.url_hash %}?${queryString}`, {
+                method: 'GET',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            })
+            .then(data => {
+                const newCategories = data.dates.map(dateStr => {
                     const date = new Date(dateStr);
                     return date.toLocaleDateString('fa-IR', {
                         year: 'numeric',
                         month: '2-digit',
                         day: '2-digit'
                     });
-                    });
+                });
 
-                    const series = Object.entries(data.branches).map(([id, branchData]) => ({
-                        name: branchData.name,
-                        data: branchData.entry_totals
-                    }));
-
-                    Highcharts.chart("second-container", {
-                        chart: { type: "line",
-                            backgroundColor: '#f9f9f9',
-                            style: {
-                                fontFamily: 'tahoma',
-                                fontSize: '20px'
-                            }
-                         },
-                        title: { text: "مقایسه ترافیک شعب",
-                            style: {
-                                fontSize: '25px',
-                                color: '#333'
-                            } 
-                        },
-                        xAxis: { categories,
-                            title: {
-                            text: "تاریخ",
-                            style: {
-                            fontSize: '20px',
-                            fontWeight: 'bold'
-                            }
-                        }
-                         },
-                        yAxis: { title: { text: "ترافیک",
-                            style: {
-                                fontSize: '20px',
-                                fontWeight: 'bold'
-                                } 
-                            } 
-                        },
-                        series: series
-                    });
-                },
-                error: function (xhr) {
-                    console.error("Error loading data");
-                    toastr.options = {
-                        positionClass: 'toast-top-center',
-                    }
-                    toastr.error("بازه زمانی یا شعب را انتخاب نمایید")
-                }
+                lineChart.update({
+                    xAxis: { categories: newCategories },
+                    series: [{ data: data.entry_totals},
+                    {data: data.exit_totals}
+                    ],
+                });
+                
+                loadingOverlay.style.display = 'none';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                loadingOverlay.style.display = 'none';
+                alert('خطا در بارگذاری داده‌ها. لطفاً دوباره تلاش کنید.');
             });
         });
+    });
+    
+    document.getElementById("select-all").addEventListener("change", () => {
+        const isChecked = document.getElementById("select-all").checked
+        document.querySelectorAll(".fake-check").forEach((item) => {
+            item.checked = isChecked
+        })
+    })
+</script>
+<!-- HighChart chart paint for multi-display line charts and Ajax for the comparison section of the page -->
+<script>
+    $("#filter-form").on("submit", function (e) {
+        
+
+        const startDate = $("#start-date").val();
+        const endDate = $("#end-date").val();
+
+        const selectedBranches = $(".real-check:checked").map(function () {
+            return $(this).val();
+        }).get();  // convert to array
+
+        $.ajax({
+            url: "/api/multi-branch-data",
+            data: {
+                "start-date": startDate,
+                "end-date": endDate,
+                "branch": selectedBranches
+            },
+            traditional: true, 
+            success: function (data) {
+                const rawCategories = data.dates;
+                const categories = rawCategories.map(dateStr => {
+                const date = new Date(dateStr);
+                return date.toLocaleDateString('fa-IR', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit'
+                });
+                });
+
+                const series = Object.entries(data.branches).map(([id, branchData]) => ({
+                    name: branchData.name,
+                    data: branchData.entry_totals
+                }));
+
+                Highcharts.chart("second-container", {
+                    chart: { type: "line",
+                        backgroundColor: '#f9f9f9',
+                        style: {
+                            fontFamily: 'tahoma',
+                            fontSize: '20px'
+                        }
+                        },
+                    title: { text: "مقایسه ترافیک شعب",
+                        style: {
+                            fontSize: '25px',
+                            color: '#333'
+                        } 
+                    },
+                    xAxis: { categories,
+                        title: {
+                        text: "تاریخ",
+                        style: {
+                        fontSize: '20px',
+                        fontWeight: 'bold'
+                        }
+                    }
+                        },
+                    yAxis: { title: { text: "ترافیک",
+                        style: {
+                            fontSize: '20px',
+                            fontWeight: 'bold'
+                            } 
+                        } 
+                    },
+                    series: series
+                });
+            },
+            error: function (xhr) {
+                console.error("Error loading data");
+                toastr.options = {
+                    positionClass: 'toast-top-center',
+                }
+                toastr.error("بازه زمانی یا شعب را انتخاب نمایید")
+            }
+        });
+    });
 </script>
 <!-- HighChart JS -->
 <script src="https://code.highcharts.com/highcharts.js"></script>
 <script src="https://code.highcharts.com/modules/exporting.js"></script>
 <script src="https://code.highcharts.com/modules/export-data.js"></script>
 <script src="https://code.highcharts.com/modules/accessibility.js"></script>
-
+<!-- FlatPicker JS (Calendar) -->
 <script src="{% static 'assets/vendor/libs/jdate/jdate.js' %}"></script>
 <script src="{% static 'assets/vendor/libs/flatpickr/flatpickr-jdate.js' %}"></script>
 <script src="{% static 'assets/vendor/libs/moment/moment.js' %}"></script>

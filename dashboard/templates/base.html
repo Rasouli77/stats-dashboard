@@ -1,14 +1,16 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="fa" class="light-style layout-navbar-fixed layout-menu-fixed" dir="rtl" data-theme="theme-default" data-assets-path="../../assets/" data-template="vertical-menu-template-no-customizer-starter">
+  
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 
     <title>{% block title %}داشبرد{% endblock %}</title>
-
+    
     <meta name="description" content="{% block meta_description %} داشبرد شمارشگر {% endblock %}">
-
+    {% load cache %}
+    {% cache 600 "head" %}
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="{% static 'assets/img/favicon/favicon.png' %}">
 
@@ -48,6 +50,7 @@
         border-radius: 10px;
       }
     </style>
+    {% endcache %}
     {% block extra_css %}
     {% endblock %}
     <!-- Helpers -->
@@ -58,7 +61,9 @@
     <script src="{% static 'assets/js/config.js' %}"></script>
     
   </head>
-
+  
+  {% load cache %}
+  {% cache 600 "before-dynamic-content" %}
   <body>
     <!-- Layout wrapper -->
     <div class="layout-wrapper layout-content-navbar">
@@ -202,10 +207,12 @@
           <!-- Content wrapper -->
           <div class="content-wrapper">
             <!-- Content -->
-
             <div class="container-xxl flex-grow-1 container-p-y">
+  {% endcache %}
               {% block content %}
               {% endblock %}
+  {% load cache %}
+  {% cache 600 "after-dynamic-content" %}
             </div>
             <!-- / Content -->
 
@@ -229,6 +236,7 @@
       <!-- Drag Target Area To SlideIn Menu On Small Screens -->
       <div class="drag-target"></div>
     </div>
+  {% endcache %}
     <!-- / Layout wrapper -->
     <!-- JavaScript -->
     <!-- HighChart JS -->
@@ -261,6 +269,7 @@
     <script src="{% static 'assets/js/main.js' %}"></script>
     <!-- Page JS -->
     <script src="{% static 'assets/js/extended-ui-drag-and-drop.js' %}"></script>
+    <!-- Persian for HighChart Utils -->
     <script>
         // Observe the DOM for new menu items
         const observer = new MutationObserver(() => {
@@ -285,6 +294,7 @@
             subtree: true
         });   
     </script>
+    <!-- FlatPicker (JS Calendar) Persian Configuration as well as checks for branches -->
     <script>
         flatpickr("#date-range", {
           inline: true,
@@ -331,6 +341,7 @@
           });
         })
     </script>
+    <!-- Permission Configuration for the drag and drop features-->
     <script>
       const addBtn = document.getElementById("submit-permission-changes");
       addBtn.addEventListener("click", () => {
@@ -383,6 +394,7 @@
       });
 
     </script>
+    <!-- Logout Form Logic -->
     <script>
       buttonLogout = document.getElementById("fake-logout")
       form = document.getElementById("logout-form")

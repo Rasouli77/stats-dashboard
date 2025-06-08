@@ -13,6 +13,7 @@ from django.http import HttpResponseForbidden
 from django.db.models import F
 from collections import defaultdict
 from .camera_data import get_custom_date_camera_data, update_or_create_camera_data
+from django.db import connection
 
 # Create your views here.
 
@@ -88,6 +89,8 @@ def people_counter(request, url_hash):
     entry_totals = [float(row["total_entry"]) for row in queryset]
     exit_totals = [float(row["total_exit"]) for row in queryset]
     dates = [str(row["date"].strftime("%Y-%m-%d")) for row in queryset]
+    # After your view or queryset logic
+    print("Total queries executed:", len(connection.queries))
 
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
         return JsonResponse(

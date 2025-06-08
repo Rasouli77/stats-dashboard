@@ -9,9 +9,9 @@ from .models import (
     District,
     Branch,
     CampaignCalendar,
-    DefaultDate,
     UserProfile,
     PermissionToViewBranch,
+    Invoice
 )
 
 # Register your models here.
@@ -87,12 +87,6 @@ class CampaignCalendarAdmin(admin.ModelAdmin):
     autocomplete_fields = ["branch"]
     exclude = ["date_created"]
 
-
-class DefaultDateAdmin(admin.ModelAdmin):
-    list_display = ["start_date", "end_date"]
-    exclude = ["date_created"]
-
-
 class UserProfileInline(admin.TabularInline):
     model = UserProfile
     extra = 0
@@ -115,6 +109,7 @@ class MerchantAdmin(admin.ModelAdmin):
 
 class PermissionToViewBranchAdmin(admin.ModelAdmin):
     list_display = ["user", "branch"]
+    exclude = ["date_created"]
     autocomplete_fields = ["branch"]
 
 
@@ -129,6 +124,12 @@ class UserProfileAdmin(admin.ModelAdmin):
     autocomplete_fields = ["merchant", "user"]
     inlines = [PermissionToViewBranchInline]
 
+class InvoiceAdmin(admin.ModelAdmin):
+    list_display = ["date", "branch", "total_amount", "total_items"]
+    autocomplete_fields = ["branch"]
+    list_filter = ["branch"]
+    exclude = ["date_created"]
+    list_per_page = 75
 
 admin.site.register(PeopleCounting, PeopleCountingAdmin)
 admin.site.register(Cam, CamAdmin)
@@ -138,7 +139,7 @@ admin.site.register(City, CityAdmin)
 admin.site.register(District, DistrictAdmin)
 admin.site.register(Branch, BranchAdmin)
 admin.site.register(CampaignCalendar, CampaignCalendarAdmin)
-admin.site.register(DefaultDate, DefaultDateAdmin)
 admin.site.register(Merchant, MerchantAdmin)
 admin.site.register(UserProfile, UserProfileAdmin)
 admin.site.register(PermissionToViewBranch, PermissionToViewBranchAdmin)
+admin.site.register(Invoice, InvoiceAdmin)
