@@ -120,7 +120,7 @@ class PermissionToViewBranchInline(admin.TabularInline):
 
 
 class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ["user", "merchant"]
+    list_display = ["user", "merchant", "pk"]
     autocomplete_fields = ["merchant", "user"]
     inlines = [PermissionToViewBranchInline]
 

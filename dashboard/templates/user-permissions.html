@@ -8,126 +8,14 @@
 	دسترسی کاربران
 {% endblock %}
 {% block content %}
-<h4 class="py-3 breadcrumb-wrapper mb-4">
-    <span class="text-muted fw-light">اضافه کردن دسترسی‌ها
-  </h4>
-
-  <!-- Multiple Lists Draggable -->
-  <div class="row mb-4">
-    <div class="col-12">
-      <div class="card">
-        <h5 class="card-header heading-color">اضافه کردن دسترسی به کاربر</h5>
-        <div class="card-body">
-          <div class="row">
-            <div class="col-md-6 col-12 mb-md-0 mb-4">
-              <p>{{ user.first_name }} {{ user.last_name }} دارای دسترسی های زیر می‌باشد:</p>
-              <ul class="list-group list-group-flush" id="pending-tasks">
-                {% if user|has_permission:"dashboard.view_stats" %}
-                <li aria-label="view_stats" class="list-group-item drag-item cursor-move d-flex justify-content-between align-items-center">
-                  <span>مشاهده اطلاعات شمارشگر</span>
-                </li>
-                {% endif %}
-                {% if user|has_permission:"dashboard.change_stats" %}
-                <li aria-label="change_stats" class="list-group-item drag-item cursor-move d-flex justify-content-between align-items-center">
-                  <span>تغییر اطلاعات شمارشگر</span>
-                </li>
-                {% endif %}
-                {% if user|has_permission:"dashboard.add_stats" %}
-                <li aria-label="add_stats" class="list-group-item drag-item cursor-move d-flex justify-content-between align-items-center">
-                  <span>اضافه کردن به اطلاعات جدید به شمارشگر</span>
-                </li>
-                {% endif %}
-                {% if user|has_permission:"dashboard.delete_stats" %}
-                <li aria-label="delete_stats" class="list-group-item drag-item cursor-move d-flex justify-content-between align-items-center">
-                  <span>حذف اطلاعات شمارشگر</span>
-                </li>
-                {% endif %}
-                {% if user|has_permission:"auth.view_user" %}
-                <li aria-label="view_user" class="list-group-item drag-item cursor-move d-flex justify-content-between align-items-center">
-                  <span>مشاهده کاربران</span>
-                </li>
-                {% endif %}
-                {% if user|has_permission:"auth.change_user" %}
-                <li aria-label="change_user" class="list-group-item drag-item cursor-move d-flex justify-content-between align-items-center">
-                  <span>تغییر اطلاعات کاربران</span>
-                </li>
-                {% endif %}
-                {% if user|has_permission:"auth.add_user" %}
-                <li aria-label="add_user" class="list-group-item drag-item cursor-move d-flex justify-content-between align-items-center">
-                  <span>اضافه کردن کاربر جدید</span>
-                </li>
-                {% endif %}
-                {% if user|has_permission:"auth.delete_user" %}
-                <li aria-label="delete_user" class="list-group-item drag-item cursor-move d-flex justify-content-between align-items-center">
-                  <span>حذف کاربر</span>
-                </li>
-                {% endif %}
-              </ul>
-            </div>
-            <div class="col-md-6 col-12 mb-md-0 mb-4">
-              <p>می‌توانید دسترسی های زیر را به کاربر دهید (موارد پایین را به ستون سمت راست بکشید تا دسترسی‌ها داده شوند):</p>
-              <ul class="list-group list-group-flush" id="completed-tasks">
-                {% if not user|has_permission:"dashboard.view_stats" %}
-                <li aria-label="view_stats" class="list-group-item drag-item cursor-move d-flex justify-content-between align-items-center">
-                  <span>مشاهده اطلاعات شمارشگر</span>
-                </li>
-                {% endif %}
-                {% if not user|has_permission:"dashboard.change_stats" %}
-                <li aria-label="change_stats" class="list-group-item drag-item cursor-move d-flex justify-content-between align-items-center">
-                  <span>تغییر اطلاعات شمارشگر</span>
-                </li>
-                {% endif %}
-                {% if not user|has_permission:"dashboard.add_stats" %}
-                <li aria-label="add_stats" class="list-group-item drag-item cursor-move d-flex justify-content-between align-items-center">
-                  <span>اضافه کردن به اطلاعات جدید به شمارشگر</span>
-                </li>
-                {% endif %}
-                {% if not user|has_permission:"dashboard.delete_stats" %}
-                <li aria-label="delete_stats" class="list-group-item drag-item cursor-move d-flex justify-content-between align-items-center">
-                  <span>حذف اطلاعات شمارشگر</span>
-                </li>
-                {% endif %}
-                {% if not user|has_permission:"auth.view_user" %}
-                <li aria-label="view_user" class="list-group-item drag-item cursor-move d-flex justify-content-between align-items-center">
-                  <span>مشاهده کاربران</span>
-                </li>
-                {% endif %}
-                {% if not user|has_permission:"auth.change_user" %}
-                <li aria-label="change_user" class="list-group-item drag-item cursor-move d-flex justify-content-between align-items-center">
-                  <span>تغییر اطلاعات کاربران</span>
-                </li>
-                {% endif %}
-                {% if not user|has_permission:"auth.add_user" %}
-                <li aria-label="add_user" class="list-group-item drag-item cursor-move d-flex justify-content-between align-items-center">
-                  <span>اضافه کردن کاربر جدید</span>
-                </li>
-                {% endif %}
-                {% if not user|has_permission:"auth.delete_user" %}
-                <li aria-label="delete_user" class="list-group-item drag-item cursor-move d-flex justify-content-between align-items-center">
-                  <span>حذف کاربر</span>
-                </li>
-                {% endif %}
-              </ul>
-            </div>
-            <div class="col-12">
-              <button class="btn btn-primary" style="margin-top: 30px;" id="submit-permission-changes"> ثبت تغییرات </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <form action="" method="get" id="form" style="display: none;">
-    <label for="">add</label>
-    <input type="text" name="permission-to-add-stats" id="permission-to-add-stats">
-    <input type="text" name="permission-to-delete-stats" id="permission-to-delete-stats">
-    <input type="text" name="permission-to-view-stats" id="permission-to-view-stats">
-    <input type="text" name="permission-to-change-stats" id="permission-to-change-stats">
-    <input type="text" name="permission-to-add-user" id="permission-to-add-user">
-    <input type="text" name="permission-to-delete-user" id="permission-to-delete-user">
-    <input type="text" name="permission-to-view-user" id="permission-to-view-user">
-    <input type="text" name="permission-to-change-user" id="permission-to-change-user">
+  {% if user.profile.is_manager %}
+  <p>شما دارای همه دسترسی ها میباشید</p>
+  {% else %}
+  <form method="post">
+  {% csrf_token %}
+  {{ form }}
+  <button type="submit">submit</button>
   </form>
-
+  {% endif %}
   <!-- /Multiple Lists Draggable ends -->
 {% endblock %}

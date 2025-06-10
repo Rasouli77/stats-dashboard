@@ -1,12 +1,13 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
+from django.urls import reverse
 from datetime import datetime, date
 from .models import PeopleCounting, Branch, UserProfile, PermissionToViewBranch
 from django.db.models import Sum
 from django.contrib.auth.models import User, Permission
 from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
-from .forms import Generate_User
+from .forms import Generate_User, UserPermissions
 import jdatetime
 import json
 from django.http import HttpResponseForbidden
@@ -27,7 +28,7 @@ def jalali_to_gregorian(date_str: str):
         print(e)
         return None
 
-
+@login_required
 def people_counter(request, url_hash):
     queryset = (
         PeopleCounting.objects.filter(merchant__url_hash=url_hash)
@@ -116,8 +117,9 @@ def people_counter(request, url_hash):
 @login_required
 def users_list(request, url_hash):
     users = UserProfile.objects.filter(merchant__url_hash=url_hash)
-    return render(request, "users.html", {"users": users})
-
+    if request.user.profile.merchant.url_hash == url_hash and request.user.profile.is_manager == True and request.user.is_active == True:
+        return render(request, "users.html", {"users": users})
+    return render(request, "401.html", status=401)
 
 @login_required
 def generate_user(request, url_hash):
@@ -128,95 +130,44 @@ def generate_user(request, url_hash):
 
 
 @login_required
-def user_permissions(request, user_id, url_hash):
+def user_permissions(request, user_id):
     user = get_object_or_404(User, pk=user_id)
-    if not request.user.is_staff:
-        return HttpResponseForbidden("شما اجازه دسترسی به این قسمت را ندارید")
-    if not request.user.is_active:
-        return HttpResponseForbidden("شما اجازه دسترسی به این قسمت را ندارید")
-    content_type_PeopleCounting = ContentType.objects.get_for_model(PeopleCounting)
-    permission_view_PeopleCounting = Permission.objects.get(
-        codename="view_PeopleCounting",
-        content_type=content_type_PeopleCounting,
-    )
-    permission_change_PeopleCounting = Permission.objects.get(
-        codename="change_PeopleCounting",
-        content_type=content_type_PeopleCounting,
-    )
-    permission_delete_PeopleCounting = Permission.objects.get(
-        codename="delete_PeopleCounting",
-        content_type=content_type_PeopleCounting,
-    )
-    permission_add_PeopleCounting = Permission.objects.get(
-        codename="add_PeopleCounting",
-        content_type=content_type_PeopleCounting,
-    )
-    content_type_user = ContentType.objects.get_for_model(User)
-    permission_add_user = Permission.objects.get(
-        codename="add_user",
-        content_type=content_type_user,
-    )
-    permission_delete_user = Permission.objects.get(
-        codename="delete_user",
-        content_type=content_type_user,
-    )
-    permission_view_user = Permission.objects.get(
-        codename="view_user",
-        content_type=content_type_user,
-    )
-    permission_change_user = Permission.objects.get(
-        codename="change_user",
-        content_type=content_type_user,
-    )
-    permission_to_add_PeopleCounting = request.GET.get(
-        "permission-to-add-PeopleCounting"
-    )
-    if permission_to_add_PeopleCounting == "add_PeopleCounting":
-        user.user_permissions.add(permission_add_PeopleCounting)
+    if request.user.profile.merchant.url_hash == user.profile.merchant.url_hash and request.user.is_active == True and request.user.profile.is_manager == True:
+        if request.method == "POST":
+            form = UserPermissions(request.POST, instance=user)
+            if form.is_valid():
+                form.save()
+                return redirect("profile", user.pk)
+        else:
+            form = UserPermissions(instance=user)
+        return render(request, "user-permissions.html", {"user": user, "form": form})
+    return render(request, "401.html", status=401)
+    
 
-    permission_to_delete_PeopleCounting = request.GET.get(
-        "permission-to-delete-PeopleCounting"
-    )
-    if permission_to_delete_PeopleCounting == "delete_PeopleCounting":
-        user.user_permissions.add(permission_delete_PeopleCounting)
-
-    permission_to_view_PeopleCounting = request.GET.get(
-        "permission-to-view-PeopleCounting"
-    )
-    if permission_to_view_PeopleCounting == "view_PeopleCounting":
-        user.user_permissions.add(permission_view_PeopleCounting)
-
-    permission_to_change_PeopleCounting = request.GET.get(
-        "permission-to-change-PeopleCounting"
-    )
-    if permission_to_change_PeopleCounting == "change_PeopleCounting":
-        user.user_permissions.add(permission_change_PeopleCounting)
-
-    permission_to_add_user = request.GET.get("permission-to-add-user")
-    if permission_to_add_user == "add_user":
-        user.user_permissions.add(permission_add_user)
-
-    permission_to_delete_user = request.GET.get("permission-to-delete-user")
-    if permission_to_delete_user == "delete_user":
-        user.user_permissions.add(permission_delete_user)
-
-    permission_to_view_user = request.GET.get("permission-to-view-user")
-    if permission_to_view_user == "view_user":
-        user.user_permissions.add(permission_view_user)
-
-    permission_to_change_user = request.GET.get("permission-to-change-user")
-    if permission_to_change_user == "change_user":
-        user.user_permissions.add(permission_change_user)
-
-    return render(request, "user-permissions.html", {"user": user})
-
-
+@login_required
 def calender(request, url_hash):
     return render(request, "calendar.html")
 
-
+@login_required
 def home(request, url_hash):
     return render(request, "home.html")
+
+@login_required
+def profile(request, user_id):
+    user = get_object_or_404(User, pk=user_id)
+    user_permissions = user.user_permissions.all()
+    user_profile = UserProfile.objects.get(user=user.pk)
+    allowed_branches = PermissionToViewBranch.objects.filter(user=user_profile.pk)
+    print(allowed_branches)
+    print(user_permissions)
+    if request.user.pk == user.pk and request.user.is_active==True:
+        return render(request, "profile.html", {"user":user, "permissions": user_permissions, "branches": allowed_branches})
+    
+    if request.user.profile.merchant.url_hash == user.profile.merchant.url_hash and request.user.profile.is_manager == True and request.user.is_active==True:
+        return render(request, "profile.html", {"user":user, "permissions": user_permissions, "branches": allowed_branches})
+
+    
+    return render(request, "401.html", status=401)
 
 
 def test(self):

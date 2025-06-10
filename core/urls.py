@@ -26,6 +26,7 @@ from dashboard.views import (
     calender,
     home,
     test,
+    profile
 )
 from dashboard.api_views import MultipleBranches
 from django.contrib.auth import views as auth_views
@@ -39,9 +40,9 @@ urlpatterns = [
     path("dashboard/users/<str:url_hash>", users_list, name="users"),
     path("dashboard/generate-user/<str:url_hash>", generate_user, name="generate_user"),
     path(
-        "dashboard/add-user-permissions/<str:url_hash>/<int:user_id>/",
+        "dashboard/edit-user-permissions/<int:user_id>/",
         user_permissions,
-        name="user-permissions",
+        name="edit-user-permissions",
     ),
     path("dashboard/calendar/<str:url_hash>", calender, name="calendar"),
     path("dashboard/account/login", custom_login, name="login"),
@@ -50,6 +51,7 @@ urlpatterns = [
         auth_views.LogoutView.as_view(next_page="login"),
         name="logout",
     ),
+    path("dashboard/account/profile/<int:user_id>/", profile, name="profile"),
     path("dashboard/<str:url_hash>", home, name="home"),
     path("api/multi-branch-data", MultipleBranches.as_view(), name="multi_branch_data"),
     path("test/", test, name="test"),
