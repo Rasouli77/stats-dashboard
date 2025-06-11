@@ -26,7 +26,8 @@ from dashboard.views import (
     calender,
     home,
     test,
-    profile
+    profile,
+    branch_permissions
 )
 from dashboard.api_views import MultipleBranches
 from django.contrib.auth import views as auth_views
@@ -43,6 +44,11 @@ urlpatterns = [
         "dashboard/edit-user-permissions/<int:user_id>/",
         user_permissions,
         name="edit-user-permissions",
+    ),
+    path(
+        "dashboard/edit-branch-permissions/<int:user_id>/",
+        branch_permissions,
+        name="edit-branch-permissions",
     ),
     path("dashboard/calendar/<str:url_hash>", calender, name="calendar"),
     path("dashboard/account/login", custom_login, name="login"),

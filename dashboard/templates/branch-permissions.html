@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}
+    دسترسی اطلاعات شعب
+{% endblock %}
+{% block meta_description %}
+	دسترسی اطلاعات شعب
+{% endblock %}
+{% block content %}
+<h5> برای اضافه کردن دسترسی کاربر به شعبه مورد نظر آنرا انتخاب نمایید. </h5>
+{% if allowed_branch_count == branch_count %}
+<p>این کاربر به اطلاعات شمارشگر تمام شعب دسترسی دارد.</p>
+{% else %}
+<form method="post">
+    {% csrf_token %}
+    <label for="id_user" style="display: none;">کاربر:</label>
+    <input name="user" required="" id="id_user" value="{{user_profile_id}}" style="display: none;">
+    <label for="id_branch">شعبه:</label>
+    <select class="form-select" name="branch" required="" id="id_branch" style="width: 30%;">
+    <option value="">---------</option>
+    {% for branch in branches %}
+    <option value="{{ branch.pk }}">{{ branch.name }}</option>
+    {% endfor %}
+    </select>
+    <button class="btn btn-primary" type="submit" style="margin-top: 35px;">ثبت</button>
+</form>
+{% endif %}
+<div class="card" style="margin-top: 30px;">
+    <h5 class="card-header heading-color">دسترسی به اطلاعات شعب</h5>
+    <div class="table-responsive text-nowrap" style="margin-bottom: 100px;">
+        <table class="table table-hover">
+        <thead>
+            <tr>
+            <th>نام فروشگاه</th>
+            <th>سطح دسترسی</th>
+            </tr>
+        </thead>
+        <tbody class="table-border-bottom-0">
+            {% for perm in perms %}
+            <tr>
+                <td>{{ perm.branch.name }}</td>
+                <td>مشاهده اطلاعات شمارشگر</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+{% endblock %}

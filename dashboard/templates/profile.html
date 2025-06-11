@@ -77,24 +77,30 @@
 
         <!-- Activity Timeline -->
         <div class="card mb-4">
-        <div class="card-body">
-        <h5> دسترسی ها </h5>
-        {% if user.profile.is_manager %}
-        <p>این کاربر دارای همه دسترسی ها می باشد</p>
-        {% else %}
-        {% for permission in permissions %}
-        <p>{{ permission.name }}</p>
-        {% endfor %}
-        {% endif %}
-        <h6>مجاز به دیدن اطلاعات شعب زیر می باشید:</h6>
-        {% if user.profile.is_manager %}
-        <p> این کاربر مجاز به دیدن اطلاعات همه شعب میباشد </p>
-        {% else %}
-        {% for branch in branches %}
-        <p>{{ branch.branch.name }}</p>
-        {% endfor %}
-        {% endif %}
-        </div>
+            <div class="card-body">
+            <h5> دسترسی ها </h5>
+            {% if user.profile.is_manager %}
+            <p>این کاربر دارای همه دسترسی ها می باشد</p>
+            {% else %}
+            {% for permission in permissions %}
+            <p>{{ permission.name }}</p>
+            {% endfor %}
+            {% endif %}
+            {% if user.profile.is_manager %}
+            <p> این کاربر مجاز به دیدن اطلاعات همه شعب میباشد </p>
+            {% else %}
+            <h6>مجاز به دیدن اطلاعات شعب زیر می باشید:</h6>
+            {% for branch in branches %}
+            <p>{{ branch.branch.name }}</p>
+            {% endfor %}
+            {% endif %}
+            {% if branch_length == 0 %}
+            <p>این کاربر مجاز به دیدن اطلاعات هیچ شعبه ای نمی باشد</p>
+            {% endif %}
+            </div>
+            {% if request.user.profile.is_manager %}
+            <a href="{% url 'edit-branch-permissions' user_id=user.pk %}" class="btn btn-primary me-3" style="width: 30%; margin: 20px;">ویرایش دسترسی شعب</a>
+            {% endif %}
         </div>
         <!-- /Activity Timeline -->
     </div>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>گردونه با Winwheel.js</title>
+    <!-- کتابخانه GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <!-- کتابخانه Winwheel.js -->
+    <script src="https://cdn.jsdelivr.net/npm/winwheel@1.0.1/dist/Winwheel.min.js"></script>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+            direction: rtl;
+        }
+        #canvasContainer {
+            border: 2px solid #333; /* برای دیدن کادر canvas */
+            margin-bottom: 20px;
+        }
+        canvas {
+            display: block; /* جلوگیری از مشکلات نمایش */
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #result {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div id="canvasContainer">
+        <canvas id="myWheel" width="400" height="400"></canvas>
+    </div>
+    <button onclick="startSpin()">بچرخون!</button>
+    <div id="result"></div>
+
+    <script>
+        // بررسی لود شدن کتابخانه‌ها
+        if (typeof Winwheel === 'undefined' || typeof gsap === 'undefined') {
+            console.error('کتابخانه Winwheel.js یا GSAP لود نشده است. لطفاً لینک‌های CDN را بررسی کنید.');
+            alert('خطا: کتابخانه‌های مورد نیاز لود نشده‌اند.');
+        } else {
+            // تعریف گردونه
+            let theWheel = new Winwheel({
+                'canvasId': 'myWheel', // آیدی canvas
+                'numSegments': 4, // تعداد بخش‌ها
+                'outerRadius': 180, // شعاع گردونه
+                'textFontSize': 16, // اندازه فونت
+                'segments': [ // تعریف بخش‌ها
+                    { 'fillStyle': '#ff6384', 'text': 'جایزه 1' },
+                    { 'fillStyle': '#36a2eb', 'text': 'جایزه 2' },
+                    { 'fillStyle': '#ffce56', 'text': 'جایزه 3' },
+                    { 'fillStyle': '#4bc0c0', 'text': 'جایزه 4' }
+                ],
+                'animation': {
+                    'type': 'spinToStop',
+                    'duration': 5,
+                    'spins': 8,
+                    'callbackFinished': alertPrize
+                }
+            });
+
+            // تابع برای شروع چرخش
+            function startSpin() {
+                theWheel.startAnimation();
+            }
+
+            // تابع برای نمایش نتیجه
+            function alertPrize(indicatedSegment) {
+                document.getElementById('result').innerText = 'شما برنده شدید: ' + indicatedSegment.text;
+            }
+        }
+    </script>
+</body>
+</html>
