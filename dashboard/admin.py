@@ -8,7 +8,7 @@ from .models import (
     City,
     District,
     Branch,
-    CampaignCalendar,
+    Campaign,
     UserProfile,
     PermissionToViewBranch,
     Invoice
@@ -138,7 +138,7 @@ admin.site.register(Province, ProvinceAdmin)
 admin.site.register(City, CityAdmin)
 admin.site.register(District, DistrictAdmin)
 admin.site.register(Branch, BranchAdmin)
-admin.site.register(CampaignCalendar, CampaignCalendarAdmin)
+admin.site.register(Campaign, CampaignCalendarAdmin)
 admin.site.register(Merchant, MerchantAdmin)
 admin.site.register(UserProfile, UserProfileAdmin)
 admin.site.register(PermissionToViewBranch, PermissionToViewBranchAdmin)

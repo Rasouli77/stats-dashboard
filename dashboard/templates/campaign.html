@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}
+    کمپین ها
+{% endblock %}
+{% block meta_description %}
+	کمپین ها
+{% endblock %}
+{% block content %}
+<div class="card">
+  <h5 class="card-header heading-color">کمپین ها</h5>
+  <div class="table-responsive text-nowrap" style="margin-bottom: 100px;">
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th>نام کمپین</th>
+          <th>تاریخ شروع</th>
+          <th>تاریخ پایان</th>
+          <th>شعبه</th>
+          <th>هزینه</th>
+          <th>عمل‌ها</th>
+        </tr>
+      </thead>
+      <tbody class="table-border-bottom-0">
+        {% for campaign in campaigns %}
+        <tr>
+          <td><i class="align-middle fab fa-angular fa-lg text-danger me-3"></i> <a href=""><strong>{{ campaign.name }}</strong></a></td>
+          <td>{{ campaign.start_date }}</td>
+          <td>
+              {{ campaign.end_date }}
+          </td>
+          <td>
+              {{ campaign.branch }}
+          </td>
+          <td>
+            {{ campaign.cost }}
+          </td>
+          <td>
+            <div class="dropdown">
+              <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                <i class="bx bx-dots-vertical-rounded"></i>
+              </button>
+              <div class="dropdown-menu">
+                <a class="dropdown-item" href=""><i class="bx bx-edit-alt me-1"></i>ویرایش</a>
+                <a class="dropdown-item" href=""><i class="bx bx-trash me-1"></i>حذف</a>
+              </div>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

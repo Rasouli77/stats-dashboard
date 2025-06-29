@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User, Permission
-from .models import PermissionToViewBranch
+from .models import PermissionToViewBranch, Campaign
 
 class Generate_User(forms.ModelForm):
     class Meta:
@@ -20,7 +20,7 @@ class Generate_User(forms.ModelForm):
         if commit:
             user.save()
         return user
-        
+    
 class UserPermissions(forms.ModelForm):
     user_permissions = forms.ModelMultipleChoiceField(
         queryset=Permission.objects.all().exclude(
@@ -34,8 +34,12 @@ class UserPermissions(forms.ModelForm):
         model = User
         fields = ["user_permissions"]
 
-
 class AssignBranchPermissions(forms.ModelForm):
     class Meta:
         model = PermissionToViewBranch
         fields = ["user", "branch"]
+
+class CreateCampaign(forms.ModelForm):
+    class Meta:
+        model = Campaign
+        fields = ["name", "start_date", "end_date", "branch", "cost"]

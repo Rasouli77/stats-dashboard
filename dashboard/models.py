@@ -211,7 +211,7 @@ class PeopleCounting(models.Model):  # former name: Stats
         verbose_name_plural = "شمارشگر"
 
 
-class CampaignCalendar(models.Model):
+class Campaign(models.Model):
     name = models.CharField(max_length=255, verbose_name="نام کمپین")
     start_date = models.DateField(verbose_name="تاریخ")
     end_date = models.DateField(verbose_name="تاریخ پایان")

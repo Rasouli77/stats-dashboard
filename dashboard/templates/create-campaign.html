@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}
+    ساخت کمپین
+{% endblock %}
+{% block meta_description %}
+	ساخت کمپین
+{% endblock %}
+{% block extra_css %}
+    <!-- Style for Calendar, FlatPicker and Toastr -->
+    <link rel="stylesheet" href="{% static 'assets/vendor/libs/fullcalendar/fullcalendar.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/vendor/libs/flatpickr/flatpickr.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/vendor/css/pages/app-calendar.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/vendor/libs/toastr/toastr.css' %}" />
+    <!-- Custom Style for FlatPicker Calendar -->
+    <style>
+        .light-style .flatpickr-calendar {
+        box-shadow: none !important;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+{% if messages %}
+{% for message in messages %}
+    {% if message.tags == 'success' %}
+    <div class="alert alert-success" style="width: 50%;">{{ message }}</div>
+    {% else %}
+    <div class="alert alert-danger" style="width: 50%;">{{ message }}</div>
+    {% endif %}
+{% endfor %}
+{% endif %}
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-4">
+        <h5 class="card-header heading-color">ساخت کمپین</h5>
+        <div class="card-body">
+            <form method="post" action="" id="form-create-campaign">
+                {% csrf_token %}
+                <div>
+                    <label for="id_name" class="form-label">نام کمپین</label>
+                    <input type="text" name="name" value="" maxlength="255" required class="form-control" id="id_name" placeholder="کمپین نوروز" aria-describedby="defaultFormControlHelp">
+                </div>
+
+                <div id="start-date" style="display: none;">
+                    <label for="id_start_date">تاریخ شروع:</label>
+                    <input type="text" name="start_date" value="" required id="id_start_date">
+                </div>
+
+                <div id="end_date" style="display: none;"> 
+                    <label for="id_end_date">تاریخ پایان:</label>
+                    <input type="text" name="end_date" value="" required id="id_end_date">
+                </div>
+
+                <div>
+                    <label for="flatpickr-date" class="form-label">تاریخ شروع</label>
+                    <input type="text" class="form-control" placeholder="YYYY/MM/DD" id="flatpickr-date">
+                </div>
+
+                <div>
+                    <label for="flatpickr-date-end" class="form-label">تاریخ پایان</label>
+                    <input type="text" class="form-control" placeholder="YYYY/MM/DD" id="flatpickr-date-end">
+                </div>
+
+                <div>
+                    <label for="id_branch" class="form-label">شعبه:</label>
+                    <select name="branch" required id="id_branch" class="form-select">
+                        <option value="">---------</option>
+                        {% for branch in branches %}
+                        <option value="{{ branch.pk }}">{{ branch.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label for="id_cost" class="form-label">هزینه:</label>
+                    <input type="text" name="cost" value="" maxlength="255" id="id_cost" class="form-control" placeholder="(هزینه کمپین به تومان)" aria-describedby="defaultFormControlHelp">
+                </div>
+                <button class="btn btn-primary" style="margin-top: 35px;" id="submit-btn">ثبت</button>
+            </form>
+            
+        </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<!-- FlatPicker JS (Calendar) -->
+<script src="https://cdn.jsdelivr.net/npm/jalaali-js@1.2.8/dist/jalaali.min.js"></script>
+<script src="{% static 'assets/vendor/libs/jdate/jdate.js' %}"></script>
+<script src="{% static 'assets/vendor/libs/flatpickr/flatpickr-jdate.js' %}"></script>
+<script src="{% static 'assets/vendor/libs/moment/moment.js' %}"></script>
+<script src="{% static 'assets/vendor/libs/flatpickr/l10n/fa-jdate.js' %}"></script>
+<script src="{% static 'assets/js/app-calendar-events.js' %}"></script>
+<script src="{% static 'assets/js/app-calendar.js' %}"></script>
+<script src="{% static 'assets/vendor/libs/bootstrap-datepicker/bootstrap-datepicker.js' %}"></script>
+<script src="{% static 'assets/vendor/libs/bootstrap-daterangepicker/bootstrap-daterangepicker.js' %}"></script>
+<script src="{% static 'assets/vendor/libs/jquery-timepicker/jquery-timepicker.js' %}"></script>
+<script src="{% static 'assets/vendor/libs/pickr/pickr.js' %}"></script>
+<!-- Page JS -->
+<script src="{% static 'assets/js/forms-pickers.js' %}"></script>
+<script>
+    flatpickr("#flatpickr-date-end", {
+      monthSelectorType: 'static',
+      locale: 'fa',
+      altInput: true,
+      altFormat: 'Y/m/d',
+      disableMobile: true
+    });
+</script>
+<script>
+  function convertJalaliToGregorian(jalaliDate) {
+    const [jy, jm, jd] = jalaliDate.split("-").map(Number);
+    const { gy, gm, gd } = jalaali.toGregorian(jy, jm, jd);
+    return `${gy}-${String(gm).padStart(2, '0')}-${String(gd).padStart(2, '0')}`;
+  }
+  
+  const formCreateCampaign = document.querySelector("#form-create-campaign")
+  const flatpickrDate = document.querySelector("#flatpickr-date")
+  const flatpickrDateEnd = document.querySelector("#flatpickr-date-end")
+  const idStartDate = document.querySelector("#id_start_date")
+  const idEndDate = document.querySelector("#id_end_date")
+  const submitBtn = document.querySelector("#submit-btn")
+
+  submitBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    idStartDate.value = convertJalaliToGregorian(flatpickrDate.value)  
+    idEndDate.value = convertJalaliToGregorian(flatpickrDateEnd.value)  
+    console.log(idStartDate.value, idEndDate.value)
+    formCreateCampaign.submit()
+  })
+</script>
+
+{% endblock %}

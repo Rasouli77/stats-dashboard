@@ -2,15 +2,16 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
 from django.urls import reverse
 from datetime import datetime, date
-from .models import PeopleCounting, Branch, UserProfile, PermissionToViewBranch
+from .models import PeopleCounting, Branch, UserProfile, PermissionToViewBranch, Campaign
 from django.db.models import Sum
 from django.contrib.auth.models import User, Permission
 from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
-from .forms import Generate_User, UserPermissions, AssignBranchPermissions
+from .forms import Generate_User, UserPermissions, AssignBranchPermissions, CreateCampaign
 import jdatetime
 import json
 from django.http import HttpResponseForbidden
+from django.contrib import messages
 from django.db.models import F
 from collections import defaultdict
 from .camera_data import get_custom_date_camera_data, update_or_create_camera_data
@@ -218,3 +219,37 @@ def test(request):
     # update_or_create_camera_data(hadish_one, 3, 1, 3)
     # update_or_create_camera_data(hadish_two, 4, 1, 3)
     return render(request, "landing.html")
+
+@login_required
+def campaign(request, url_hash):
+    campaigns = Campaign.objects.filter(branch__merchant__url_hash=request.user.profile.merchant.url_hash)
+    if request.user.profile.is_manager == True and request.user.is_active == True:
+        return render(request, "campaign.html", {"campaigns": campaigns})
+    return render(request, "401.html", status=401)
+
+@login_required
+def create_campaign(request, url_hash):
+    if request.user.profile.merchant.url_hash == url_hash:
+        permissions = PermissionToViewBranch.objects.filter(user__merchant__url_hash=url_hash, user__pk=request.user.profile.pk)
+        permission_list = []
+        for permission in permissions:
+            permission_list.append(permission.branch.pk)
+        branches = Branch.objects.filter(pk__in=permission_list).only("pk", "name")
+        if request.user.profile.is_manager == True and request.user.is_active == True:
+            branches = Branch.objects.filter(merchant__url_hash=url_hash).only("pk", "name")
+        form = CreateCampaign(request.POST)
+        if request.method == "POST":
+            if form.is_valid():
+                form.save()
+                messages.success(request, "کمپین با موفقیت ساخته شد")
+            else:
+                messages.error(request, "مشکلی در اطلاعات وارد شده وجود دارد")
+        return render(request, "create-campaign.html", {"form": form, "branches": branches})
+    return render(request, "401.html", status=401)
+
+@login_required
+def edit_campaign(request, campaign_id):
+    pass
+
+def update_stats(request):
+    pass
