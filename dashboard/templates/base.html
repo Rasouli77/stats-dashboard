@@ -96,9 +96,9 @@
             </li>
             {% endif %}
             <li class="menu-item">
-              <a href="{% url 'calendar' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
+              <a href="{% url 'campaign' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-calendar"></i>
-                <div data-i18n="Page 2">تقویم رویدادها</div>
+                <div data-i18n="Page 2">کمپین ها</div>
               </a>
             </li>
             {% if request.user.profile.is_manager %}

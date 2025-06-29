@@ -78,11 +78,11 @@
                 </div>
                 <button class="btn btn-primary" style="margin-top: 35px;" id="submit-btn">ثبت</button>
             </form>
-            
         </div>
         </div>
     </div>
 </div>
+<a href="{% url 'campaign' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="btn btn-secondary" style="margin-top: 35px; width: 200px;">بازگشت</a>
 {% endblock %}
 {% block extra_js %}
 <!-- FlatPicker JS (Calendar) -->
