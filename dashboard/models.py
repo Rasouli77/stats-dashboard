@@ -187,14 +187,14 @@ class PeopleCounting(models.Model):  # former name: Stats
         on_delete=models.CASCADE,
         verbose_name="مرچنت",
         related_name="people_counts",
-        db_index=True
+        db_index=True,
     )
     branch = models.ForeignKey(
         Branch,
         on_delete=models.CASCADE,
         verbose_name="شعبه",
         related_name="people_counts",
-        db_index=True
+        db_index=True,
     )
     date_created = models.DateTimeField(
         null=True, default=datetime.now, verbose_name="تاریخ ساخت"
@@ -237,7 +237,11 @@ class UserProfile(models.Model):
         User, on_delete=models.CASCADE, related_name="profile", verbose_name="کاربر"
     )
     merchant = models.ForeignKey(
-        Merchant, on_delete=models.CASCADE, related_name="profile", verbose_name="مرچنت", db_index=True
+        Merchant,
+        on_delete=models.CASCADE,
+        related_name="profile",
+        verbose_name="مرچنت",
+        db_index=True,
     )
     mobile = models.CharField(
         max_length=11, verbose_name="شماره تلفن", null=True, blank=True

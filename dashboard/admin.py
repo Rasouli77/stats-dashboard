@@ -11,7 +11,7 @@ from .models import (
     Campaign,
     UserProfile,
     PermissionToViewBranch,
-    Invoice
+    Invoice,
 )
 
 # Register your models here.
@@ -87,6 +87,7 @@ class CampaignCalendarAdmin(admin.ModelAdmin):
     autocomplete_fields = ["branch"]
     exclude = ["date_created"]
 
+
 class UserProfileInline(admin.TabularInline):
     model = UserProfile
     extra = 0
@@ -124,12 +125,14 @@ class UserProfileAdmin(admin.ModelAdmin):
     autocomplete_fields = ["merchant", "user"]
     inlines = [PermissionToViewBranchInline]
 
+
 class InvoiceAdmin(admin.ModelAdmin):
     list_display = ["date", "branch", "total_amount", "total_items"]
     autocomplete_fields = ["branch"]
     list_filter = ["branch"]
     exclude = ["date_created"]
     list_per_page = 75
+
 
 admin.site.register(PeopleCounting, PeopleCountingAdmin)
 admin.site.register(Cam, CamAdmin)

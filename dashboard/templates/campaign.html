@@ -26,9 +26,9 @@
         {% for campaign in campaigns %}
         <tr>
           <td><i class="align-middle fab fa-angular fa-lg text-danger me-3"></i><strong>{{ campaign.name }}</strong></td>
-          <td>{{ campaign.start_date }}</td>
-          <td>
-              {{ campaign.end_date }}
+          <td class="date">{{ campaign.start_date|date:"Y-m-d" }}</td>
+          <td class="date">
+              {{ campaign.end_date|date:"Y-m-d"}}
           </td>
           <td>
               {{ campaign.branch }}
@@ -53,4 +53,20 @@
     </table>
   </div>
 </div>
+{% endblock %}
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/jalaali-js@1.2.8/dist/jalaali.min.js"></script>
+<script>
+  function convertGregorianToJalali(gregorianDateStr) {
+  const [gy, gm, gd] = gregorianDateStr.split("-").map(Number);
+  const { jy, jm, jd } = jalaali.toJalaali(gy, gm, gd);
+  return `${jy}/${String(jm).padStart(2, '0')}/${String(jd).padStart(2, '0')}`;
+}
+const dates = document.querySelectorAll(".date")
+document.addEventListener("DOMContentLoaded", () => {
+  dates.forEach((date) => {
+    date.innerHTML = convertGregorianToJalali(date.innerHTML)
+  })
+})
+</script>
 {% endblock %}
