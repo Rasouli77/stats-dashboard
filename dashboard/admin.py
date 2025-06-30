@@ -83,7 +83,7 @@ class BranchAdmin(admin.ModelAdmin):
 
 
 class CampaignCalendarAdmin(admin.ModelAdmin):
-    list_display = ["name", "start_date", "end_date"]
+    list_display = ["name", "start_date", "end_date", "pk"]
     autocomplete_fields = ["branch"]
     exclude = ["date_created"]
 

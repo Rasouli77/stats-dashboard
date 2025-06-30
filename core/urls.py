@@ -29,7 +29,9 @@ from dashboard.views import (
     profile,
     branch_permissions,
     campaign,
-    create_campaign
+    create_campaign,
+    edit_campaign,
+    delete_campaign
 )
 from dashboard.api_views import MultipleBranches
 from django.contrib.auth import views as auth_views
@@ -55,6 +57,8 @@ urlpatterns = [
     path("dashboard/calendar/<str:url_hash>", calender, name="calendar"),
     path("dashboard/campaigns/<str:url_hash>", campaign, name="campaign"),
     path("dashboard/create-campaign/<str:url_hash>", create_campaign, name="create_campaign"),
+    path("dashboard/edit-campaign/<int:campaign_id>", edit_campaign, name="edit_campaign"),
+    path("dashboard/delete-campaign/<int:campaign_id>", delete_campaign, name='delete_campaign'),
     path("dashboard/account/login", custom_login, name="login"),
     path(
         "dashboard/account/logout/",

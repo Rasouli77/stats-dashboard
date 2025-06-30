@@ -28,6 +28,13 @@ def jalali_to_gregorian(date_str: str):
     except Exception as e:
         print(e)
         return None
+    
+def convert_gregorian_to_jalali(g_date):
+    """Convert a Gregorian date (datetime.date or datetime.datetime) to Jalali (YYYY-MM-DD)."""
+    if not g_date:
+        return ""
+    j_date = jdatetime.date.fromgregorian(date=g_date)
+    return j_date.strftime("%Y-%m-%d")
 
 @login_required
 def people_counter(request, url_hash):
@@ -204,7 +211,6 @@ def profile(request, user_id):
 
     return render(request, "401.html", status=401)
 
-
 def test(request):
     # aghdasieh = get_custom_date_camera_data("172.16.20.103", "2025-05-31", "2025-06-06")
     # iranmallone = get_custom_date_camera_data("172.16.70.75", "2025-05-31", "2025-06-06")
@@ -222,7 +228,14 @@ def test(request):
 
 @login_required
 def campaign(request, url_hash):
-    campaigns = Campaign.objects.filter(branch__merchant__url_hash=request.user.profile.merchant.url_hash)
+    campaigns = Campaign.objects.filter(branch__merchant__url_hash=request.user.profile.merchant.url_hash).order_by("pk")
+    permissions = PermissionToViewBranch.objects.filter(user__pk=request.user.profile.pk)
+    permission_list = []
+    for permission in permissions:
+        permission_list.append(permission.branch.pk)
+    branches = Branch.objects.filter(pk__in=permission_list).only("pk", "name")
+    if request.user.profile.is_manager == False:
+        campaigns = campaigns.filter(branch__pk__in=branches).order_by("pk")
     if request.user.profile.is_manager == True and request.user.is_active == True:
         return render(request, "campaign.html", {"campaigns": campaigns})
     return render(request, "401.html", status=401)
@@ -249,7 +262,39 @@ def create_campaign(request, url_hash):
 
 @login_required
 def edit_campaign(request, campaign_id):
-    pass
+    campaign = Campaign.objects.get(pk=campaign_id)
+    permissions = PermissionToViewBranch.objects.filter(user__pk=request.user.profile.pk)
+    permission_list = []
+    for permission in permissions:
+        permission_list.append(permission.branch.pk)
+    branches = Branch.objects.filter(pk__in=permission_list).only("pk", "name")
+    if request.user.profile.is_manager == True:
+        branches = Branch.objects.filter(merchant__url_hash=request.user.profile.merchant.url_hash) 
+    if campaign.branch.pk in branches or request.user.profile.is_manager == True:
+        form = 0
+        if request.method == "POST":
+            form = CreateCampaign(request.POST, instance=campaign)
+            if form.is_valid():
+                form.save()
+                messages.success(request, "کمپین با موفقیت تغییر یافت")
+            else:
+                messages.error(request, "مشکلی در اطلاعات وارد شده وجود دارد")
+        else:
+            form = CreateCampaign(instance=campaign)
+        jalali_start_date = convert_gregorian_to_jalali(campaign.start_date)
+        jalali_end_date = convert_gregorian_to_jalali(campaign.end_date)
+        return render(request, "edit-campaign.html", {"form": form, "campaign": campaign, "branches": branches, "jalali_start_date": jalali_start_date, "jalali_end_date": jalali_end_date})
+    return render(request, "edit-campaign.html", {"branches": branches, "campaign": campaign})
+
+@login_required
+def delete_campaign(request, campaign_id):
+    campaign = get_object_or_404(Campaign, pk=campaign_id)
+    jalali_start_date = convert_gregorian_to_jalali(campaign.start_date)
+    jalali_end_date = convert_gregorian_to_jalali(campaign.end_date)
+    if request.method == "POST":
+        campaign.delete()
+        return redirect('campaign', request.user.profile.merchant.url_hash)
+    return render(request, "delete-campaign.html", {"campaign": campaign, "jalali_start_date": jalali_start_date, "jalali_end_date": jalali_end_date})
 
 def update_stats(request):
     pass
