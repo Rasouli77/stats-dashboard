@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
 from django.urls import reverse
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from .models import (
     PeopleCounting,
     Branch,
@@ -27,6 +27,7 @@ from django.db.models import F
 from collections import defaultdict
 from .camera_data import get_custom_date_camera_data, update_or_create_camera_data
 from django.db import connection
+from django.utils import timezone
 
 # Create your views here.
 
@@ -239,7 +240,22 @@ def calender(request, url_hash):
 
 @login_required
 def home(request, url_hash):
-    return render(request, "home.html")
+    # 7 days
+    today = timezone.now().today()
+    last_7_days_start = today - timedelta(days=7)
+    last_7_days_end = today 
+    previous_7_days_start = today - timedelta(days=14)
+    previous_7_days_end = today - timedelta(days=7)
+
+    last_7_days_data = PeopleCounting.objects.filter(date__range=(last_7_days_start, last_7_days_end)).aggregate(total_entry=Sum('entry'))
+    previous_7_days_data = PeopleCounting.objects.filter(date__range=(previous_7_days_start, previous_7_days_end)).aggregate(total_entry=Sum('entry'))
+
+    last_7_days_best_branch_name = PeopleCounting.objects.filter(date__range=(last_7_days_start, last_7_days_end)).values("branch__id", "branch__name").annotate(total_entry=Sum('entry')).order_by("-total_entry").first()
+    last_7_days_worst_branch_name = PeopleCounting.objects.filter(date__range=(last_7_days_start, last_7_days_end)).values("branch__id", "branch__name").annotate(total_entry=Sum('entry')).order_by("total_entry").first()
+
+    # 30 days
+    # last_30_days_start = today - timedelta(days=)
+    return render(request, "home.html", {"last_7_days_best_branch_name": last_7_days_best_branch_name, "last_7_days_worst_branch_name": last_7_days_worst_branch_name})
 
 
 @login_required
@@ -279,19 +295,19 @@ def profile(request, user_id):
 
 
 def test(request):
-    # aghdasieh = get_custom_date_camera_data("172.16.20.103", "2025-06-07", "2025-06-30")
-    # iranmallone = get_custom_date_camera_data("172.16.70.75", "2025-06-07", "2025-06-30")
-    # iranmalltwo = get_custom_date_camera_data("172.16.70.128", "2025-06-07", "2025-06-30")
-    # mehrad = get_custom_date_camera_data("172.16.90.241", "2025-06-07", "2025-06-30")
-    # hadish_one = get_custom_date_camera_data("172.16.40.174", "2025-06-07", "2025-06-30")
-    # hadish_two = get_custom_date_camera_data("172.16.40.175", "2025-06-07", "2025-06-30")
-    # update_or_create_camera_data(aghdasieh, 1, 1, 1)
-    # update_or_create_camera_data(iranmallone, 5, 1, 4)
-    # update_or_create_camera_data(iranmalltwo, 6, 1, 4)
-    # update_or_create_camera_data(mehrad, 2, 1, 2)
-    # update_or_create_camera_data(hadish_one, 3, 1, 3)
-    # update_or_create_camera_data(hadish_two, 4, 1, 3)
-    # print("done and done!")
+    aghdasieh = get_custom_date_camera_data("172.16.20.103", "2025-06-07", "2025-06-30")
+    iranmallone = get_custom_date_camera_data("172.16.70.75", "2025-06-07", "2025-06-30")
+    iranmalltwo = get_custom_date_camera_data("172.16.70.128", "2025-06-07", "2025-06-30")
+    mehrad = get_custom_date_camera_data("172.16.90.241", "2025-06-07", "2025-06-30")
+    hadish_one = get_custom_date_camera_data("172.16.40.174", "2025-06-07", "2025-06-30")
+    hadish_two = get_custom_date_camera_data("172.16.40.175", "2025-06-07", "2025-06-30")
+    update_or_create_camera_data(aghdasieh, 1, 1, 1)
+    update_or_create_camera_data(iranmallone, 5, 1, 4)
+    update_or_create_camera_data(iranmalltwo, 6, 1, 4)
+    update_or_create_camera_data(mehrad, 2, 1, 2)
+    update_or_create_camera_data(hadish_one, 3, 1, 3)
+    update_or_create_camera_data(hadish_two, 4, 1, 3)
+    print("done and done!")
     return render(request, "landing.html")
 
 
