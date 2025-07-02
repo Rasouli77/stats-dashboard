@@ -88,6 +88,12 @@
           <ul class="menu-inner py-1">
             {% if permissions_to_view_branch_length > 0 or request.user.profile.is_manager %}
             <!-- Page -->
+             <li class="menu-item">
+              <a href="{% url 'home' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-home-circle"></i>
+                <div data-i18n="Page 1">خانه</div>
+              </a>
+            </li>
             <li class="menu-item">
               <a href="{% url 'people_counter' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-chart"></i>

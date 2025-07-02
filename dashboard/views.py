@@ -240,22 +240,131 @@ def calender(request, url_hash):
 
 @login_required
 def home(request, url_hash):
+    queryset = PeopleCounting.objects.filter(merchant__url_hash=url_hash)
     # 7 days
     today = timezone.now().today()
     last_7_days_start = today - timedelta(days=7)
-    last_7_days_end = today 
+    last_7_days_end = today
     previous_7_days_start = today - timedelta(days=14)
     previous_7_days_end = today - timedelta(days=7)
 
-    last_7_days_data = PeopleCounting.objects.filter(date__range=(last_7_days_start, last_7_days_end)).aggregate(total_entry=Sum('entry'))
-    previous_7_days_data = PeopleCounting.objects.filter(date__range=(previous_7_days_start, previous_7_days_end)).aggregate(total_entry=Sum('entry'))
+    # entries
+    last_7_days_entry = queryset.filter(
+        date__range=(last_7_days_start, last_7_days_end)
+    ).aggregate(total_entry=Sum("entry"))
+    previous_7_days_entry = queryset.filter(
+        date__range=(previous_7_days_start, previous_7_days_end)
+    ).aggregate(total_entry=Sum("entry"))
+    try:
+        diff_7_per = (
+            (last_7_days_entry["total_entry"] - previous_7_days_entry["total_entry"])
+            / previous_7_days_entry["total_entry"]
+        ) * 100
+    except Exception as e:
+        print(e)
+        diff_7_per = 0
+    try:
+        rounded_diff_7_per = round(diff_7_per, 2)
+    except Exception as e:
+        print(e)
+        rounded_diff_7_per = 0
 
-    last_7_days_best_branch_name = PeopleCounting.objects.filter(date__range=(last_7_days_start, last_7_days_end)).values("branch__id", "branch__name").annotate(total_entry=Sum('entry')).order_by("-total_entry").first()
-    last_7_days_worst_branch_name = PeopleCounting.objects.filter(date__range=(last_7_days_start, last_7_days_end)).values("branch__id", "branch__name").annotate(total_entry=Sum('entry')).order_by("total_entry").first()
+    # branches
+    last_7_days_best_branch_name = (
+        queryset.filter(date__range=(last_7_days_start, last_7_days_end))
+        .values("branch__id", "branch__name")
+        .annotate(total_entry=Sum("entry"))
+        .order_by("-total_entry")
+        .first()
+    )
+    last_7_days_worst_branch_name = (
+        queryset.filter(date__range=(last_7_days_start, last_7_days_end))
+        .values("branch__id", "branch__name")
+        .annotate(total_entry=Sum("entry"))
+        .order_by("total_entry")
+        .first()
+    )
+
+    # branch rank
+    branch_7_day_ranks = (
+        queryset.filter(date__range=(last_7_days_start, last_7_days_end))
+        .values("branch__id", "branch__name")
+        .annotate(total_entry=Sum("entry"))
+        .annotate(percent_seven=(Sum("entry") / last_7_days_entry["total_entry"]) * 100)
+        .order_by("-total_entry")
+    )
 
     # 30 days
-    # last_30_days_start = today - timedelta(days=)
-    return render(request, "home.html", {"last_7_days_best_branch_name": last_7_days_best_branch_name, "last_7_days_worst_branch_name": last_7_days_worst_branch_name})
+    last_30_days_start = today - timedelta(days=30)
+    last_30_days_end = today
+    previous_30_days_start = today - timedelta(days=60)
+    previous_30_days_end = today - timedelta(days=30)
+
+    # entries
+    last_30_days_entry = queryset.filter(
+        date__range=(last_30_days_start, last_30_days_end)
+    ).aggregate(total_entry=Sum("entry"))
+    previous_30_days_entry = queryset.filter(
+        date__range=(previous_30_days_start, previous_30_days_end)
+    ).aggregate(total_entry=Sum("entry"))
+    try:
+        diff_30_per = (
+            (last_30_days_entry["total_entry"] - previous_30_days_entry["total_entry"])
+            / previous_30_days_entry["total_entry"]
+        ) * 100
+    except Exception as e:
+        print(e)
+        diff_30_per = 0
+    try:
+        rounded_diff_30_per = round(diff_30_per, 2)
+    except Exception as e:
+        print(e)
+        rounded_diff_30_per = 0
+
+    # branches
+    last_30_days_best_branch_name = (
+        queryset.filter(date__range=(last_30_days_start, last_30_days_end))
+        .values("branch__id", "branch__name")
+        .annotate(total_entry=Sum("entry"))
+        .order_by("-total_entry")
+        .first()
+    )
+    last_30_days_worst_branch_name = (
+        queryset.filter(date__range=(last_30_days_start, last_30_days_end))
+        .values("branch__id", "branch__name")
+        .annotate(total_entry=Sum("entry"))
+        .order_by("total_entry")
+        .first()
+    )
+
+    # branch rank
+    branch_30_day_ranks = (
+        queryset.filter(date__range=(last_30_days_start, last_30_days_end))
+        .values("branch__id", "branch__name")
+        .annotate(total_entry=Sum("entry"))
+        .annotate(
+            percent_thirty=(Sum("entry") / last_30_days_entry["total_entry"]) * 100
+        )
+        .order_by("-total_entry")
+    )
+    return render(
+        request,
+        "home.html",
+        {
+            "last_7_days_best_branch_name": last_7_days_best_branch_name,
+            "last_7_days_worst_branch_name": last_7_days_worst_branch_name,
+            "branch_30_day_ranks": branch_30_day_ranks,
+            "branch_7_day_ranks": branch_7_day_ranks,
+            "last_30_days_best_branch_name": last_30_days_best_branch_name,
+            "last_30_days_worst_branch_name": last_30_days_worst_branch_name,
+            "rounded_diff_30_per": rounded_diff_30_per,
+            "rounded_diff_7_per": rounded_diff_7_per,
+            "last_30_days_entry_total": last_30_days_entry["total_entry"],
+            "last_7_days_entry_total": last_7_days_entry["total_entry"],
+            "previous_7_days_entry_total": previous_7_days_entry["total_entry"],
+            "previous_30_days_entry_total": previous_30_days_entry["total_entry"],
+        },
+    )
 
 
 @login_required
@@ -295,19 +404,27 @@ def profile(request, user_id):
 
 
 def test(request):
-    aghdasieh = get_custom_date_camera_data("172.16.20.103", "2025-06-07", "2025-06-30")
-    iranmallone = get_custom_date_camera_data("172.16.70.75", "2025-06-07", "2025-06-30")
-    iranmalltwo = get_custom_date_camera_data("172.16.70.128", "2025-06-07", "2025-06-30")
-    mehrad = get_custom_date_camera_data("172.16.90.241", "2025-06-07", "2025-06-30")
-    hadish_one = get_custom_date_camera_data("172.16.40.174", "2025-06-07", "2025-06-30")
-    hadish_two = get_custom_date_camera_data("172.16.40.175", "2025-06-07", "2025-06-30")
-    update_or_create_camera_data(aghdasieh, 1, 1, 1)
-    update_or_create_camera_data(iranmallone, 5, 1, 4)
-    update_or_create_camera_data(iranmalltwo, 6, 1, 4)
-    update_or_create_camera_data(mehrad, 2, 1, 2)
-    update_or_create_camera_data(hadish_one, 3, 1, 3)
-    update_or_create_camera_data(hadish_two, 4, 1, 3)
-    print("done and done!")
+    # aghdasieh = get_custom_date_camera_data("172.16.20.103", "2025-06-07", "2025-06-30")
+    # iranmallone = get_custom_date_camera_data(
+    #     "172.16.70.75", "2025-06-07", "2025-06-30"
+    # )
+    # iranmalltwo = get_custom_date_camera_data(
+    #     "172.16.70.128", "2025-06-07", "2025-06-30"
+    # )
+    # mehrad = get_custom_date_camera_data("172.16.90.241", "2025-06-07", "2025-06-30")
+    # hadish_one = get_custom_date_camera_data(
+    #     "172.16.40.174", "2025-06-07", "2025-06-30"
+    # )
+    # hadish_two = get_custom_date_camera_data(
+    #     "172.16.40.175", "2025-06-07", "2025-06-30"
+    # )
+    # update_or_create_camera_data(aghdasieh, 1, 1, 1)
+    # update_or_create_camera_data(iranmallone, 5, 1, 4)
+    # update_or_create_camera_data(iranmalltwo, 6, 1, 4)
+    # update_or_create_camera_data(mehrad, 2, 1, 2)
+    # update_or_create_camera_data(hadish_one, 3, 1, 3)
+    # update_or_create_camera_data(hadish_two, 4, 1, 3)
+    # print("done and done!")
     return render(request, "landing.html")
 
 
