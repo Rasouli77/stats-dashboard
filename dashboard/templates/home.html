@@ -74,7 +74,7 @@
                 <span class="avatar-initial rounded-circle bg-label-primary"><i class="bx bx-purchase-tag fs-4"></i></span>
                 </div>
                 <span class="d-block text-nowrap pt-1">ترافیک کل 30 روز اخیر</span>
-                <h2 class="mb-n3">{{ last_30_days_entry_total }}</h2>
+                <h2 class="mb-n3 num">{{ last_30_days_entry_total }}</h2>
             </div>
             </div>
         </div>
@@ -85,7 +85,7 @@
                 <span class="avatar-initial rounded-circle bg-label-primary"><i class="bx bx-purchase-tag fs-4"></i></span>
                 </div>
                 <span class="d-block text-nowrap pt-1">ترافیک کل 30 روز قبل</span>
-                <h2 class="mb-n3">{{ previous_30_days_entry_total }}</h2>
+                <h2 class="mb-n3 num">{{ previous_30_days_entry_total }}</h2>
             </div>
             </div>
         </div>
@@ -96,7 +96,7 @@
                 <span class="avatar-initial rounded-circle bg-label-primary"><i class="bx bx-purchase-tag fs-4"></i></span>
                 </div>
                 <span class="d-block text-nowrap pt-1">ترافیک کل 7 روز اخیر</span>
-                <h2 class="mb-n3">{{ last_7_days_entry_total }}</h2>
+                <h2 class="mb-n3 num">{{ last_7_days_entry_total }}</h2>
             </div>
             </div>
         </div>
@@ -107,7 +107,7 @@
                 <span class="avatar-initial rounded-circle bg-label-primary"><i class="bx bx-purchase-tag fs-4"></i></span>
                 </div>
                 <span class="d-block text-nowrap pt-1">ترافیک کل 7 روز قبل</span>
-                <h2 class="mb-n3">{{ previous_7_days_entry_total }}</h2>
+                <h2 class="mb-n3 num">{{ previous_7_days_entry_total }}</h2>
             </div>
             </div>
         </div>
@@ -121,7 +121,7 @@
         <div class="card h-100">
         <div class="card-header">
             <h5 class="card-title mb-3">ترافیک کل 30 روز اخیر</h5>
-            <h1 class="display-6 fw-normal mb-0 primary-font">{{ last_30_days_entry_total }}</h1>
+            <h1 class="display-6 fw-normal mb-0 primary-font num">{{ last_30_days_entry_total }}</h1>
         </div>
         <div class="card-body">
             <ul class="p-0 m-0">
@@ -131,7 +131,7 @@
                 <span class="badge badge-dot bg-primary me-2"></span> {{ rank.branch__name }}
                 </div>
                 <div class="d-flex gap-3">
-                <span>{{ rank.total_entry }}</span>
+                <span class="num">{{ rank.total_entry }}</span>
                 <span class="fw-semibold">{{ rank.percent_thirty }}%</span>
                 </div>
             </li>
@@ -147,7 +147,7 @@
         <div class="card h-100">
         <div class="card-header">
             <h5 class="card-title mb-3">ترافیک کل 7 روز اخیر</h5>
-            <h1 class="display-6 fw-normal mb-0 primary-font">{{ last_7_days_entry_total }}</h1>
+            <h1 class="display-6 fw-normal mb-0 primary-font num">{{ last_7_days_entry_total }}</h1>
         </div>
         <div class="card-body">
             <ul class="p-0 m-0">
@@ -157,7 +157,7 @@
                 <span class="badge badge-dot bg-primary me-2"></span> {{ rank.branch__name }}
                 </div>
                 <div class="d-flex gap-3">
-                <span>{{ rank.total_entry }}</span>
+                <span class="num">{{ rank.total_entry }}</span>
                 <span class="fw-semibold">{{ rank.percent_seven }}%</span>
                 </div>
             </li>
@@ -169,4 +169,14 @@
     <!--/ All Users -->
 </div>
 {% endif %}
+{% endblock %}
+{% block extra_js %}
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const nums = document.querySelectorAll(".num");
+        nums.forEach((num) => {
+        num.innerHTML = parseInt(num.textContent.replace(/,/g, ""), 10).toLocaleString("en-US")
+        })
+    })
+</script>
 {% endblock %}

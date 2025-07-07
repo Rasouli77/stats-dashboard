@@ -74,10 +74,12 @@ def update_or_create_camera_data(data: dict, cam_id, merchant_id, branch_id):
     for date in data.items():
         PeopleCounting.objects.update_or_create(
             date=date[1]["date"],
-            entry=date[1]["entry"],
-            exit=date[1]["exit"],
             cam=cam,
-            merchant=merchant,
-            branch=branch
+            defaults={
+            "entry": date[1]["entry"],
+            "exit": date[1]["exit"],
+            "merchant": merchant,
+            "branch": branch
+            }
             )
         

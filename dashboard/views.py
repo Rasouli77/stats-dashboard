@@ -8,6 +8,7 @@ from .models import (
     UserProfile,
     PermissionToViewBranch,
     Campaign,
+    Cam
 )
 from django.db.models import Sum
 from django.contrib.auth.models import User, Permission
@@ -28,6 +29,7 @@ from collections import defaultdict
 from .camera_data import get_custom_date_camera_data, update_or_create_camera_data
 from django.db import connection
 from django.utils import timezone
+import subprocess
 
 # Create your views here.
 
@@ -403,28 +405,42 @@ def profile(request, user_id):
     return render(request, "401.html", status=401)
 
 
+def ping_ip(ip, timeout=15):
+    try:
+        result = subprocess.run(
+            ["ping", "-c", "1", "-W", str(timeout), ip],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            timeout=timeout + 2  # Overall timeout to avoid hanging
+        )
+        return result.returncode == 0
+    except subprocess.TimeoutExpired:
+        print(f"Timeout: Ping to {ip} took too long.")
+        return False
+    except Exception as e:
+        print(f"Error: {e}")
+        return False
+
 def test(request):
-    # aghdasieh = get_custom_date_camera_data("172.16.20.103", "2025-06-07", "2025-06-30")
-    # iranmallone = get_custom_date_camera_data(
-    #     "172.16.70.75", "2025-06-07", "2025-06-30"
-    # )
-    # iranmalltwo = get_custom_date_camera_data(
-    #     "172.16.70.128", "2025-06-07", "2025-06-30"
-    # )
-    # mehrad = get_custom_date_camera_data("172.16.90.241", "2025-06-07", "2025-06-30")
-    # hadish_one = get_custom_date_camera_data(
-    #     "172.16.40.174", "2025-06-07", "2025-06-30"
-    # )
-    # hadish_two = get_custom_date_camera_data(
-    #     "172.16.40.175", "2025-06-07", "2025-06-30"
-    # )
-    # update_or_create_camera_data(aghdasieh, 1, 1, 1)
-    # update_or_create_camera_data(iranmallone, 5, 1, 4)
-    # update_or_create_camera_data(iranmalltwo, 6, 1, 4)
-    # update_or_create_camera_data(mehrad, 2, 1, 2)
-    # update_or_create_camera_data(hadish_one, 3, 1, 3)
-    # update_or_create_camera_data(hadish_two, 4, 1, 3)
-    # print("done and done!")
+    today = timezone.now().date()
+    raw_yesterday = today - timedelta(days=1)
+    yesterday = raw_yesterday.strftime("%Y-%m-%d")
+    cams = Cam.objects.select_related("merchant", "branch").all()
+    ips = []
+    for cam in cams:
+        ips.append({"ip": cam.ip, "cam_id": cam.pk, "merchant_id": cam.merchant.pk, "branch_id": cam.branch.pk})
+    print(ips)   
+    for ip in ips:
+        print(ip)
+        if ping_ip(ip['ip']):
+            print(ip['ip'])
+            try:
+                data = get_custom_date_camera_data(ip["ip"], yesterday, yesterday)
+                update_or_create_camera_data(data, ip["cam_id"], ip["merchant_id"], ip["branch_id"])
+            except Exception as e:
+                print(e)
+        else:
+            print(f"This ip has a problem: {ip['ip']}")
     return render(request, "landing.html")
 
 
