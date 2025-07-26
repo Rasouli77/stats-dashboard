@@ -43,18 +43,47 @@
   // Basic Dropzone
   // --------------------------------------------------------------------
   var options = {
+    url: "/dashboard/create-invoice/4CbCwLRPAJ5B/", // Replace with {% url 'upload_excel_file_invoice' url_hash=url_hash %}
+    paramName: "excel_file",  // ✅ CRUCIAL: matches Django form field
     previewTemplate: previewTemplate,
     parallelUploads: 1,
     maxFilesize: 5,
+    maxFiles: 1,
     addRemoveLinks: true,
-    maxFiles: 1
+    headers: {
+      "X-CSRFToken": getCookie("csrftoken")  // ✅ Needed for Django POST
+    },
+    init: function () {
+      this.on("success", function (file, response) {
+        console.log("Upload succeeded", response);
+      });
+      this.on("error", function (file, errorMessage) {
+        console.log("Upload error", errorMessage);
+      });
+    }
   };
-  Object.assign(options, messages);
+
+  Object.assign(options, messages);  // If you use a `messages` object for localization, fine
 
   const dropzoneBasic = document.querySelector('#dropzone-basic');
   if (dropzoneBasic) {
     const myDropzone = new Dropzone(dropzoneBasic, options);
   }
+
+  function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== "") {
+    const cookies = document.cookie.split(";");
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === name + "=") {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
 
   // Multiple Dropzone
   // --------------------------------------------------------------------

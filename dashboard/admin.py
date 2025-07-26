@@ -13,12 +13,13 @@ from .models import (
     PermissionToViewBranch,
     Invoice,
 )
+from rangefilter.filters import DateRangeFilter
 
 # Register your models here.
 
 
 class PeopleCountingAdmin(admin.ModelAdmin):
-    list_display = ["merchant", "date", "branch", "cam", "entry", "exit"]
+    list_display = ("merchant", "date", "branch", "cam", "entry", "exit", "date_created", "last_modified")
     list_filter = ["branch", "date"]
     exclude = ["date_created"]
 

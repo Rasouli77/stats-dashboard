@@ -127,6 +127,26 @@
                 </ul>
               </li>
             {% endif %}
+            {% if perms.dashboard.add_invoice %}
+            <li class="menu-item">
+                <a href="javascript:void(0);" class="menu-link menu-toggle">
+                  <i class="menu-icon tf-icons bx bx-detail"></i>
+                  <div data-i18n="Invoice">اطلاعات فروش</div>
+                </a>
+                <ul class="menu-sub">
+                  <li class="menu-item">
+                    <a href="{% url 'upload_excel_file_invoice' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
+                      <div data-i18n="List">آپلود اطلاعات فروش</div>
+                    </a>
+                  </li>
+                  <li class="menu-item">
+                    <a href="#" class="menu-link">
+                      <div data-i18n="Preview">ویرایش اطلاعات فروش</div>
+                    </a>
+                  </li>
+                </ul>
+              </li>
+            {% endif %}
           </ul>
         </aside>
         <!-- / Menu -->

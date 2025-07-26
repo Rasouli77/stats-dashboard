@@ -70,3 +70,7 @@ class CreateCampaign(forms.ModelForm):
     class Meta:
         model = Campaign
         fields = ["name", "start_date", "end_date", "branch", "cost"]
+
+
+class UploadInvoiceExcel(forms.Form):
+    excel_file = forms.FileField(required=True)

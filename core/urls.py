@@ -16,7 +16,7 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from accounts.views import custom_login
 from dashboard.views import (
     people_counter,
@@ -31,10 +31,16 @@ from dashboard.views import (
     campaign,
     create_campaign,
     edit_campaign,
-    delete_campaign
+    delete_campaign,
+    upload_excel_file_invoice,
 )
 from dashboard.api_views import MultipleBranches
 from django.contrib.auth import views as auth_views
+from django.contrib import admin
+
+admin.site.site_header = "پنل مدیریت فروشگاه"
+admin.site.site_title = "وب‌پوش | مدیریت"
+admin.site.index_title = "خوش آمدید به بخش مدیریت"
 
 
 urlpatterns = [
@@ -59,6 +65,7 @@ urlpatterns = [
     path("dashboard/create-campaign/<str:url_hash>", create_campaign, name="create_campaign"),
     path("dashboard/edit-campaign/<int:campaign_id>", edit_campaign, name="edit_campaign"),
     path("dashboard/delete-campaign/<int:campaign_id>", delete_campaign, name='delete_campaign'),
+    path("dashboard/create-invoice/<str:url_hash>", upload_excel_file_invoice, name='upload_excel_file_invoice'),
     path("dashboard/account/login", custom_login, name="login"),
     path(
         "dashboard/account/logout/",

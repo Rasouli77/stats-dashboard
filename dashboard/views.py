@@ -8,7 +8,8 @@ from .models import (
     UserProfile,
     PermissionToViewBranch,
     Campaign,
-    Cam
+    Cam,
+    Invoice
 )
 from django.db.models import Sum
 from django.contrib.auth.models import User, Permission
@@ -19,6 +20,7 @@ from .forms import (
     UserPermissions,
     AssignBranchPermissions,
     CreateCampaign,
+    UploadInvoiceExcel
 )
 import jdatetime
 import json
@@ -30,6 +32,9 @@ from .camera_data import get_custom_date_camera_data, update_or_create_camera_da
 from django.db import connection
 from django.utils import timezone
 import subprocess
+import openpyxl
+import datetime
+import jdatetime
 
 # Create your views here.
 
@@ -554,3 +559,61 @@ def delete_campaign(request, campaign_id):
 
 def update_stats(request):
     pass
+
+
+@login_required
+def upload_excel_file_invoice(request, url_hash):
+    if request.user.profile.merchant.url_hash != url_hash or request.user.is_active == False:
+        return render(request, "401.html", status=401)
+    if not request.user.has_perm('dashboard.add_invoice'):
+        return render(request, "401.html", status=401)
+    if not request.user.has_perm('dashboard.delete_invoice'):
+        return render(request, "401.html", status=401)
+    try:
+        merchant = request.user.profile.merchant
+        branches = Branch.objects.select_related("merchant").filter(merchant=merchant)
+    except Exception as e:
+        messages.error(request, f"{e}")
+        return render(request, "upload_excel_invoice.html", {"error": f"{e}"})
+    allowed_branches = []
+    for branch in branches:
+        allowed_branches.append(branch.pk)
+    if request.method == "POST":
+        form = UploadInvoiceExcel(request.POST, request.FILES)
+        if form.is_valid():
+            excel_file = request.FILES["excel_file"]
+            try:
+                wb =  openpyxl.load_workbook(excel_file)
+                sheet = wb.active
+                for row in sheet.iter_rows(min_row=2, values_only=True):
+                    date, branch, total_amount, total_items = row
+                    if isinstance(date, str):
+                        first_two = date[:2]
+                        if first_two == "13" or first_two == "14":
+                            year, month, day = map(int, date.split("-"))
+                            jalali_date = jdatetime.date(year, month, day)
+                            date = jalali_date.togregorian()
+                        else:
+                            date = datetime.datetime.strptime(date, "%Y-%m-%d").date()
+                    if branch not in allowed_branches:
+                        messages.error(request, "شعبه نامعتبر")
+                        return render(request, "upload_excel_invoice.html", {"error": "کد شعبه نامعتبر"})
+                    branch = branches.get(pk=branch)
+                    Invoice.objects.update_or_create(
+                        date=date,
+                        branch=branch,
+                        total_amount=total_amount,
+                        total_items=total_items
+                    )
+                return redirect(reverse("upload_excel_file_invoice", args=[url_hash]))
+            except Exception as e:
+                return render(request, "upload_excel_invoice.html", {"error": f"{e}"})
+        else:
+            return render(request, "upload_excel_invoice.html", {"error": f"{form.errors}"})
+    else:
+        form = UploadInvoiceExcel()       
+        return render(request, "upload_excel_invoice.html", {"form": form})
+    
+        
+
+
