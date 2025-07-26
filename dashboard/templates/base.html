@@ -140,7 +140,7 @@
                     </a>
                   </li>
                   <li class="menu-item">
-                    <a href="#" class="menu-link">
+                    <a href="{% url 'delete_excel_file_invoice' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
                       <div data-i18n="Preview">ویرایش اطلاعات فروش</div>
                     </a>
                   </li>

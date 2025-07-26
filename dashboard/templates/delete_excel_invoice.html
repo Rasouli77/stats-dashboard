@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block title %}
-    آپلود اطلاعات فروش
+    ویرایش اطلاعات فروش
 {% endblock %}
 {% block meta_description %}
-	آپلود اطلاعات فروش
+	ویرایش اطلاعات فروش
 {% endblock %}
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'assets/vendor/libs/dropzone/dropzone.css' %}">
@@ -47,7 +47,7 @@
             <p>{{ branch.pk }} - {{ branch.name }}</p>
           {% endfor %}
         {% endif %}
-        <a href="{% url 'upload_excel_file_invoice' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="btn btn-primary">بازگشت</a>
+        <a href="{% url 'delete_excel_file_invoice' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="btn btn-primary">بازگشت</a>
       </div>
     </div>
     <!-- /Error -->
@@ -56,7 +56,7 @@
 <!-- Basic  -->
 <div class="col-12">
     <div class="card mb-4">
-        <h5 class="card-header heading-color">آپلود اطلاعات فروش</h5>
+        <h5 class="card-header heading-color" style="color: red;">آپلود اطلاعات فروش برای حذف</h5>
         <div class="card-body" style="display: flex; flex-direction: column; align-items: center;">
             <form method="post" enctype="multipart/form-data" class="form form-control" id="dropzone-basic">
                 {% csrf_token %}

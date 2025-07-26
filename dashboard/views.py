@@ -9,7 +9,7 @@ from .models import (
     PermissionToViewBranch,
     Campaign,
     Cam,
-    Invoice
+    Invoice,
 )
 from django.db.models import Sum
 from django.contrib.auth.models import User, Permission
@@ -20,7 +20,7 @@ from .forms import (
     UserPermissions,
     AssignBranchPermissions,
     CreateCampaign,
-    UploadInvoiceExcel
+    UploadInvoiceExcel,
 )
 import jdatetime
 import json
@@ -416,7 +416,7 @@ def ping_ip(ip, timeout=15):
             ["ping", "-c", "1", "-W", str(timeout), ip],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
-            timeout=timeout + 2  # Overall timeout to avoid hanging
+            timeout=timeout + 2,  # Overall timeout to avoid hanging
         )
         return result.returncode == 0
     except subprocess.TimeoutExpired:
@@ -426,6 +426,7 @@ def ping_ip(ip, timeout=15):
         print(f"Error: {e}")
         return False
 
+
 def test(request):
     today = timezone.now().date()
     raw_yesterday = today - timedelta(days=1)
@@ -433,15 +434,24 @@ def test(request):
     cams = Cam.objects.select_related("merchant", "branch").all()
     ips = []
     for cam in cams:
-        ips.append({"ip": cam.ip, "cam_id": cam.pk, "merchant_id": cam.merchant.pk, "branch_id": cam.branch.pk})
-    print(ips)   
+        ips.append(
+            {
+                "ip": cam.ip,
+                "cam_id": cam.pk,
+                "merchant_id": cam.merchant.pk,
+                "branch_id": cam.branch.pk,
+            }
+        )
+    print(ips)
     for ip in ips:
         print(ip)
-        if ping_ip(ip['ip']):
-            print(ip['ip'])
+        if ping_ip(ip["ip"]):
+            print(ip["ip"])
             try:
                 data = get_custom_date_camera_data(ip["ip"], yesterday, yesterday)
-                update_or_create_camera_data(data, ip["cam_id"], ip["merchant_id"], ip["branch_id"])
+                update_or_create_camera_data(
+                    data, ip["cam_id"], ip["merchant_id"], ip["branch_id"]
+                )
             except Exception as e:
                 print(e)
         else:
@@ -563,17 +573,20 @@ def update_stats(request):
 
 @login_required
 def upload_excel_file_invoice(request, url_hash):
-    if request.user.profile.merchant.url_hash != url_hash or request.user.is_active == False:
+    if (
+        request.user.profile.merchant.url_hash != url_hash
+        or request.user.is_active == False
+    ):
         return render(request, "401.html", status=401)
-    if not request.user.has_perm('dashboard.add_invoice'):
+    if not request.user.has_perm("dashboard.add_invoice"):
         return render(request, "401.html", status=401)
-    if not request.user.has_perm('dashboard.delete_invoice'):
+    if not request.user.has_perm("dashboard.delete_invoice"):
         return render(request, "401.html", status=401)
     try:
         merchant = request.user.profile.merchant
         branches = Branch.objects.select_related("merchant").filter(merchant=merchant)
-    except Exception as e:
-        messages.error(request, f"{e}")
+    except Exception:
+        messages.error(request, "مرچنتی با این مشخصات یافت نشد.")
         return render(request, "upload_excel_invoice.html", {"error": f"{e}"})
     allowed_branches = []
     for branch in branches:
@@ -583,37 +596,112 @@ def upload_excel_file_invoice(request, url_hash):
         if form.is_valid():
             excel_file = request.FILES["excel_file"]
             try:
-                wb =  openpyxl.load_workbook(excel_file)
+                wb = openpyxl.load_workbook(excel_file)
                 sheet = wb.active
                 for row in sheet.iter_rows(min_row=2, values_only=True):
                     date, branch, total_amount, total_items = row
                     if isinstance(date, str):
-                        first_two = date[:2]
-                        if first_two == "13" or first_two == "14":
-                            year, month, day = map(int, date.split("-"))
-                            jalali_date = jdatetime.date(year, month, day)
-                            date = jalali_date.togregorian()
-                        else:
-                            date = datetime.datetime.strptime(date, "%Y-%m-%d").date()
-                    if branch not in allowed_branches:
-                        messages.error(request, "شعبه نامعتبر")
-                        return render(request, "upload_excel_invoice.html", {"error": "کد شعبه نامعتبر"})
-                    branch = branches.get(pk=branch)
-                    Invoice.objects.update_or_create(
-                        date=date,
-                        branch=branch,
-                        total_amount=total_amount,
-                        total_items=total_items
-                    )
+                        if date:
+                            first_two = date[:2]
+                            if first_two == "13" or first_two == "14":
+                                year, month, day = map(int, date.split("-"))
+                                jalali_date = jdatetime.date(year, month, day)
+                                date = jalali_date.togregorian()
+                            else:
+                                date = datetime.datetime.strptime(date, "%Y-%m-%d").date()
+                    if branch and total_amount and total_items:
+                        if branch not in allowed_branches:
+                            messages.warning(request, "یک یا چند ردیف دارای کد شعبی هستند که برای شما تعریف نشده است.")
+                            return render(
+                                request,
+                                "upload_excel_invoice.html",
+                                {"error": "از کد های زیر برای شعبه استفاده نمایید:", "branches": branches},
+                            )
+                        branch = branches.get(pk=branch)
+                        Invoice.objects.update_or_create(
+                            date=date,
+                            branch=branch,
+                            total_amount=total_amount,
+                            total_items=total_items,
+                        )
+                messages.success(request, "اطلاعات فروش با موفقیت آپلود شدند")
                 return redirect(reverse("upload_excel_file_invoice", args=[url_hash]))
             except Exception as e:
+                messages.error(request, "فایل مورد نظر یافت نشد. فرمت فایل و نام فایل آپلود شده را دوباره بررسی فرمایید. فایل مورد نظر باید طبق نمونه تمپلیت آپلود شود.")
                 return render(request, "upload_excel_invoice.html", {"error": f"{e}"})
         else:
-            return render(request, "upload_excel_invoice.html", {"error": f"{form.errors}"})
+            messages.error(request, "فایل مورد نظر باید دارای فرمت اکسل باشد.")
+            return render(
+                request, "upload_excel_invoice.html", {"error": f"{form.errors}"}
+            )
     else:
-        form = UploadInvoiceExcel()       
+        form = UploadInvoiceExcel()
         return render(request, "upload_excel_invoice.html", {"form": form})
     
-        
 
-
+@login_required
+def delete_excel_file_invoice(request, url_hash):
+    if (
+        request.user.profile.merchant.url_hash != url_hash
+        or request.user.is_active == False
+    ):
+        return render(request, "401.html", status=401)
+    if not request.user.has_perm("dashboard.add_invoice"):
+        return render(request, "401.html", status=401)
+    if not request.user.has_perm("dashboard.delete_invoice"):
+        return render(request, "401.html", status=401)
+    try:
+        merchant = request.user.profile.merchant
+        branches = Branch.objects.select_related("merchant").filter(merchant=merchant)
+    except Exception:
+        messages.error(request, "مرچنتی با این مشخصات یافت نشد.")
+        return render(request, "delete_excel_invoice.html", {"error": f"{e}"})
+    allowed_branches = []
+    for branch in branches:
+        allowed_branches.append(branch.pk)
+    if request.method == "POST":
+        form = UploadInvoiceExcel(request.POST, request.FILES)
+        if form.is_valid():
+            excel_file = request.FILES["excel_file"]
+            try:
+                wb = openpyxl.load_workbook(excel_file)
+                sheet = wb.active
+                for row in sheet.iter_rows(min_row=2, values_only=True):
+                    date, branch, total_amount, total_items = row
+                    if isinstance(date, str):
+                        if date:
+                            first_two = date[:2]
+                            if first_two == "13" or first_two == "14":
+                                year, month, day = map(int, date.split("-"))
+                                jalali_date = jdatetime.date(year, month, day)
+                                date = jalali_date.togregorian()
+                            else:
+                                date = datetime.datetime.strptime(date, "%Y-%m-%d").date()
+                    if branch and total_amount and total_items:
+                        if branch not in allowed_branches:
+                            messages.warning(request, "یک یا چند ردیف دارای کد شعبی هستند که برای شما تعریف نشده است.")
+                            return render(
+                                request,
+                                "delete_excel_invoice.html",
+                                {"error": "از کد های زیر برای شعبه استفاده نمایید:", "branches": branches},
+                            )
+                        branch = branches.get(pk=branch)
+                        Invoice.objects.filter(
+                            date=date,
+                            branch=branch,
+                            total_amount=total_amount,
+                            total_items=total_items,
+                        ).delete()
+                messages.success(request, "اطلاعات فروش با موفقیت حذف شدند")
+                return redirect(reverse("delete_excel_file_invoice", args=[url_hash]))
+            except Exception as e:
+                messages.error(request, "فایل مورد نظر یافت نشد. فرمت فایل و نام فایل آپلود شده را دوباره بررسی فرمایید. فایل مورد نظر باید طبق نمونه تمپلیت آپلود شود.")
+                return render(request, "delete_excel_invoice.html", {"error": f"{e}"})
+        else:
+            messages.error(request, "فایل مورد نظر باید دارای فرمت اکسل باشد.")
+            return render(
+                request, "delete_excel_invoice.html", {"error": f"{form.errors}"}
+            )
+    else:
+        form = UploadInvoiceExcel()
+        return render(request, "delete_excel_invoice.html", {"form": form})
