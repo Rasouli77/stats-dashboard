@@ -33,7 +33,10 @@ from dashboard.views import (
     edit_campaign,
     delete_campaign,
     upload_excel_file_invoice,
-    delete_excel_file_invoice
+    delete_excel_file_invoice,
+    invoices,
+    invoice_detail,
+    invoice_delete
 )
 from dashboard.api_views import MultipleBranches
 from django.contrib.auth import views as auth_views
@@ -66,8 +69,11 @@ urlpatterns = [
     path("dashboard/create-campaign/<str:url_hash>", create_campaign, name="create_campaign"),
     path("dashboard/edit-campaign/<int:campaign_id>", edit_campaign, name="edit_campaign"),
     path("dashboard/delete-campaign/<int:campaign_id>", delete_campaign, name='delete_campaign'),
-    path("dashboard/create-invoice/<str:url_hash>", upload_excel_file_invoice, name='upload_excel_file_invoice'),
-    path("dashboard/delete-invoice/<str:url_hash>", delete_excel_file_invoice, name='delete_excel_file_invoice'),
+    path("dashboard/create-invoice-from-excel/<str:url_hash>", upload_excel_file_invoice, name='upload_excel_file_invoice'),
+    path("dashboard/delete-invoice-from-excel/<str:url_hash>", delete_excel_file_invoice, name='delete_excel_file_invoice'),
+    path("dashboard/invoices/<str:url_hash>", invoices, name='invoices'),
+    path("dashboard/invoice-detail/<int:invoice_pk>", invoice_detail, name='invoice_detail'),
+    path("dashboard/invoice-delete/<int:invoice_pk>", invoice_delete, name='invoice_delete'),
     path("dashboard/account/login", custom_login, name="login"),
     path(
         "dashboard/account/logout/",

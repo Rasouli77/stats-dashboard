@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}
+	 جزییات اطلاعات فروش
+{% endblock %}
+{% block meta_description %}
+	 جزییات اطلاعات فروش
+{% endblock %}
+{% block content %}
+{% if messages %}
+    {% for message in messages %}
+        {% if message.tags == 'success' %}
+        <div class="alert alert-success" role="alert">{{ message }}</div>
+        {% else %}
+        <div class="alert alert-danger" role="alert">{{ message }}</div>
+        {% endif %}
+    {% endfor %}
+{% endif %}
+<h4 class="py-3 breadcrumb-wrapper mb-4">
+جزییات اطلاعات فروش
+</h4>
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+        <div class="card-body">
+            <h5 class="pb-2 border-bottom mb-4 secondary-font">جزئیات</h5>
+            <div class="info-container">
+                <ul class="list-unstyled">
+                    <li class="mb-3">
+                    <span class="fw-bold me-2">تاریخ شمسی</span>
+                    <span class="greg-date">{{ invoice.date|date:"Y-m-d" }}</span>
+                    </li>
+                    <li class="mb-3">
+                    <span class="fw-bold me-2">کد شعبه</span>
+                    <span class="badge bg-label-primary">{{ invoice.branch.pk }}</span>
+                    </li>
+                    <li class="mb-3">
+                    <span class="fw-bold me-2">نام شعبه</span>
+                    <span class="badge bg-label-primary">{{ invoice.branch.name }}</span>
+                    </li>
+                    <li class="mb-3">
+                    <span class="fw-bold me-2">تعداد فاکتور</span>
+                    <span class="badge bg-label-primary">{{ invoice.total_items }}</span>
+                    </li>
+                    <li class="mb-3">
+                    <span class="fw-bold me-2">مبلغ فاکتور</span>
+                    <span class="badge bg-label-primary">{{ invoice.total_amount }}</span>
+                    </li>
+                </ul>
+                <div class="d-flex justify-content-center pt-3 gap-4">
+                    <a href="javascript:;" class="btn btn-primary me-3" data-bs-target="#editInvoice" data-bs-toggle="modal" style="width: 25%;">ویرایش</a>
+                    {% if perms.dashboard.delete_invoice %}
+                    <a href="javascript:;" class="btn btn-danger me-3" data-bs-target="#deleteInvoice" data-bs-toggle="modal" style="width: 25%;">حذف</a>
+                    {% endif %}
+                    <a href="{% url 'invoices' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="btn btn-dark me-3" style="width: 25%;">بازگشت</a>
+                </div> 
+            </div>
+        </div>
+        </div>
+    </div>
+</div>
+<!-- Modal -->
+<!-- Edit Invoice Modal -->
+<div class="modal fade" id="editInvoice" tabindex="-1" aria-hidden="true">
+<div class="modal-dialog modal-lg modal-simple modal-edit-user">
+    <div class="modal-content p-3 p-md-5">
+    <div class="modal-body">
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="text-center mb-4 mt-0 mt-md-n2">
+        <h3 class="secondary-font">ویرایش اطلاعات فروش</h3>
+        <p>تعداد و مبلغ فاکتور قابل ویرایش هستند.</p>
+        </div>
+        <form id="editUserForm" class="row g-3" method="post">
+        {% csrf_token %}
+        <div class="col-12 col-md-6" style="display: none;">
+            <label class="form-label" for="modalEditUserFirstName">تاریخ</label>
+            <input type="text" name="date" id="modalEditUserFirstName" name="modalEditUserFirstName" class="form-control" placeholder="تاریخ" value="{{ invoice.date|date:'Y-m-d' }}" readonly>
+        </div>
+        <div class="col-12 col-md-6" style="display: none;">
+            <label class="form-label" for="modalEditUserFirstName">شعبه</label>
+            <input type="text" name="branch" id="modalEditUserFirstName" name="modalEditUserFirstName" class="form-control" placeholder="شعبه" value="{{ invoice.branch.pk }}" readonly>
+        </div>
+        <div class="col-12 col-md-6">
+            <label class="form-label" for="modalEditUserFirstName">تعداد فاکتور</label>
+            <input type="text" name="total_items" id="modalEditUserFirstName" name="modalEditUserFirstName" class="form-control" placeholder="تعداد فاکتور های ثبت شده" value="{{ invoice.total_items }}">
+        </div>
+        <div class="col-12 col-md-6">
+            <label class="form-label" for="modalEditUserFirstName">مبلغ فاکتور</label>
+            <input type="text" name="total_amount" id="modalEditUserFirstName" name="modalEditUserFirstName" class="form-control" placeholder="مبلغ به ریال" value="{{ invoice.total_amount }}">
+        </div>
+        <div class="col-12 text-center mt-4">
+            <button type="submit" class="btn btn-primary me-sm-3 me-1">ثبت</button>
+            <button type="reset" class="btn btn-label-secondary" data-bs-dismiss="modal" aria-label="Close">
+            انصراف
+            </button>
+        </div>
+        </form>
+    </div>
+    </div>
+</div>
+</div>
+<!--/ Edit User Modal -->
+<!-- Delete Invoice Modal -->
+<div class="modal fade" id="deleteInvoice" tabindex="-1" aria-hidden="true">
+<div class="modal-dialog modal-lg modal-simple modal-edit-user">
+    <div class="modal-content p-3 p-md-5">
+        <div class="modal-body">
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="text-center mb-4 mt-0 mt-md-n2">
+            <h3 class="secondary-font">حذف فاکتور</h3>
+            <p>آیا میخواهید این فاکتور را حذف کنید؟</p>
+            </div>
+            <div class="col-12 text-center mt-4">
+                <a class="btn btn-danger me-sm-3 me-1" href="{% url 'invoice_delete' invoice_pk=invoice.pk %}">حذف</a>
+                <button type="reset" class="btn btn-label-secondary" data-bs-dismiss="modal" aria-label="Close">
+                انصراف
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+<!--/ Delete Invoice Modal -->
+{% endblock %}
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/jalaali-js/dist/jalaali.min.js"></script>
+<script>
+  document.querySelectorAll(".greg-date").forEach(el => {
+    const gregorian = el.innerHTML.split("-");
+    const gYear = parseInt(gregorian[0]);
+    const gMonth = parseInt(gregorian[1]);
+    const gDay = parseInt(gregorian[2]);
+
+    const jdate = jalaali.toJalaali(gYear, gMonth, gDay);
+    el.innerText = `${jdate.jy}/${String(jdate.jm).padStart(2, '0')}/${String(jdate.jd).padStart(2, '0')}`;
+  });
+</script>
+{% endblock %}

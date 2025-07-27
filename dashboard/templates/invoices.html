@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}
+    مشاهده اطلاعات فروش
+{% endblock %}
+{% block meta_description %}
+	مشاهده اطلاعات فروش
+{% endblock %}
+{% block content %}
+<div class="card">
+  <h5 class="card-header heading-color">اطلاعات فروش</h5>
+  <div class="table-responsive text-nowrap" style="margin-bottom: 100px;">
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th>تاریخ میلادی</th>
+          <th>تاریخ شمسی</th>
+          <th>کد شعبه</th>
+          <th>نام شعبه</th>
+          <th>تعداد فاکتور</th>
+          <th>مبلغ فاکتور</th>
+          <th>ویرایش</th>
+        </tr>
+      </thead>
+      <tbody class="table-border-bottom-0">
+        {% for invoice in invoices %}
+        <tr>
+            <td>
+                {{ invoice.date|date:"Y-m-d" }} 
+            </td>
+            <td class="greg-date">
+                {{ invoice.date|date:"Y-m-d" }}
+            </td>
+            <td>
+                {{ invoice.branch.pk }}
+            </td>
+            <td>
+                {{ invoice.branch.name }}
+            </td>
+            <td>
+                {{ invoice.total_items }}
+            </td>
+            <td>
+                {{ invoice.total_amount }}
+            </td>
+            <td>
+            <a href="{% url 'invoice_detail' invoice_pk=invoice.pk %}">مشاهده</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/jalaali-js/dist/jalaali.min.js"></script>
+<script>
+  document.querySelectorAll(".greg-date").forEach(el => {
+    const gregorian = el.innerHTML.split("-");
+    const gYear = parseInt(gregorian[0]);
+    const gMonth = parseInt(gregorian[1]);
+    const gDay = parseInt(gregorian[2]);
+
+    const jdate = jalaali.toJalaali(gYear, gMonth, gDay);
+    el.innerText = `${jdate.jy}/${String(jdate.jm).padStart(2, '0')}/${String(jdate.jd).padStart(2, '0')}`;
+  });
+</script>
+{% endblock %}

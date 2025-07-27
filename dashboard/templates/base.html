@@ -135,13 +135,23 @@
                 </a>
                 <ul class="menu-sub">
                   <li class="menu-item">
+                    <a href="{% url 'invoices' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
+                      <div data-i18n="List">مشاهده</div>
+                    </a>
+                  </li>
+                  <li class="menu-item">
                     <a href="{% url 'upload_excel_file_invoice' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
-                      <div data-i18n="List">آپلود اطلاعات فروش</div>
+                      <div data-i18n="List">آپلود</div>
+                    </a>
+                  </li>
+                  <li class="menu-item">
+                    <a href="{% url 'upload_excel_file_invoice' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
+                      <div data-i18n="List">ساخت تمپلیت</div>
                     </a>
                   </li>
                   <li class="menu-item">
                     <a href="{% url 'delete_excel_file_invoice' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
-                      <div data-i18n="Preview">ویرایش اطلاعات فروش</div>
+                      <div data-i18n="Preview">حذف</div>
                     </a>
                   </li>
                 </ul>

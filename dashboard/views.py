@@ -21,6 +21,7 @@ from .forms import (
     AssignBranchPermissions,
     CreateCampaign,
     UploadInvoiceExcel,
+    InvoiceForm
 )
 import jdatetime
 import json
@@ -610,19 +611,21 @@ def upload_excel_file_invoice(request, url_hash):
                             else:
                                 date = datetime.datetime.strptime(date, "%Y-%m-%d").date()
                     if branch and total_amount and total_items:
-                        if branch not in allowed_branches:
+                        if int(branch) not in allowed_branches:
+                            print(branch, type(branch))
+                            print(allowed_branches)
                             messages.warning(request, "یک یا چند ردیف دارای کد شعبی هستند که برای شما تعریف نشده است.")
                             return render(
                                 request,
                                 "upload_excel_invoice.html",
                                 {"error": "از کد های زیر برای شعبه استفاده نمایید:", "branches": branches},
                             )
-                        branch = branches.get(pk=branch)
+                        branch = branches.get(pk=int(branch))
                         Invoice.objects.update_or_create(
                             date=date,
                             branch=branch,
-                            total_amount=total_amount,
-                            total_items=total_items,
+                            total_amount=str(int(total_amount)),
+                            total_items=str(int(total_items)),
                         )
                 messages.success(request, "اطلاعات فروش با موفقیت آپلود شدند")
                 return redirect(reverse("upload_excel_file_invoice", args=[url_hash]))
@@ -689,8 +692,8 @@ def delete_excel_file_invoice(request, url_hash):
                         Invoice.objects.filter(
                             date=date,
                             branch=branch,
-                            total_amount=total_amount,
-                            total_items=total_items,
+                            total_amount=str(round(float(total_amount), 0)),
+                            total_items=str(int(total_items)),
                         ).delete()
                 messages.success(request, "اطلاعات فروش با موفقیت حذف شدند")
                 return redirect(reverse("delete_excel_file_invoice", args=[url_hash]))
@@ -705,3 +708,61 @@ def delete_excel_file_invoice(request, url_hash):
     else:
         form = UploadInvoiceExcel()
         return render(request, "delete_excel_invoice.html", {"form": form})
+    
+
+@login_required
+def invoices(request, url_hash):
+    if not request.user.has_perm("dashboard.add_invoice"):
+        return render(request, "401.html", status=401)
+    branches = Branch.objects.filter(merchant__url_hash=url_hash)
+    permissions = PermissionToViewBranch.objects.filter(user=request.user.profile)
+    permission_branch_keys = []
+    for permission in permissions:
+        permission_branch_keys.append(permission.branch.pk)
+    allowed_branches = []
+    if request.user.profile.is_manager == True:
+        for branch in branches:
+            allowed_branches.append(branch.pk)
+    if request.user.profile.is_manager != True and request.user.has_perm("dashboard.add_invoice"):
+        allowed_branches = permission_branch_keys
+    invoices = Invoice.objects.filter(branch__pk__in=allowed_branches)
+    return render(request, "invoices.html", {"invoices": invoices})
+
+
+@login_required
+def invoice_detail(request, invoice_pk):
+    invoice = Invoice.objects.get(pk=invoice_pk)
+    permissions = PermissionToViewBranch.objects.filter(user=request.user.profile)
+    allowed_branches = []
+    for permission in permissions:
+        allowed_branches.append(permission.branch.pk)
+    if not request.user.profile.is_manager:
+        if invoice.branch.pk not in allowed_branches:
+            return render(request, "401.html", status=401)
+    form = InvoiceForm(instance=invoice)
+    if request.method == "POST":
+        form = InvoiceForm(request.POST, instance=invoice)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "تغییرات با موفقیت اعمال شد")
+            return redirect(reverse("invoice_detail", args = [invoice_pk]))
+        else:
+            messages.error(request, f"{form.errors}")
+            return redirect(reverse("invoice_detail", args = [invoice_pk]))
+    return render(request, "invoice_detail.html", {"invoice": invoice, "form": form}) 
+
+
+@login_required
+def invoice_delete(request, invoice_pk):
+    invoice = Invoice.objects.get(pk=invoice_pk)
+    permissions = PermissionToViewBranch.objects.filter(user=request.user.profile)
+    url_hash = request.user.profile.merchant.url_hash
+    allowed_branches = []
+    for permission in permissions:
+        allowed_branches.append(permission.branch.pk)
+    if not request.user.profile.is_manager:
+        if invoice.branch.pk not in allowed_branches:
+            return render(request, "401.html", status=401)
+    invoice.delete()
+    return redirect(reverse("invoices", args = [url_hash]))
+

@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User, Permission
-from .models import PermissionToViewBranch, Campaign
+from .models import PermissionToViewBranch, Campaign, Invoice, Branch
 
 
 class Generate_User(forms.ModelForm):
@@ -74,3 +74,9 @@ class CreateCampaign(forms.ModelForm):
 
 class UploadInvoiceExcel(forms.Form):
     excel_file = forms.FileField(required=True)
+
+
+class InvoiceForm(forms.ModelForm):
+    class Meta:
+        model = Invoice
+        fields = ["date", "branch", "total_amount", "total_items"]
