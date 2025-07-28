@@ -72,7 +72,7 @@ urlpatterns = [
     path("dashboard/create-invoice-from-excel/<str:url_hash>", upload_excel_file_invoice, name='upload_excel_file_invoice'),
     path("dashboard/delete-invoice-from-excel/<str:url_hash>", delete_excel_file_invoice, name='delete_excel_file_invoice'),
     path("dashboard/invoices/<str:url_hash>", invoices, name='invoices'),
-    path("dashboard/invoice-detail/<int:invoice_pk>", invoice_detail, name='invoice_detail'),
+    path("dashboard/invoices/invoice-detail/<int:invoice_pk>", invoice_detail, name='invoice_detail'),
     path("dashboard/invoice-delete/<int:invoice_pk>", invoice_delete, name='invoice_delete'),
     path("dashboard/account/login", custom_login, name="login"),
     path(

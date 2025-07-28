@@ -11,7 +11,7 @@ from .models import (
     Cam,
     Invoice,
 )
-from django.db.models import Sum
+from django.db.models import Sum, F
 from django.contrib.auth.models import User, Permission
 from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
@@ -34,8 +34,8 @@ from django.db import connection
 from django.utils import timezone
 import subprocess
 import openpyxl
-import datetime
-import jdatetime
+
+
 
 # Create your views here.
 
@@ -609,7 +609,7 @@ def upload_excel_file_invoice(request, url_hash):
                                 jalali_date = jdatetime.date(year, month, day)
                                 date = jalali_date.togregorian()
                             else:
-                                date = datetime.datetime.strptime(date, "%Y-%m-%d").date()
+                                date = datetime.strptime(date, "%Y-%m-%d").date()
                     if branch and total_amount and total_items:
                         if int(branch) not in allowed_branches:
                             print(branch, type(branch))
@@ -679,7 +679,7 @@ def delete_excel_file_invoice(request, url_hash):
                                 jalali_date = jdatetime.date(year, month, day)
                                 date = jalali_date.togregorian()
                             else:
-                                date = datetime.datetime.strptime(date, "%Y-%m-%d").date()
+                                date = datetime.strptime(date, "%Y-%m-%d").date()
                     if branch and total_amount and total_items:
                         if branch not in allowed_branches:
                             messages.warning(request, "یک یا چند ردیف دارای کد شعبی هستند که برای شما تعریف نشده است.")
@@ -725,8 +725,29 @@ def invoices(request, url_hash):
             allowed_branches.append(branch.pk)
     if request.user.profile.is_manager != True and request.user.has_perm("dashboard.add_invoice"):
         allowed_branches = permission_branch_keys
-    invoices = Invoice.objects.filter(branch__pk__in=allowed_branches)
-    return render(request, "invoices.html", {"invoices": invoices})
+
+    invoices = []
+    branches = Branch.objects.filter(pk__in=allowed_branches)
+    start_date_str = str(jalali_to_gregorian(request.GET.get("start-date")))
+    end_date_str = str(jalali_to_gregorian(request.GET.get("end-date")))
+    selected_branch_str = request.GET.getlist("branch")
+    selected_branch = [int(item) for item in selected_branch_str]
+    invoices_json = {}
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        if start_date_str and end_date_str:
+            try:
+                start_date = datetime.strptime(start_date_str, "%Y-%m-%d").date()
+                end_date = datetime.strptime(end_date_str, "%Y-%m-%d").date()
+                if len(selected_branch) == 0:
+                    invoices = Invoice.objects.filter(branch__pk__in=allowed_branches).filter(date__range=(start_date, end_date)).annotate(branch_name=F("branch__name"))
+                else:
+                    invoices = Invoice.objects.filter(branch__pk__in=selected_branch).filter(date__range=(start_date, end_date)).annotate(branch_name=F("branch__name"))
+            except Exception as e:
+                print(e)
+            return JsonResponse({
+                "invoices": list(invoices.values())
+            })
+    return render(request, "invoices.html", {"invoices": invoices, "branches": branches})
 
 
 @login_required

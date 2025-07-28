@@ -6,7 +6,140 @@
 {% block meta_description %}
 	مشاهده اطلاعات فروش
 {% endblock %}
+{% block extra_css %}
+    <!-- Style for Calendar, FlatPicker and Toastr -->
+    <link rel="stylesheet" href="{% static 'assets/vendor/libs/fullcalendar/fullcalendar.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/vendor/libs/flatpickr/flatpickr.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/vendor/css/pages/app-calendar.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/vendor/libs/toastr/toastr.css' %}" />
+    <!-- Custom Style for FlatPicker Calendar -->
+    <style>
+        .light-style .flatpickr-calendar {
+        box-shadow: none !important;
+        }
+    </style>
+    <!-- Custom Style for the Loading Overlay -->
+    <style>
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .loader {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .highcharts-credits {
+          display: none;
+        }
+
+        .branches-grid {
+          display: grid;
+          grid-template-columns: repeat(7, 1fr);
+          gap: 10px;
+        }
+
+        /* Tablets */
+        @media (max-width: 992px) {
+          .branches-grid {
+            grid-template-columns: repeat(4, 1fr);
+          }
+        }
+
+        /* Phones */
+        @media (max-width: 576px) {
+          .branches-grid {
+            grid-template-columns: repeat(2, 1fr);
+          }
+        }
+    </style>
+{% endblock %}
 {% block content %}
+<div class="loading-overlay" id="loading-overlay"></div>
+<div class="container">
+  <div class="row">
+    <!-- Date Accordion -->
+    <div class="col-xl-4 col-lg-4 col-md-12 col-sm-12" style="margin-bottom: 10px;">
+      <h6>تاریخ</h6>
+      <div class="accordion mt-3 accordion-header-primary" id="accordionDate">
+          <div class="card accordion-item">
+          <h2 class="accordion-header d-flex align-items-center">
+              <button type="button" class="accordion-button" data-bs-toggle="collapse" data-bs-target="#collapseDate" aria-expanded="true">
+              <i class="menu-icon tf-icons bx bx-calendar"></i>
+              انتخاب تاریخ
+              </button>
+          </h2>
+
+          <div id="collapseDate" class="accordion-collapse collapse" data-bs-parent="#accordionDate">
+              <div class="accordion-body" style="display: flex; justify-content: center; align-items: center;">
+              <div id="date-range"></div>
+              </div>
+          </div>
+          </div>
+      </div>              
+    </div>
+    <!-- Branch Accordion -->
+    <div class="col-xl-8 col-lg-8 col-md-12 col-sm-12" style="margin-bottom: 10px;">
+    <h6>شعب</h6>
+      <div class="accordion mt-3 accordion-header-primary" id="accordionBranch">
+          <div class="card accordion-item">
+          <h2 class="accordion-header d-flex align-items-center">
+              <button type="button" class="accordion-button" data-bs-toggle="collapse" data-bs-target="#collapseBranch" aria-expanded="true">
+              <i class="menu-icon tf-icons bx bx-map-alt"></i>
+              انتخاب شعب
+              </button>
+          </h2>
+
+          <div id="collapseBranch" class="accordion-collapse collapse" data-bs-parent="#accordionBranch">
+              <div class="accordion-body">
+              <div class="branches-grid mt-3">
+                  <div class="form-check mt-3">
+                      <input class="form-check-input" type="checkbox" id="select-all">
+                      <label class="form-check-label" for="defaultCheck1">انتخاب همه</label>
+                  </div>
+                  {% for branch in branches %}
+                  <div class="form-check mt-3">
+                      <input class="form-check-input fake-check" type="checkbox" value="{{ branch.pk }}">
+                      <label class="form-check-label" for="defaultCheck1">{{ branch.name }}</label>
+                  </div>
+                  {% endfor %}
+              </div>
+              </div>
+          </div>
+          </div>
+      </div>   
+    </div>
+    <form action="" method="get" id="filter-form" style="margin-bottom: 20px;">
+      <label style="display: none;" for="start-date">از تاریخ</label>
+      <input type="text" name="start-date" id="start-date" style="display: none;">
+      <label style="display: none;" for="end-date">تا</label>
+      <input type="text" name="end-date" id="end-date" style="display: none;">
+      {% for branch in branches %}
+      <div class="form-check mt-3" style="display: none;">
+          <input class="form-check-input real-check" type="checkbox" value="{{ branch.pk }}" name="branch">
+          <label class="form-check-label" for="defaultCheck1">{{ branch.name }}</label>
+      </div>
+      {% endfor %}
+      <button class="btn btn-primary btn-lg" type="submit" id="filter-proxy-button" data-bs-toggle="collapse" data-bs-target="#collapseDate">اعمال فیلتر</button>
+    </form>
+  </div>
+</div>
 <div class="card">
   <h5 class="card-header heading-color">اطلاعات فروش</h5>
   <div class="table-responsive text-nowrap" style="margin-bottom: 100px;">
@@ -48,21 +181,147 @@
             </td>
         </tr>
         {% endfor %}
+      </tbody>
     </table>
   </div>
 </div>
 {% endblock %}
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/jalaali-js/dist/jalaali.min.js"></script>
+<!-- JQuery and Toastr Scripts -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="{% static 'assets/vendor/libs/toastr/toastr.js' %}"></script>
+<script src="{% static 'assets/js/ui-toasts.js' %}"></script>
+<!-- FlatPicker JS (Calendar) -->
+<script src="{% static 'assets/vendor/libs/jdate/jdate.js' %}"></script>
+<script src="{% static 'assets/vendor/libs/flatpickr/flatpickr-jdate.js' %}"></script>
+<script src="{% static 'assets/vendor/libs/moment/moment.js' %}"></script>
+<script src="{% static 'assets/vendor/libs/flatpickr/l10n/fa-jdate.js' %}"></script>
+<script src="{% static 'assets/js/app-calendar-events.js' %}"></script>
+<script src="{% static 'assets/js/app-calendar.js' %}"></script>
 <script>
-  document.querySelectorAll(".greg-date").forEach(el => {
-    const gregorian = el.innerHTML.split("-");
-    const gYear = parseInt(gregorian[0]);
-    const gMonth = parseInt(gregorian[1]);
-    const gDay = parseInt(gregorian[2]);
-
-    const jdate = jalaali.toJalaali(gYear, gMonth, gDay);
-    el.innerText = `${jdate.jy}/${String(jdate.jm).padStart(2, '0')}/${String(jdate.jd).padStart(2, '0')}`;
+  
+</script>
+<script>
+    flatpickr("#date-range", {
+        inline: true,
+        locale: "fa",
+        mode: "range",
+        dateFormat: "Y-m-d",
+        onChange: function(selectedDates, dateStr, instance) {
+        selectedRange = selectedDates;
+        }
+    });
+    const filterProxyButton = document.getElementById("filter-proxy-button");
+    const realFilterForm = document.getElementById("filter-form");
+    filterProxyButton.addEventListener("click", () => {
+        function formatJalaliDate(jdateObj) {
+        if (!jdateObj || !jdateObj._cached_date) return "";
+        const [year, month, day] = jdateObj._cached_date;
+        return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+        }
+        const fakeChecks = document.querySelectorAll(".fake-check");
+        const realChecks = document.querySelectorAll(".real-check");
+        let startDate = selectedRange[0]
+        let endDate = selectedRange[1]
+        let startJalaiDate = formatJalaliDate(startDate);
+        let endJalaliDate = formatJalaliDate(endDate);
+        const realJalaliStartDate = document.getElementById("start-date");
+        const realJalaliEndDate = document.getElementById("end-date");
+        realJalaliStartDate.value = startJalaiDate;
+        realJalaliEndDate.value = endJalaliDate;
+        fakeChecks.forEach((item) => {
+        if (item.checked == true) {
+            realChecks.forEach((sitem) => {
+            if (item.value == sitem.value) {
+                sitem.checked = true;
+            }
+            }); 
+        } else {
+            realChecks.forEach((sitem) => {
+            if (item.value == sitem.value) {
+                sitem.checked = false;
+            }
+            }); 
+        }
+        });
+    });
+  document.getElementById("select-all").addEventListener("change", () => {
+      const isChecked = document.getElementById("select-all").checked
+      document.querySelectorAll(".fake-check").forEach((item) => {
+          item.checked = isChecked
+      })
+  })
+</script>
+<script>
+  document.getElementById("filter-form").addEventListener("submit", (event) => {
+    event.preventDefault();
+    const form = document.getElementById("filter-form");
+    const formData = new FormData(form);
+    const queryString = new URLSearchParams(formData).toString();
+    const loadingOverlay = document.getElementById("loading-overlay");
+    loadingOverlay.style.display = "flex";
+    fetch(`{% url 'invoices' url_hash=request.user.profile.merchant.url_hash %}?${queryString}`, {
+      method: "GET",
+      headers: {"X-Requested-With": "XMLHttpRequest"}
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Network response was not ok');
+        console.log("data is recieved")
+        loadingOverlay.style.display = "none";
+        return response.json()
+        console.log(response.json())
+    })
+    .then( data => { 
+      document.querySelector(".table-border-bottom-0").innerHTML = "";
+      data.invoices.forEach(invoice => {
+      const rowhtml = `
+              <tr>
+                  <td>
+                      ${invoice.date} 
+                  </td>
+                  <td class="greg-date">
+                      ${invoice.date}
+                  </td>
+                  <td>
+                      ${invoice.branch_id}
+                  </td>
+                  <td>
+                      ${invoice.branch_name}
+                  </td>
+                  <td>
+                      ${invoice.total_items}
+                  </td>
+                  <td>
+                      ${invoice.total_amount}
+                  </td>
+                  <td>
+                  <a href="invoice-detail/${invoice.id}">مشاهده</a>
+                  </td>
+              </tr>
+              `
+              document.querySelector(".table-border-bottom-0").insertAdjacentHTML("beforeend", rowhtml);
+      })},
+    )      
+    .catch((error) => {
+      console.log("Error:", error);
+      loadingOverlay.style.display = "none";
+    }
+    );
+    function jalaliDateConvertor() {
+      document.querySelectorAll(".greg-date").forEach(el => {
+      console.log(el)
+      const gregorian = el.innerHTML.split("-");
+      const gYear = parseInt(gregorian[0]);
+      const gMonth = parseInt(gregorian[1]);
+      const gDay = parseInt(gregorian[2]);
+      const jdate = jalaali.toJalaali(gYear, gMonth, gDay);
+      el.innerText = `${jdate.jy}/${String(jdate.jm).padStart(2, '0')}/${String(jdate.jd).padStart(2, '0')}`;
+      });
+    }
+    setTimeout(jalaliDateConvertor, 500)
   });
 </script>
 {% endblock %}
+
+
