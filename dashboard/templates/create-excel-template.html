@@ -71,6 +71,7 @@
     </style>
 {% endblock %}
 {% block content %}
+<div class="alert alert-success" role="alert">تمپلیت مورد نظر ساخته شد.</div>
 <div class="loading-overlay" id="loading-overlay"></div>
 <div class="container">
   <div class="row">
@@ -207,6 +208,29 @@
           item.checked = isChecked
       })
   })
+</script>
+<script>
+document.querySelector(".alert-success").style.display = "none";
+</script>
+<script>
+document.querySelector("#filter-form").addEventListener("submit", () => {
+    function eraseQuery() {
+        window.addEventListener("DOMContentLoaded", function () {
+        if (window.location.search) {
+            const cleanUrl = window.location.origin + window.location.pathname;
+            window.history.replaceState({}, document.title, cleanUrl);
+        }
+        });
+    }
+    function alertDisappear() {
+        document.querySelectorAll(".alert").forEach((e) => {
+            e.style.display = "none";
+        })
+    }
+    setTimeout(eraseQuery, 500)
+    document.querySelector(".alert-success").style.display = "block";
+    setTimeout(alertDisappear, 5000)
+});
 </script>
 {% endblock %}
 

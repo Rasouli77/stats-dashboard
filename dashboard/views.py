@@ -21,7 +21,7 @@ from .forms import (
     AssignBranchPermissions,
     CreateCampaign,
     UploadInvoiceExcel,
-    InvoiceForm
+    InvoiceForm,
 )
 import jdatetime
 import json
@@ -35,7 +35,6 @@ from django.utils import timezone
 import subprocess
 import openpyxl
 from io import BytesIO
-
 
 
 # Create your views here.
@@ -615,11 +614,17 @@ def upload_excel_file_invoice(request, url_hash):
                         if int(branch) not in allowed_branches:
                             print(branch, type(branch))
                             print(allowed_branches)
-                            messages.warning(request, "یک یا چند ردیف دارای کد شعبی هستند که برای شما تعریف نشده است.")
+                            messages.warning(
+                                request,
+                                "یک یا چند ردیف دارای کد شعبی هستند که برای شما تعریف نشده است.",
+                            )
                             return render(
                                 request,
                                 "upload_excel_invoice.html",
-                                {"error": "از کد های زیر برای شعبه استفاده نمایید:", "branches": branches},
+                                {
+                                    "error": "از کد های زیر برای شعبه استفاده نمایید:",
+                                    "branches": branches,
+                                },
                             )
                         branch = branches.get(pk=int(branch))
                         Invoice.objects.update_or_create(
@@ -631,7 +636,10 @@ def upload_excel_file_invoice(request, url_hash):
                 messages.success(request, "اطلاعات فروش با موفقیت آپلود شدند")
                 return redirect(reverse("upload_excel_file_invoice", args=[url_hash]))
             except Exception as e:
-                messages.error(request, "فایل مورد نظر یافت نشد. فرمت فایل و نام فایل آپلود شده را دوباره بررسی فرمایید. فایل مورد نظر باید طبق نمونه تمپلیت آپلود شود.")
+                messages.error(
+                    request,
+                    "فایل مورد نظر یافت نشد. فرمت فایل و نام فایل آپلود شده را دوباره بررسی فرمایید. فایل مورد نظر باید طبق نمونه تمپلیت آپلود شود.",
+                )
                 return render(request, "upload_excel_invoice.html", {"error": f"{e}"})
         else:
             messages.error(request, "فایل مورد نظر باید دارای فرمت اکسل باشد.")
@@ -641,7 +649,7 @@ def upload_excel_file_invoice(request, url_hash):
     else:
         form = UploadInvoiceExcel()
         return render(request, "upload_excel_invoice.html", {"form": form})
-    
+
 
 @login_required
 def delete_excel_file_invoice(request, url_hash):
@@ -683,11 +691,17 @@ def delete_excel_file_invoice(request, url_hash):
                                 date = datetime.strptime(date, "%Y-%m-%d").date()
                     if branch and total_amount and total_items:
                         if branch not in allowed_branches:
-                            messages.warning(request, "یک یا چند ردیف دارای کد شعبی هستند که برای شما تعریف نشده است.")
+                            messages.warning(
+                                request,
+                                "یک یا چند ردیف دارای کد شعبی هستند که برای شما تعریف نشده است.",
+                            )
                             return render(
                                 request,
                                 "delete_excel_invoice.html",
-                                {"error": "از کد های زیر برای شعبه استفاده نمایید:", "branches": branches},
+                                {
+                                    "error": "از کد های زیر برای شعبه استفاده نمایید:",
+                                    "branches": branches,
+                                },
                             )
                         branch = branches.get(pk=branch)
                         Invoice.objects.filter(
@@ -699,7 +713,10 @@ def delete_excel_file_invoice(request, url_hash):
                 messages.success(request, "اطلاعات فروش با موفقیت حذف شدند")
                 return redirect(reverse("delete_excel_file_invoice", args=[url_hash]))
             except Exception as e:
-                messages.error(request, "فایل مورد نظر یافت نشد. فرمت فایل و نام فایل آپلود شده را دوباره بررسی فرمایید. فایل مورد نظر باید طبق نمونه تمپلیت آپلود شود.")
+                messages.error(
+                    request,
+                    "فایل مورد نظر یافت نشد. فرمت فایل و نام فایل آپلود شده را دوباره بررسی فرمایید. فایل مورد نظر باید طبق نمونه تمپلیت آپلود شود.",
+                )
                 return render(request, "delete_excel_invoice.html", {"error": f"{e}"})
         else:
             messages.error(request, "فایل مورد نظر باید دارای فرمت اکسل باشد.")
@@ -709,7 +726,7 @@ def delete_excel_file_invoice(request, url_hash):
     else:
         form = UploadInvoiceExcel()
         return render(request, "delete_excel_invoice.html", {"form": form})
-    
+
 
 @login_required
 def invoices(request, url_hash):
@@ -724,7 +741,9 @@ def invoices(request, url_hash):
     if request.user.profile.is_manager == True:
         for branch in branches:
             allowed_branches.append(branch.pk)
-    if request.user.profile.is_manager != True and request.user.has_perm("dashboard.add_invoice"):
+    if request.user.profile.is_manager != True and request.user.has_perm(
+        "dashboard.add_invoice"
+    ):
         allowed_branches = permission_branch_keys
 
     invoices = []
@@ -740,15 +759,23 @@ def invoices(request, url_hash):
                 start_date = datetime.strptime(start_date_str, "%Y-%m-%d").date()
                 end_date = datetime.strptime(end_date_str, "%Y-%m-%d").date()
                 if len(selected_branch) == 0:
-                    invoices = Invoice.objects.filter(branch__pk__in=allowed_branches).filter(date__range=(start_date, end_date)).annotate(branch_name=F("branch__name"))
+                    invoices = (
+                        Invoice.objects.filter(branch__pk__in=allowed_branches)
+                        .filter(date__range=(start_date, end_date))
+                        .annotate(branch_name=F("branch__name"))
+                    )
                 else:
-                    invoices = Invoice.objects.filter(branch__pk__in=selected_branch).filter(date__range=(start_date, end_date)).annotate(branch_name=F("branch__name"))
+                    invoices = (
+                        Invoice.objects.filter(branch__pk__in=selected_branch)
+                        .filter(date__range=(start_date, end_date))
+                        .annotate(branch_name=F("branch__name"))
+                    )
             except Exception as e:
                 print(e)
-            return JsonResponse({
-                "invoices": list(invoices.values())
-            })
-    return render(request, "invoices.html", {"invoices": invoices, "branches": branches})
+            return JsonResponse({"invoices": list(invoices.values())})
+    return render(
+        request, "invoices.html", {"invoices": invoices, "branches": branches}
+    )
 
 
 @login_required
@@ -767,11 +794,11 @@ def invoice_detail(request, invoice_pk):
         if form.is_valid():
             form.save()
             messages.success(request, "تغییرات با موفقیت اعمال شد")
-            return redirect(reverse("invoice_detail", args = [invoice_pk]))
+            return redirect(reverse("invoice_detail", args=[invoice_pk]))
         else:
             messages.error(request, f"{form.errors}")
-            return redirect(reverse("invoice_detail", args = [invoice_pk]))
-    return render(request, "invoice_detail.html", {"invoice": invoice, "form": form}) 
+            return redirect(reverse("invoice_detail", args=[invoice_pk]))
+    return render(request, "invoice_detail.html", {"invoice": invoice, "form": form})
 
 
 @login_required
@@ -786,19 +813,25 @@ def invoice_delete(request, invoice_pk):
         if invoice.branch.pk not in allowed_branches:
             return render(request, "401.html", status=401)
     invoice.delete()
-    return redirect(reverse("invoices", args = [url_hash]))
+    return redirect(reverse("invoices", args=[url_hash]))
 
 
-def get_dates(start_date_str: str, end_date_str:str):
+def get_dates(start_date_str: str, end_date_str: str):
     date_list = []
-    start_date = jdatetime.datetime.strptime(start_date_str, "%Y-%m-%d").date().togregorian()
-    end_date = jdatetime.datetime.strptime(end_date_str, "%Y-%m-%d").date().togregorian()
+    start_date = (
+        jdatetime.datetime.strptime(start_date_str, "%Y-%m-%d").date().togregorian()
+    )
+    end_date = (
+        jdatetime.datetime.strptime(end_date_str, "%Y-%m-%d").date().togregorian()
+    )
     current_date = start_date
     while current_date <= end_date:
         date_list.append(current_date)
         current_date += timedelta(days=1)
-    date_list = [jdatetime.datetime.fromgregorian(date=date).date().strftime("%Y-%m-%d") for date in date_list]
-    print(date_list)
+    date_list = [
+        jdatetime.datetime.fromgregorian(date=date).date().strftime("%Y-%m-%d")
+        for date in date_list
+    ]
     return date_list
 
 
@@ -817,6 +850,7 @@ def create_excel_template(start_date: str, end_date: str, branch_list: list):
     output.seek(0)
     return output
 
+
 @login_required
 def excel_template_generator(request, url_hash):
     permissions = PermissionToViewBranch.objects.filter(user=request.user.profile)
@@ -824,31 +858,27 @@ def excel_template_generator(request, url_hash):
     if not request.user.profile.is_manager:
         for permission in permissions:
             allowed_branches.append(permission.branch.pk)
-        branches = Branch.objects.filter(merchant=request.user.profile.merchant).filter(pk__in=allowed_branches)
+        branches = Branch.objects.filter(merchant=request.user.profile.merchant).filter(
+            pk__in=allowed_branches
+        )
     else:
         branches = Branch.objects.filter(merchant=request.user.profile.merchant)
     try:
         start_date_str = str(request.GET.get("start-date"))
-        end_date_str = str(request.GET.get("end-date"))  
+        end_date_str = str(request.GET.get("end-date"))
         branches_str = request.GET.getlist("branch")
         branches_int = [int(i) for i in branches_str]
         if start_date_str and end_date_str:
             print(start_date_str, end_date_str)
-            excel_file = create_excel_template(start_date_str, end_date_str, branches_int)
+            excel_file = create_excel_template(
+                start_date_str, end_date_str, branches_int
+            )
             response = HttpResponse(
                 excel_file,
-                content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             )
             response["Content-Disposition"] = f'attachment; filename="template.xlsx"'
             return response
     except Exception as e:
         print(e)
     return render(request, "create-excel-template.html", {"branches": branches})
-
-
-    
-        
-
-
-
-
