@@ -145,7 +145,7 @@
                     </a>
                   </li>
                   <li class="menu-item">
-                    <a href="{% url 'upload_excel_file_invoice' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
+                    <a href="{% url 'excel_template_generator' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
                       <div data-i18n="List">ساخت تمپلیت</div>
                     </a>
                   </li>

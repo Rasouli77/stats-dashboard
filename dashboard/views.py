@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.urls import reverse
 from datetime import datetime, date, timedelta
 from .models import (
@@ -34,6 +34,7 @@ from django.db import connection
 from django.utils import timezone
 import subprocess
 import openpyxl
+from io import BytesIO
 
 
 
@@ -786,4 +787,68 @@ def invoice_delete(request, invoice_pk):
             return render(request, "401.html", status=401)
     invoice.delete()
     return redirect(reverse("invoices", args = [url_hash]))
+
+
+def get_dates(start_date_str: str, end_date_str:str):
+    date_list = []
+    start_date = jdatetime.datetime.strptime(start_date_str, "%Y-%m-%d").date().togregorian()
+    end_date = jdatetime.datetime.strptime(end_date_str, "%Y-%m-%d").date().togregorian()
+    current_date = start_date
+    while current_date <= end_date:
+        date_list.append(current_date)
+        current_date += timedelta(days=1)
+    date_list = [jdatetime.datetime.fromgregorian(date=date).date().strftime("%Y-%m-%d") for date in date_list]
+    print(date_list)
+    return date_list
+
+
+def create_excel_template(start_date: str, end_date: str, branch_list: list):
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "تمپلیت آپلود اطلاعات فروش شعب"
+    ws.append(["تاریخ", "کد شعبه", "مبلغ فاکتور", "تعداد فاکتور"])
+    branches = branch_list
+    dates = get_dates(start_date, end_date)
+    for branch in branches:
+        for date in dates:
+            ws.append([date, branch, "", ""])
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+    return output
+
+@login_required
+def excel_template_generator(request, url_hash):
+    permissions = PermissionToViewBranch.objects.filter(user=request.user.profile)
+    allowed_branches = []
+    if not request.user.profile.is_manager:
+        for permission in permissions:
+            allowed_branches.append(permission.branch.pk)
+        branches = Branch.objects.filter(merchant=request.user.profile.merchant).filter(pk__in=allowed_branches)
+    else:
+        branches = Branch.objects.filter(merchant=request.user.profile.merchant)
+    try:
+        start_date_str = str(request.GET.get("start-date"))
+        end_date_str = str(request.GET.get("end-date"))  
+        branches_str = request.GET.getlist("branch")
+        branches_int = [int(i) for i in branches_str]
+        if start_date_str and end_date_str:
+            print(start_date_str, end_date_str)
+            excel_file = create_excel_template(start_date_str, end_date_str, branches_int)
+            response = HttpResponse(
+                excel_file,
+                content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
+            response["Content-Disposition"] = f'attachment; filename="template.xlsx"'
+            return response
+    except Exception as e:
+        print(e)
+    return render(request, "create-excel-template.html", {"branches": branches})
+
+
+    
+        
+
+
+
 
