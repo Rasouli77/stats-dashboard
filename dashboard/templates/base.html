@@ -149,11 +149,6 @@
                       <div data-i18n="List">تمپلیت</div>
                     </a>
                   </li>
-                  <li class="menu-item">
-                    <a href="{% url 'delete_excel_file_invoice' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
-                      <div data-i18n="Preview">حذف</div>
-                    </a>
-                  </li>
                 </ul>
               </li>
             {% endif %}

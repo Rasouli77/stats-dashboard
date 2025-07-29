@@ -40,10 +40,25 @@ from io import BytesIO
 import random
 
 
-# Create your views here.
+def perm_to_open(request, url_hash):
+    """Checks if the user has the right to open the page."""
+    if not request.user.is_active:
+        return False
+    try:
+        if request.user.profile.merchant.url_hash:
+            if request.user.profile.merchant.url_hash != url_hash:
+                return False
+            else:
+                return True
+        else:
+            return False
+    except Exception as e:
+        print(e)
+        return False
 
 
 def jalali_to_gregorian(date_str: str):
+    """Convert a Jalali date (datetime.date or datetime.datetime) to Gregorian (YYYY-MM-DD)."""
     try:
         jyear, jmonth, jday = map(int, date_str.split("-"))
         gregorian_date = jdatetime.date(jyear, jmonth, jday).togregorian()
@@ -63,6 +78,10 @@ def convert_gregorian_to_jalali(g_date):
 
 @login_required
 def people_counter(request, url_hash):
+    """This provides an overview for people counters in all branches."""
+    # Rights
+    if not perm_to_open(request, url_hash):
+        return render(request, "401.html", status=401)
     queryset = (
         PeopleCounting.objects.filter(merchant__url_hash=url_hash)
         .values("date")
@@ -70,23 +89,27 @@ def people_counter(request, url_hash):
         .annotate(total_exit=Sum("exit"))
         .order_by("date")
     )
-    permissions = PermissionToViewBranch.objects.filter(
-        user__pk=request.user.profile.pk
+    permissions = (
+        PermissionToViewBranch.objects.defer("date_created", "last_modified")
+        .select_related("branch")
+        .filter(user__pk=request.user.profile.pk)
     )
     if len(permissions) == 0 and request.user.profile.is_manager != True:
         return render(request, "401.html", status=401)
     if request.user.profile.is_manager == True:
-        branches = Branch.objects.filter(merchant__url_hash=url_hash).only("name", "pk")
+        branches = Branch.objects.only("name", "pk").filter(merchant__url_hash=url_hash)
     else:
-        permitted_branches = PermissionToViewBranch.objects.filter(
-            user__merchant__url_hash=url_hash, user__pk=request.user.profile.pk
+        permitted_branches = (
+            PermissionToViewBranch.objects.defer("date_created", "last_modified")
+            .select_related("branch")
+            .filter(user__pk=request.user.profile.pk)
         )
         permitted_branches_list = []
         for permitted_branch in permitted_branches:
             permitted_branches_list.append(permitted_branch.branch.pk)
-        branches = Branch.objects.filter(
+        branches = Branch.objects.only("name", "pk").filter(
             merchant__url_hash=url_hash, pk__in=permitted_branches_list
-        ).only("name", "pk")
+        )
 
     selected_branches = request.GET.getlist("branch")
     start_date_str = str(jalali_to_gregorian(request.GET.get("start-date")))
@@ -154,6 +177,10 @@ def people_counter(request, url_hash):
 
 @login_required
 def users_list(request, url_hash):
+    """A list of all users for managers."""
+    # Rights
+    if not perm_to_open(request, url_hash):
+        return render(request, "401.html", status=401)
     users = UserProfile.objects.filter(merchant__url_hash=url_hash)
     if (
         request.user.profile.merchant.url_hash == url_hash
@@ -166,6 +193,10 @@ def users_list(request, url_hash):
 
 @login_required
 def generate_user(request, url_hash):
+    """Using this, managers can create users."""
+    # Rights
+    if not perm_to_open(request, url_hash):
+        return render(request, "401.html", status=401)
     if (
         request.user.profile.merchant.url_hash == url_hash
         and request.user.profile.is_manager == True
@@ -209,8 +240,14 @@ def user_permissions(request, user_id):
 @login_required
 def branch_permissions(request, user_id):
     user_profile = UserProfile.objects.get(user=user_id)
-    perms = PermissionToViewBranch.objects.filter(user=user_profile)
-    branches = Branch.objects.filter(merchant=user_profile.merchant)
+    perms = (
+        PermissionToViewBranch.objects.defer("date_created", "last_modified")
+        .select_related("branch")
+        .filter(user=user_profile)
+    )
+    branches = Branch.objects.defer(
+        "country", "province", "city", "district", "date_created", "last_modified"
+    ).filter(merchant=user_profile.merchant)
     branch_count = branches.count()
     allowed_branches = []
     for perm in perms:
@@ -251,6 +288,13 @@ def calender(request, url_hash):
 
 @login_required
 def home(request, url_hash):
+    """A general overview of certain aggregations"""
+    # Rights
+    if not perm_to_open(request, url_hash):
+        return render(request, "401.html", status=401)
+    # Rights
+    if not perm_to_open(request, url_hash):
+        return render(request, "401.html", status=401)
     queryset = PeopleCounting.objects.filter(merchant__url_hash=url_hash)
     # 7 days
     today = timezone.now().today()
@@ -380,10 +424,13 @@ def home(request, url_hash):
 
 @login_required
 def profile(request, user_id):
+    """This loads a profile for each user."""
     user = get_object_or_404(User, pk=user_id)
     user_permissions = user.user_permissions.all()
     user_profile = UserProfile.objects.get(user=user.pk)
-    allowed_branches = PermissionToViewBranch.objects.filter(user=user_profile.pk)
+    allowed_branches = PermissionToViewBranch.objects.defer(
+        "date_created", "last_modified"
+    ).filter(user=user_profile.pk)
     if request.user.pk == user.pk and request.user.is_active == True:
         return render(
             request,
@@ -465,37 +512,57 @@ def test(request):
 
 @login_required
 def campaign(request, url_hash):
+    """A full list of campaigns if allowed"""
+    # Rights
+    if not perm_to_open(request, url_hash):
+        return render(request, "401.html", status=401)
     campaigns = Campaign.objects.filter(
         branch__merchant__url_hash=request.user.profile.merchant.url_hash
     ).order_by("pk")
-    permissions = PermissionToViewBranch.objects.filter(
-        user__pk=request.user.profile.pk
+    permissions = (
+        PermissionToViewBranch.objects.defer("date_created", "last_modified")
+        .select_related("branch")
+        .filter(user__pk=request.user.profile.pk)
     )
     permission_list = []
     for permission in permissions:
         permission_list.append(permission.branch.pk)
-    branches = Branch.objects.filter(pk__in=permission_list).only("pk", "name")
+    branches = Branch.objects.defer(
+        "country", "province", "city", "district", "date_created", "last_modified"
+    ).filter(merchant__url_hash=url_hash, pk__in=permission_list)
     if request.user.profile.is_manager == False:
         campaigns = campaigns.filter(branch__pk__in=branches).order_by("pk")
-    if request.user.profile.is_manager == True and request.user.is_active == True:
-        return render(request, "campaign.html", {"campaigns": campaigns})
-    return render(request, "401.html", status=401)
+    return render(request, "campaign.html", {"campaigns": campaigns})
+
 
 
 @login_required
 def create_campaign(request, url_hash):
+    """Using this, users can create campaigns."""
+    # Rights
+    if not perm_to_open(request, url_hash):
+        return render(request, "401.html", status=401)
     if request.user.profile.merchant.url_hash == url_hash:
-        permissions = PermissionToViewBranch.objects.filter(
-            user__merchant__url_hash=url_hash, user__pk=request.user.profile.pk
+        permissions = (
+            PermissionToViewBranch.objects.defer("date_created", "last_modified")
+            .select_related("branch")
+            .filter(user__pk=request.user.profile.pk)
         )
         permission_list = []
         for permission in permissions:
             permission_list.append(permission.branch.pk)
-        branches = Branch.objects.filter(pk__in=permission_list).only("pk", "name")
+        branches = Branch.objects.defer(
+            "country", "province", "city", "district", "date_created", "last_modified"
+        ).filter(merchant__url_hash=url_hash, pk__in=permission_list)
         if request.user.profile.is_manager == True and request.user.is_active == True:
-            branches = Branch.objects.filter(merchant__url_hash=url_hash).only(
-                "pk", "name"
-            )
+            branches = Branch.objects.defer(
+                "country",
+                "province",
+                "city",
+                "district",
+                "date_created",
+                "last_modified",
+            ).filter(merchant__url_hash=url_hash)
         form = CreateCampaign(request.POST)
         if request.method == "POST":
             if form.is_valid():
@@ -511,18 +578,23 @@ def create_campaign(request, url_hash):
 
 @login_required
 def edit_campaign(request, campaign_id):
+    """This edits each campaign using a form if permitted."""
     campaign = Campaign.objects.get(pk=campaign_id)
-    permissions = PermissionToViewBranch.objects.filter(
-        user__pk=request.user.profile.pk
+    permissions = (
+        PermissionToViewBranch.objects.defer("date_created", "last_modified")
+        .select_related("branch")
+        .filter(user__pk=request.user.profile.pk)
     )
     permission_list = []
     for permission in permissions:
         permission_list.append(permission.branch.pk)
-    branches = Branch.objects.filter(pk__in=permission_list).only("pk", "name")
-    if request.user.profile.is_manager == True:
-        branches = Branch.objects.filter(
-            merchant__url_hash=request.user.profile.merchant.url_hash
-        )
+    branches = Branch.objects.defer(
+        "country", "province", "city", "district", "date_created", "last_modified"
+    ).filter(pk__in=permission_list)
+    if request.user.profile.is_manager:
+        branches = Branch.objects.defer(
+            "country", "province", "city", "district", "date_created", "last_modified"
+        ).filter(merchant__url_hash=request.user.profile.merchant.url_hash)
     if campaign.branch.pk in branches or request.user.profile.is_manager == True:
         form = 0
         if request.method == "POST":
@@ -554,6 +626,7 @@ def edit_campaign(request, campaign_id):
 
 @login_required
 def delete_campaign(request, campaign_id):
+    """This deletes each campaign by its id."""
     campaign = get_object_or_404(Campaign, pk=campaign_id)
     jalali_start_date = convert_gregorian_to_jalali(campaign.start_date)
     jalali_end_date = convert_gregorian_to_jalali(campaign.end_date)
@@ -577,18 +650,18 @@ def update_stats(request):
 
 @login_required
 def upload_excel_file_invoice(request, url_hash):
-    if (
-        request.user.profile.merchant.url_hash != url_hash
-        or request.user.is_active == False
-    ):
+    """This uploads an excel file to create invoice objects accordingly."""
+    # Rights
+    if not perm_to_open(request, url_hash):
         return render(request, "401.html", status=401)
     if not request.user.has_perm("dashboard.add_invoice"):
         return render(request, "401.html", status=401)
     if not request.user.has_perm("dashboard.delete_invoice"):
         return render(request, "401.html", status=401)
     try:
-        merchant = request.user.profile.merchant
-        branches = Branch.objects.select_related("merchant").filter(merchant=merchant)
+        branches = Branch.objects.defer(
+            "country", "province", "city", "district", "date_created", "last_modified"
+        ).filter(merchant__url_hash=url_hash)
     except Exception:
         messages.error(request, "مرچنتی با این مشخصات یافت نشد.")
         return render(request, "upload_excel_invoice.html", {"error": f"{e}"})
@@ -615,8 +688,6 @@ def upload_excel_file_invoice(request, url_hash):
                                 date = datetime.strptime(date, "%Y-%m-%d").date()
                     if branch and total_amount and total_items:
                         if int(branch) not in allowed_branches:
-                            print(branch, type(branch))
-                            print(allowed_branches)
                             messages.warning(
                                 request,
                                 "یک یا چند ردیف دارای کد شعبی هستند که برای شما تعریف نشده است.",
@@ -655,107 +726,39 @@ def upload_excel_file_invoice(request, url_hash):
 
 
 @login_required
-def delete_excel_file_invoice(request, url_hash):
-    if (
-        request.user.profile.merchant.url_hash != url_hash
-        or request.user.is_active == False
-    ):
-        return render(request, "401.html", status=401)
-    if not request.user.has_perm("dashboard.add_invoice"):
-        return render(request, "401.html", status=401)
-    if not request.user.has_perm("dashboard.delete_invoice"):
-        return render(request, "401.html", status=401)
-    try:
-        merchant = request.user.profile.merchant
-        branches = Branch.objects.select_related("merchant").filter(merchant=merchant)
-    except Exception:
-        messages.error(request, "مرچنتی با این مشخصات یافت نشد.")
-        return render(request, "delete_excel_invoice.html", {"error": f"{e}"})
-    allowed_branches = []
-    for branch in branches:
-        allowed_branches.append(branch.pk)
-    if request.method == "POST":
-        form = UploadInvoiceExcel(request.POST, request.FILES)
-        if form.is_valid():
-            excel_file = request.FILES["excel_file"]
-            try:
-                wb = openpyxl.load_workbook(excel_file)
-                sheet = wb.active
-                for row in sheet.iter_rows(min_row=2, values_only=True):
-                    date, branch, branch_name, total_amount, total_items = row
-                    if isinstance(date, str):
-                        if date:
-                            first_two = date[:2]
-                            if first_two == "13" or first_two == "14":
-                                year, month, day = map(int, date.split("-"))
-                                jalali_date = jdatetime.date(year, month, day)
-                                date = jalali_date.togregorian()
-                            else:
-                                date = datetime.strptime(date, "%Y-%m-%d").date()
-                    if branch and total_amount and total_items:
-                        if branch not in allowed_branches:
-                            messages.warning(
-                                request,
-                                "یک یا چند ردیف دارای کد شعبی هستند که برای شما تعریف نشده است.",
-                            )
-                            return render(
-                                request,
-                                "delete_excel_invoice.html",
-                                {
-                                    "error": "از کد های زیر برای شعبه استفاده نمایید:",
-                                    "branches": branches,
-                                },
-                            )
-                        branch = branches.get(pk=branch)
-                        Invoice.objects.filter(
-                            date=date,
-                            branch=branch,
-                            total_amount=str(round(float(total_amount), 0)),
-                            total_items=str(int(total_items)),
-                        ).delete()
-                messages.success(request, "اطلاعات فروش با موفقیت حذف شدند")
-                return redirect(reverse("delete_excel_file_invoice", args=[url_hash]))
-            except Exception as e:
-                messages.error(
-                    request,
-                    "فایل مورد نظر یافت نشد. فرمت فایل و نام فایل آپلود شده را دوباره بررسی فرمایید. فایل مورد نظر باید طبق نمونه تمپلیت آپلود شود.",
-                )
-                return render(request, "delete_excel_invoice.html", {"error": f"{e}"})
-        else:
-            messages.error(request, "فایل مورد نظر باید دارای فرمت اکسل باشد.")
-            return render(
-                request, "delete_excel_invoice.html", {"error": f"{form.errors}"}
-            )
-    else:
-        form = UploadInvoiceExcel()
-        return render(request, "delete_excel_invoice.html", {"form": form})
-
-
-@login_required
 def invoices(request, url_hash):
+    """This shows a list of all invoices. Filtering is also enabled."""
+    # Rights
+    if not perm_to_open(request, url_hash):
+        return render(request, "401.html", status=401)
     if not request.user.has_perm("dashboard.add_invoice"):
         return render(request, "401.html", status=401)
-    branches = Branch.objects.filter(merchant__url_hash=url_hash)
-    permissions = PermissionToViewBranch.objects.filter(user=request.user.profile)
+    branches = Branch.objects.defer(
+        "country", "province", "city", "district", "date_created", "last_modified"
+    ).filter(merchant__url_hash=url_hash)
+    permissions = (
+        PermissionToViewBranch.objects.defer("date_created", "last_modified")
+        .select_related("branch")
+        .filter(user__pk=request.user.profile.pk)
+    )
     permission_branch_keys = []
     for permission in permissions:
         permission_branch_keys.append(permission.branch.pk)
     allowed_branches = []
-    if request.user.profile.is_manager == True:
+    if request.user.profile.is_manager:
         for branch in branches:
             allowed_branches.append(branch.pk)
-    if request.user.profile.is_manager != True and request.user.has_perm(
+    if not request.user.profile.is_manager and request.user.has_perm(
         "dashboard.add_invoice"
     ):
         allowed_branches = permission_branch_keys
 
     invoices = []
-    branches = Branch.objects.filter(pk__in=allowed_branches)
+    branches = branches.filter(pk__in=allowed_branches)
     start_date_str = str(jalali_to_gregorian(request.GET.get("start-date")))
     end_date_str = str(jalali_to_gregorian(request.GET.get("end-date")))
     selected_branch_str = request.GET.getlist("branch")
     selected_branch = [int(item) for item in selected_branch_str]
-    invoices_json = {}
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
         if start_date_str and end_date_str:
             try:
@@ -776,6 +779,7 @@ def invoices(request, url_hash):
             except Exception as e:
                 print(e)
             return JsonResponse({"invoices": list(invoices.values())})
+    print("Total queries executed:", connection.queries, len(connection.queries))
     return render(
         request, "invoices.html", {"invoices": invoices, "branches": branches}
     )
@@ -783,8 +787,17 @@ def invoices(request, url_hash):
 
 @login_required
 def invoice_detail(request, invoice_pk):
-    invoice = Invoice.objects.get(pk=invoice_pk)
-    permissions = PermissionToViewBranch.objects.filter(user=request.user.profile)
+    """This shows the detail of each invoice record. You can also delete and edit the total amount as well as the item numbers."""
+    invoice = (
+        Invoice.objects.defer("date_created", "last_modified", "branch__date_created")
+        .select_related("branch")
+        .get(pk=invoice_pk)
+    )
+    permissions = (
+        PermissionToViewBranch.objects.defer("date_created", "last_modified")
+        .select_related("branch")
+        .filter(user__pk=request.user.profile.pk)
+    )
     allowed_branches = []
     for permission in permissions:
         allowed_branches.append(permission.branch.pk)
@@ -801,13 +814,23 @@ def invoice_detail(request, invoice_pk):
         else:
             messages.error(request, f"{form.errors}")
             return redirect(reverse("invoice_detail", args=[invoice_pk]))
+    print("Total queries executed:", connection.queries, len(connection.queries))
     return render(request, "invoice_detail.html", {"invoice": invoice, "form": form})
 
 
 @login_required
 def invoice_delete(request, invoice_pk):
-    invoice = Invoice.objects.get(pk=invoice_pk)
-    permissions = PermissionToViewBranch.objects.filter(user=request.user.profile)
+    """This deletes the said invoice."""
+    invoice = (
+        Invoice.objects.defer("date_created", "last_modified")
+        .select_related("branch")
+        .get(pk=invoice_pk)
+    )
+    permissions = (
+        PermissionToViewBranch.objects.defer("date_created", "last_modified")
+        .select_related("branch")
+        .filter(user__pk=request.user.profile.pk)
+    )
     url_hash = request.user.profile.merchant.url_hash
     allowed_branches = []
     for permission in permissions:
@@ -820,6 +843,7 @@ def invoice_delete(request, invoice_pk):
 
 
 def get_dates(start_date_str: str, end_date_str: str):
+    """This creates a Python list within the Jalali specificed time period."""
     date_list = []
     start_date = (
         jdatetime.datetime.strptime(start_date_str, "%Y-%m-%d").date().togregorian()
@@ -839,18 +863,19 @@ def get_dates(start_date_str: str, end_date_str: str):
 
 
 def create_excel_template(start_date: str, end_date: str, branch_list: dict):
+    """It creates an excel file and styles it using Jalali start and end dates and a dictionary of numbers as keys and strings as values."""
     wb = openpyxl.Workbook()
     colors = [
-    "FFF4CCCC",
-    "FFFCE5CD",
-    "FFFFF2CC",
-    "FFD9EAD3",
-    "FFD0E0E3",
-    "FFCFE2F3",
-    "FFD9D2E9",
-    "FFEAD1DC",
-    "FFEEEEEE",
-    "FFBCBCBC"
+        "FFF4CCCC",
+        "FFFCE5CD",
+        "FFFFF2CC",
+        "FFD9EAD3",
+        "FFD0E0E3",
+        "FFCFE2F3",
+        "FFD9D2E9",
+        "FFEAD1DC",
+        "FFEEEEEE",
+        "FFBCBCBC",
     ]
     color_mapper = {}
     for item in branch_list.keys():
@@ -863,12 +888,15 @@ def create_excel_template(start_date: str, end_date: str, branch_list: dict):
     for branch_id, branch_name in branches.items():
         for date in dates:
             ws.append([date, branch_id, branch_name, "", ""])
-    
+
     for row in ws.iter_rows(min_row=2, max_row=ws.max_row):
         if row[1].value in color_mapper.keys():
             for cell in row:
-                print(color_mapper[row[1].value])
-                cell.fill = openpyxl.styles.PatternFill(start_color=color_mapper[row[1].value], end_color=color_mapper[row[1].value], fill_type="solid")
+                cell.fill = openpyxl.styles.PatternFill(
+                    start_color=color_mapper[row[1].value],
+                    end_color=color_mapper[row[1].value],
+                    fill_type="solid",
+                )
     output = BytesIO()
     wb.save(output)
     output.seek(0)
@@ -877,16 +905,35 @@ def create_excel_template(start_date: str, end_date: str, branch_list: dict):
 
 @login_required
 def excel_template_generator(request, url_hash):
-    permissions = PermissionToViewBranch.objects.filter(user=request.user.profile)
+    """This creates an excel template file for uploading to the system without any errors."""
+    # Rights
+    if not perm_to_open(request, url_hash):
+        return render(request, "401.html", status=401)
+    permissions = (
+        PermissionToViewBranch.objects.defer("date_created", "last_modified")
+        .select_related("branch")
+        .filter(user__pk=request.user.profile.pk)
+    )
     allowed_branches = []
     if not request.user.profile.is_manager:
         for permission in permissions:
             allowed_branches.append(permission.branch.pk)
-        branches = Branch.objects.filter(merchant=request.user.profile.merchant).filter(
-            pk__in=allowed_branches
+        branches = (
+            Branch.objects.defer(
+                "country",
+                "province",
+                "city",
+                "district",
+                "date_created",
+                "last_modified",
+            )
+            .filter(merchant__url_hash=url_hash)
+            .filter(pk__in=allowed_branches)
         )
     else:
-        branches = Branch.objects.filter(merchant=request.user.profile.merchant)
+        branches = Branch.objects.defer(
+            "country", "province", "city", "district", "date_created", "last_modified"
+        ).filter(merchant__url_hash=url_hash)
     try:
         start_date_str = str(request.GET.get("start-date"))
         end_date_str = str(request.GET.get("end-date"))
@@ -908,4 +955,39 @@ def excel_template_generator(request, url_hash):
             return response
     except Exception as e:
         print(e)
+    print("Total queries executed:", connection.queries, len(connection.queries))
     return render(request, "create-excel-template.html", {"branches": branches})
+
+
+def invoice_counter(request, url_hash):
+    # Rights
+    if not perm_to_open(request, url_hash):
+        return render(request, "401.html", status=401)
+    # Permissions
+    allowed_branches = []
+    if not request.user.profile.is_manager:
+        permissions = (
+            PermissionToViewBranch.objects.defer("date_created", "last_modified")
+            .select_related("branch")
+            .filter(user__pk=request.user.profile.pk)
+        )
+        for permission in permissions:
+            allowed_branches.append(permission.branch.pk)
+    else:
+        all_branches = Branch.objects.defer(
+            "country", "province", "city", "district", "date_created", "last_modified"
+        ).filter(merchant__url_hash=url_hash)
+        for item in all_branches:
+            allowed_branches.append(item.pk)
+    start_date_str = str(jalali_to_gregorian(request.GET.get("start-date")))
+    end_date_str = str(jalali_to_gregorian(request.GET.get("end-date")))
+    branches_str = request.GET.getlist("branch")
+    branches = []
+    invoices = []
+    if start_date_str and end_date_str:
+        start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
+        end_date = datetime.strptime(end_date_str, "%Y-%m-%d")
+        invoices = Invoice.objects.filter(date__range=(start_date, end_date))
+        if branches_str:
+            branches = [int(branch_str) for branch_str in branches_str]
+            invoices = invoices.filter(pk__in=branches)
