@@ -2,6 +2,8 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse, HttpResponse
 from django.urls import reverse
 from datetime import datetime, date, timedelta
+
+import openpyxl.styles
 from .models import (
     PeopleCounting,
     Branch,
@@ -35,6 +37,7 @@ from django.utils import timezone
 import subprocess
 import openpyxl
 from io import BytesIO
+import random
 
 
 # Create your views here.
@@ -600,7 +603,7 @@ def upload_excel_file_invoice(request, url_hash):
                 wb = openpyxl.load_workbook(excel_file)
                 sheet = wb.active
                 for row in sheet.iter_rows(min_row=2, values_only=True):
-                    date, branch, total_amount, total_items = row
+                    date, branch, total_amount, total_items = row[:2] + row[3:]
                     if isinstance(date, str):
                         if date:
                             first_two = date[:2]
@@ -679,7 +682,7 @@ def delete_excel_file_invoice(request, url_hash):
                 wb = openpyxl.load_workbook(excel_file)
                 sheet = wb.active
                 for row in sheet.iter_rows(min_row=2, values_only=True):
-                    date, branch, total_amount, total_items = row
+                    date, branch, branch_name, total_amount, total_items = row
                     if isinstance(date, str):
                         if date:
                             first_two = date[:2]
@@ -835,16 +838,37 @@ def get_dates(start_date_str: str, end_date_str: str):
     return date_list
 
 
-def create_excel_template(start_date: str, end_date: str, branch_list: list):
+def create_excel_template(start_date: str, end_date: str, branch_list: dict):
     wb = openpyxl.Workbook()
+    colors = [
+    "FFF4CCCC",
+    "FFFCE5CD",
+    "FFFFF2CC",
+    "FFD9EAD3",
+    "FFD0E0E3",
+    "FFCFE2F3",
+    "FFD9D2E9",
+    "FFEAD1DC",
+    "FFEEEEEE",
+    "FFBCBCBC"
+    ]
+    color_mapper = {}
+    for item in branch_list.keys():
+        color_mapper[item] = random.sample(colors, 1)[0]
     ws = wb.active
     ws.title = "تمپلیت آپلود اطلاعات فروش شعب"
-    ws.append(["تاریخ", "کد شعبه", "مبلغ فاکتور", "تعداد فاکتور"])
+    ws.append(["تاریخ", "کد شعبه", "نام شعبه", "مبلغ فاکتور", "تعداد فاکتور"])
     branches = branch_list
     dates = get_dates(start_date, end_date)
-    for branch in branches:
+    for branch_id, branch_name in branches.items():
         for date in dates:
-            ws.append([date, branch, "", ""])
+            ws.append([date, branch_id, branch_name, "", ""])
+    
+    for row in ws.iter_rows(min_row=2, max_row=ws.max_row):
+        if row[1].value in color_mapper.keys():
+            for cell in row:
+                print(color_mapper[row[1].value])
+                cell.fill = openpyxl.styles.PatternFill(start_color=color_mapper[row[1].value], end_color=color_mapper[row[1].value], fill_type="solid")
     output = BytesIO()
     wb.save(output)
     output.seek(0)
@@ -868,10 +892,13 @@ def excel_template_generator(request, url_hash):
         end_date_str = str(request.GET.get("end-date"))
         branches_str = request.GET.getlist("branch")
         branches_int = [int(i) for i in branches_str]
+        branch_dict = {}
+        for branch in branches:
+            if branch.pk in branches_int:
+                branch_dict[branch.pk] = branch.name
         if start_date_str and end_date_str:
-            print(start_date_str, end_date_str)
             excel_file = create_excel_template(
-                start_date_str, end_date_str, branches_int
+                start_date_str, end_date_str, branch_dict
             )
             response = HttpResponse(
                 excel_file,
