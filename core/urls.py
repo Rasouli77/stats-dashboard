@@ -23,7 +23,6 @@ from dashboard.views import (
     users_list,
     generate_user,
     user_permissions,
-    calender,
     home,
     test,
     profile,
@@ -36,7 +35,8 @@ from dashboard.views import (
     invoices,
     invoice_detail,
     invoice_delete,
-    excel_template_generator
+    excel_template_generator,
+    invoice_counter
 )
 from dashboard.api_views import MultipleBranches
 from django.contrib.auth import views as auth_views
@@ -64,7 +64,6 @@ urlpatterns = [
         branch_permissions,
         name="edit-branch-permissions",
     ),
-    path("dashboard/calendar/<str:url_hash>", calender, name="calendar"),
     path("dashboard/campaigns/<str:url_hash>", campaign, name="campaign"),
     path("dashboard/create-campaign/<str:url_hash>", create_campaign, name="create_campaign"),
     path("dashboard/edit-campaign/<int:campaign_id>", edit_campaign, name="edit_campaign"),
@@ -74,6 +73,7 @@ urlpatterns = [
     path("dashboard/invoices/invoice-detail/<int:invoice_pk>", invoice_detail, name='invoice_detail'),
     path("dashboard/invoice-delete/<int:invoice_pk>", invoice_delete, name='invoice_delete'),
     path("dashboard/excel-template-generator/<str:url_hash>", excel_template_generator, name='excel_template_generator'),
+    path("dashboard/sales-counter/<str:url_hash>", invoice_counter, name='invoice_counter'),
     path("dashboard/account/login", custom_login, name="login"),
     path(
         "dashboard/account/logout/",

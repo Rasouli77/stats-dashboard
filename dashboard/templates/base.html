@@ -140,6 +140,11 @@
                     </a>
                   </li>
                   <li class="menu-item">
+                    <a href="{% url 'invoice_counter' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
+                      <div data-i18n="List">شمارنده</div>
+                    </a>
+                  </li>
+                  <li class="menu-item">
                     <a href="{% url 'upload_excel_file_invoice' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
                       <div data-i18n="List">آپلود</div>
                     </a>

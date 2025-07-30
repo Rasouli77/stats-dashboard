@@ -1,0 +1,360 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}
+       شمارنده فروش
+{% endblock %}
+{% block meta_description %}
+	   شمارنده فروش
+{% endblock %}
+{% block extra_css %}
+    <!-- Style for Calendar, FlatPicker and Toastr -->
+    <link rel="stylesheet" href="{% static 'assets/vendor/libs/fullcalendar/fullcalendar.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/vendor/libs/flatpickr/flatpickr.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/vendor/css/pages/app-calendar.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/vendor/libs/toastr/toastr.css' %}" />
+    <!-- Custom Style for FlatPicker Calendar -->
+    <style>
+        .light-style .flatpickr-calendar {
+        box-shadow: none !important;
+        }
+    </style>
+    <!-- Custom Style for the Loading Overlay -->
+    <style>
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .loader {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .highcharts-credits {
+          display: none;
+        }
+
+        .branches-grid {
+          display: grid;
+          grid-template-columns: repeat(7, 1fr);
+          gap: 10px;
+        }
+
+        /* Tablets */
+        @media (max-width: 992px) {
+          .branches-grid {
+            grid-template-columns: repeat(4, 1fr);
+          }
+        }
+
+        /* Phones */
+        @media (max-width: 576px) {
+          .branches-grid {
+            grid-template-columns: repeat(2, 1fr);
+          }
+        }
+    </style>
+{% endblock %}
+{% block content %}
+<div class="loading-overlay" id="loading-overlay"></div>
+<div class="container">
+  <div class="row">
+    <!-- Date Accordion -->
+    <div class="col-xl-4 col-lg-4 col-md-12 col-sm-12" style="margin-bottom: 10px;">
+      <h6>تاریخ</h6>
+      <div class="accordion mt-3 accordion-header-primary" id="accordionDate">
+          <div class="card accordion-item">
+          <h2 class="accordion-header d-flex align-items-center">
+              <button type="button" class="accordion-button" data-bs-toggle="collapse" data-bs-target="#collapseDate" aria-expanded="true">
+              <i class="menu-icon tf-icons bx bx-calendar"></i>
+              انتخاب تاریخ
+              </button>
+          </h2>
+
+          <div id="collapseDate" class="accordion-collapse collapse" data-bs-parent="#accordionDate">
+              <div class="accordion-body" style="display: flex; justify-content: center; align-items: center; position: absolute; z-index: 1001; width: 100%; background-color: white; box-shadow: 0 0.25rem 1rem rgba(147, 158, 170, 0.45);">
+              <div id="date-range"></div>
+              </div>
+          </div>
+          </div>
+      </div>              
+    </div>
+    <!-- Branch Accordion -->
+    <div class="col-xl-3 col-lg-3 col-md-12 col-sm-12" style="margin-bottom: 10px;">
+    <h6>شعب</h6>
+      <div class="accordion mt-3 accordion-header-primary" id="accordionBranch">
+          <div class="card accordion-item">
+          <h2 class="accordion-header d-flex align-items-center">
+              <button type="button" class="accordion-button" data-bs-toggle="collapse" data-bs-target="#collapseBranch" aria-expanded="true">
+              <i class="menu-icon tf-icons bx bx-map-alt"></i>
+              انتخاب شعب
+              </button>
+          </h2>
+          <div id="collapseBranch" class="accordion-collapse collapse" data-bs-parent="#accordionBranch">
+              <div class="accordion-body" style="position: absolute; z-index: 999; width: 100%; background-color: white; box-shadow: 0 0.25rem 1rem rgba(147, 158, 170, 0.45);">
+                  <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="select-all">
+                      <label class="form-check-label" for="defaultCheck1">انتخاب همه</label>
+                  </div>
+                  {% for branch in branches %}
+                  <div class="form-check">
+                      <input class="form-check-input fake-check" type="checkbox" value="{{ branch.pk }}">
+                      <label class="form-check-label" for="defaultCheck1">{{ branch.name }}</label>
+                  </div>
+                  {% endfor %}
+              </div>
+          </div>
+          </div>
+      </div>   
+    </div>
+    <!-- Dropdown Display -->
+    <div class="col-xl-3 col-lg-3 col-md-12 col-sm-12" style="margin-bottom: 10px;">
+    <h6>نمایش</h6>
+        <select class="form-control" id="select-view">
+            <option value="1">تجمیعی</option>
+            <option value="2">مقایسه ای</option>
+        </select>
+    </div>
+    <div class="col-xl-2 col-lg-2 col-md-12 col-sm-12" style="margin-top: 20px; display: flex; justify-content: center; align-items: center;">
+        <form action="" method="get" id="filter-form">
+            <label style="display: none;" for="start-date">از تاریخ</label>
+            <input type="text" name="start-date" id="start-date" style="display: none;">
+            <label style="display: none;" for="end-date">تا</label>
+            <input type="text" name="end-date" id="end-date" style="display: none;">
+            {% for branch in branches %}
+            <div class="form-check mt-3" style="display: none;">
+                <input class="form-check-input real-check" type="checkbox" value="{{ branch.pk }}" name="branch">
+                <label class="form-check-label" for="defaultCheck1">{{ branch.name }}</label>
+            </div>
+            {% endfor %}
+            <button class="btn btn-primary btn-md" type="submit" id="filter-proxy-button">فیلتر</button>
+        </form>
+    </div>
+  </div>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="demo-inline-spacing mt-3">
+            <div class="tab-content px-0 pt-2">
+                <div id="container" style="width: 100%; height: 400px; margin-top: 45px;"></div>
+                <div id="second-container" style="width: 100%; height: 400px; margin-top: 45px; display: none;">test</div>
+            </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/jalaali-js/dist/jalaali.min.js"></script>
+<!-- JQuery and Toastr Scripts -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="{% static 'assets/vendor/libs/toastr/toastr.js' %}"></script>
+<script src="{% static 'assets/js/ui-toasts.js' %}"></script>
+<!-- HighChart JS -->
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/modules/export-data.js"></script>
+<script src="https://code.highcharts.com/modules/accessibility.js"></script>
+<!-- FlatPicker JS (Calendar) -->
+<script src="{% static 'assets/vendor/libs/jdate/jdate.js' %}"></script>
+<script src="{% static 'assets/vendor/libs/flatpickr/flatpickr-jdate.js' %}"></script>
+<script src="{% static 'assets/vendor/libs/moment/moment.js' %}"></script>
+<script src="{% static 'assets/vendor/libs/flatpickr/l10n/fa-jdate.js' %}"></script>
+<script src="{% static 'assets/js/app-calendar-events.js' %}"></script>
+<script src="{% static 'assets/js/app-calendar.js' %}"></script>
+<script>
+    flatpickr("#date-range", {
+        inline: true,
+        locale: "fa",
+        mode: "range",
+        dateFormat: "Y-m-d",
+        onChange: function(selectedDates, dateStr, instance) {
+        selectedRange = selectedDates;
+        }
+    });
+    const filterProxyButton = document.getElementById("filter-proxy-button");
+    const realFilterForm = document.getElementById("filter-form");
+    filterProxyButton.addEventListener("click", () => {
+        function formatJalaliDate(jdateObj) {
+        if (!jdateObj || !jdateObj._cached_date) return "";
+        const [year, month, day] = jdateObj._cached_date;
+        return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+        }
+        const fakeChecks = document.querySelectorAll(".fake-check");
+        const realChecks = document.querySelectorAll(".real-check");
+        let startDate = selectedRange[0]
+        let endDate = selectedRange[1]
+        let startJalaiDate = formatJalaliDate(startDate);
+        let endJalaliDate = formatJalaliDate(endDate);
+        const realJalaliStartDate = document.getElementById("start-date");
+        const realJalaliEndDate = document.getElementById("end-date");
+        realJalaliStartDate.value = startJalaiDate;
+        realJalaliEndDate.value = endJalaliDate;
+        fakeChecks.forEach((item) => {
+        if (item.checked == true) {
+            realChecks.forEach((sitem) => {
+            if (item.value == sitem.value) {
+                sitem.checked = true;
+            }
+            }); 
+        } else {
+            realChecks.forEach((sitem) => {
+            if (item.value == sitem.value) {
+                sitem.checked = false;
+            }
+            }); 
+        }
+        });
+    });
+  document.getElementById("select-all").addEventListener("change", () => {
+      const isChecked = document.getElementById("select-all").checked
+      document.querySelectorAll(".fake-check").forEach((item) => {
+          item.checked = isChecked
+      })
+  })
+</script>
+<!-- HighChart chart paint and Ajax for the traffic section of the page -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+        const rawCategories = JSON.parse('{{ dates|safe }}');  
+
+        const categories = rawCategories.map(dateStr => {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('fa-IR', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            });
+        });
+
+        const total_amount = JSON.parse('{{ total_amount|safe }}');
+        lineChart = Highcharts.chart(
+            'container', {
+                chart: {
+                    type: 'line',
+                    backgroundColor: '#f9f9f9',
+                    style: {
+                        fontFamily: 'tahoma',
+                        fontSize: '20px'
+                    }
+                },
+                title: {
+                    text: "فروش",
+                    style: {
+                        fontSize: '25px',
+                        color: '#333'
+                    }
+                },
+                xAxis: {
+                    categories : categories,
+                    title: {
+                        text: "تاریخ",
+                        style: {
+                        fontSize: '20px',
+                        fontWeight: 'bold'
+                        }
+                    }
+                },
+                yAxis: {
+                    title: {
+                        text: "فروش",
+                        style: {
+                        fontSize: '20px',
+                        fontWeight: 'bold'
+                        }
+                    }
+                },
+                series: [
+                    {
+                        name: "مبلغ فاکتور",
+                        data: total_amount
+                    },
+                ]
+            }
+        );
+        
+        document.getElementById('filter-form').addEventListener('submit', function(event) {
+            event.preventDefault(); 
+            const form = this;
+            const formData = new FormData(form);
+            const queryString = new URLSearchParams(formData).toString();
+            const loadingOverlay = document.getElementById('loading-overlay');
+            loadingOverlay.style.display = 'flex';
+        
+            fetch(`{% url 'invoice_counter' url_hash=request.user.profile.merchant.url_hash %}?${queryString}`, {
+                method: 'GET',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            })
+            .then(data => {
+                console.log(data.dates, data.total_amount, data.total_items)
+                const newCategories = data.dates.map(dateStr => {
+                    const date = new Date(dateStr);
+                    return date.toLocaleDateString('fa-IR', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit'
+                    });
+                });
+
+                lineChart.update({
+                    xAxis: { categories: newCategories },
+                    series: [{ data: data.total_amount}
+                    ],
+                });
+                
+                loadingOverlay.style.display = 'none';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                loadingOverlay.style.display = 'none';
+                alert('خطا در بارگذاری داده‌ها. لطفاً دوباره تلاش کنید.');
+            });
+        });
+    });
+    
+    document.getElementById("select-all").addEventListener("change", () => {
+        const isChecked = document.getElementById("select-all").checked;
+        document.querySelectorAll(".fake-check").forEach((item) => {
+            item.checked = isChecked
+        })
+    })
+</script>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+    const selectView = document.querySelector("#select-view");
+    const secondContainer = document.querySelector("#second-container");
+    selectView.addEventListener("change", (event) => {
+     const value = event.target.value;
+     if (value === "1") {
+        container.style.display = "block";
+        secondContainer.style.display = "none";
+     }
+     else {
+        container.style.display = "none";
+        secondContainer.style.display = "block";
+     }
+    });
+    });
+</script>
+{% endblock %}
+
+

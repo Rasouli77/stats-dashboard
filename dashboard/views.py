@@ -287,11 +287,6 @@ def branch_permissions(request, user_id):
 
 
 @login_required
-def calender(request, url_hash):
-    return render(request, "calendar.html")
-
-
-@login_required
 def home(request, url_hash):
     """A general overview of certain aggregations"""
     # Rights
@@ -653,10 +648,6 @@ def delete_campaign(request, campaign_id):
     )
 
 
-def update_stats(request):
-    pass
-
-
 @login_required
 def upload_excel_file_invoice(request, url_hash):
     """This uploads an excel file to create invoice objects accordingly."""
@@ -969,35 +960,68 @@ def excel_template_generator(request, url_hash):
     return render(request, "create-excel-template.html", {"branches": branches})
 
 
+@login_required
 def invoice_counter(request, url_hash):
     # Rights
     if not perm_to_open(request, url_hash):
         return render(request, "401.html", status=401)
     # Permissions
     allowed_branches = []
-    if not request.user.profile.is_manager:
+    profile = request.user.profile
+    all_branches = Branch.objects.defer(
+            "country", "province", "city", "district", "date_created", "last_modified"
+    ).filter(merchant__url_hash=url_hash)
+    if not profile.is_manager:
         permissions = (
             PermissionToViewBranch.objects.defer("date_created", "last_modified")
             .select_related("branch")
-            .filter(user__pk=request.user.profile.pk)
+            .filter(user__pk=profile.pk)
         )
         for permission in permissions:
             allowed_branches.append(permission.branch.pk)
     else:
-        all_branches = Branch.objects.defer(
-            "country", "province", "city", "district", "date_created", "last_modified"
-        ).filter(merchant__url_hash=url_hash)
         for item in all_branches:
             allowed_branches.append(item.pk)
-    start_date_str = str(jalali_to_gregorian(request.GET.get("start-date")))
-    end_date_str = str(jalali_to_gregorian(request.GET.get("end-date")))
-    branches_str = request.GET.getlist("branch")
+    try:
+        start_date_str = str(jalali_to_gregorian(request.GET.get("start-date")))
+        end_date_str = str(jalali_to_gregorian(request.GET.get("end-date")))
+        branches_str = request.GET.getlist("branch")
+    except Exception as e:
+        print(e)
     branches = []
-    invoices = []
+    invoices = Invoice.objects.defer("date_created", "last_modified").values("date").annotate(sum_total_amount=Sum("total_amount")).annotate(sum_total_items=Sum("total_items")).filter(branch__pk__in=allowed_branches).order_by("date")
     if start_date_str and end_date_str:
-        start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
-        end_date = datetime.strptime(end_date_str, "%Y-%m-%d")
-        invoices = Invoice.objects.filter(date__range=(start_date, end_date))
+        try:
+            start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
+            end_date = datetime.strptime(end_date_str, "%Y-%m-%d")
+            invoices = invoices.filter(date__range=(start_date, end_date))
+            print(start_date, end_date)
+        except Exception as e:
+            print(e)
         if branches_str:
-            branches = [int(branch_str) for branch_str in branches_str]
-            invoices = invoices.filter(pk__in=branches)
+            print(branches_str)
+            try:
+                branches = [int(branch_str) for branch_str in branches_str if int(branch_str) in allowed_branches]
+            except ValueError:
+                branches = []
+            if branches:
+                print(branches)
+                invoices = invoices.filter(branch__pk__in=branches)
+
+        print(invoices)
+        dates = [str(row["date"].strftime("%Y-%m-%d")) for row in invoices]
+        total_items = [float(row["sum_total_items"]) for row in invoices]
+        total_amount = [float(row["sum_total_amount"]) for row in invoices]
+        print(dates, total_items, total_amount)
+
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return JsonResponse(
+                {
+                    "dates": dates,
+                    "total_items": total_items,
+                    "total_amount": total_amount
+                }
+            )
+    if not profile.is_manager:
+        all_branches = all_branches.filter(pk__in=allowed_branches)
+    return render(request, "invoice-counter.html", {"invoices": invoices, "branches": all_branches, "dates": json.dumps(dates), "total_amount": json.dumps(total_amount), "total_items": json.dumps(total_items)})
