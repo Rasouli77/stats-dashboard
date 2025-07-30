@@ -44,9 +44,10 @@ def perm_to_open(request, url_hash):
     """Checks if the user has the right to open the page."""
     if not request.user.is_active:
         return False
+    merchant = request.user.profile.merchant
     try:
-        if request.user.profile.merchant.url_hash:
-            if request.user.profile.merchant.url_hash != url_hash:
+        if merchant.url_hash:
+            if merchant.url_hash != url_hash:
                 return False
             else:
                 return True
@@ -96,7 +97,7 @@ def people_counter(request, url_hash):
     )
     if len(permissions) == 0 and request.user.profile.is_manager != True:
         return render(request, "401.html", status=401)
-    if request.user.profile.is_manager == True:
+    if request.user.profile.is_manager:
         branches = Branch.objects.only("name", "pk").filter(merchant__url_hash=url_hash)
     else:
         permitted_branches = (
@@ -184,9 +185,10 @@ def users_list(request, url_hash):
     users = UserProfile.objects.filter(merchant__url_hash=url_hash)
     if (
         request.user.profile.merchant.url_hash == url_hash
-        and request.user.profile.is_manager == True
-        and request.user.is_active == True
+        and request.user.profile.is_manager
+        and request.user.is_active
     ):
+        print("Total queries executed:", connection.queries, len(connection.queries))
         return render(request, "users.html", {"users": users})
     return render(request, "401.html", status=401)
 
@@ -199,8 +201,8 @@ def generate_user(request, url_hash):
         return render(request, "401.html", status=401)
     if (
         request.user.profile.merchant.url_hash == url_hash
-        and request.user.profile.is_manager == True
-        and request.user.is_active == True
+        and request.user.profile.is_manager
+        and request.user.is_active
     ):
         form = Generate_User(request.POST)
         if form.is_valid():
@@ -214,6 +216,7 @@ def generate_user(request, url_hash):
                 )
             except Exception as e:
                 print(e)
+        print("Total queries executed:", connection.queries, len(connection.queries))
         return render(request, "create-user.html", {"form": form})
     return render(request, "401.html", status=401)
 
@@ -223,8 +226,8 @@ def user_permissions(request, user_id):
     user = get_object_or_404(User, pk=user_id)
     if (
         request.user.profile.merchant.url_hash == user.profile.merchant.url_hash
-        and request.user.is_active == True
-        and request.user.profile.is_manager == True
+        and request.user.is_active
+        and request.user.profile.is_manager
     ):
         if request.method == "POST":
             form = UserPermissions(request.POST, instance=user)
@@ -233,6 +236,7 @@ def user_permissions(request, user_id):
                 return redirect("profile", user.pk)
         else:
             form = UserPermissions(instance=user)
+        print("Total queries executed:", connection.queries, len(connection.queries))
         return render(request, "user-permissions.html", {"user": user, "form": form})
     return render(request, "401.html", status=401)
 
@@ -255,8 +259,8 @@ def branch_permissions(request, user_id):
     if len(allowed_branches) > 0:
         branches = branches.exclude(pk__in=allowed_branches)
     if (
-        request.user.is_active == True
-        and request.user.profile.is_manager == True
+        request.user.is_active
+        and request.user.profile.is_manager
         and request.user.profile.merchant.url_hash == user_profile.merchant.url_hash
     ):
         if request.method == "POST":
@@ -278,6 +282,7 @@ def branch_permissions(request, user_id):
                 "allowed_branch_count": len(allowed_branches),
             },
         )
+    print("Total queries executed:", connection.queries, len(connection.queries))
     return render(request, "401.html", status=401)
 
 
@@ -292,10 +297,9 @@ def home(request, url_hash):
     # Rights
     if not perm_to_open(request, url_hash):
         return render(request, "401.html", status=401)
-    # Rights
-    if not perm_to_open(request, url_hash):
-        return render(request, "401.html", status=401)
-    queryset = PeopleCounting.objects.filter(merchant__url_hash=url_hash)
+    queryset = PeopleCounting.objects.defer(
+        "date_created", "last_modified", "exit"
+    ).filter(merchant__url_hash=url_hash)
     # 7 days
     today = timezone.now().today()
     last_7_days_start = today - timedelta(days=7)
@@ -402,6 +406,7 @@ def home(request, url_hash):
         )
         .order_by("-total_entry")
     )
+    print("Total queries executed:", connection.queries, len(connection.queries))
     return render(
         request,
         "home.html",
@@ -431,7 +436,8 @@ def profile(request, user_id):
     allowed_branches = PermissionToViewBranch.objects.defer(
         "date_created", "last_modified"
     ).filter(user=user_profile.pk)
-    if request.user.pk == user.pk and request.user.is_active == True:
+    if request.user.pk == user.pk and request.user.is_active:
+        print("Total queries executed:", connection.queries, len(connection.queries))
         return render(
             request,
             "profile.html",
@@ -444,8 +450,8 @@ def profile(request, user_id):
 
     if (
         request.user.profile.merchant.url_hash == user.profile.merchant.url_hash
-        and request.user.profile.is_manager == True
-        and request.user.is_active == True
+        and request.user.profile.is_manager
+        and request.user.is_active
     ):
         return render(
             request,
@@ -457,7 +463,7 @@ def profile(request, user_id):
                 "branch_length": len(allowed_branches),
             },
         )
-
+    print("Total queries executed:", connection.queries, len(connection.queries))
     return render(request, "401.html", status=401)
 
 
@@ -530,10 +536,10 @@ def campaign(request, url_hash):
     branches = Branch.objects.defer(
         "country", "province", "city", "district", "date_created", "last_modified"
     ).filter(merchant__url_hash=url_hash, pk__in=permission_list)
-    if request.user.profile.is_manager == False:
+    if not request.user.profile.is_manager:
         campaigns = campaigns.filter(branch__pk__in=branches).order_by("pk")
+    print("Total queries executed:", connection.queries, len(connection.queries))
     return render(request, "campaign.html", {"campaigns": campaigns})
-
 
 
 @login_required
@@ -554,7 +560,7 @@ def create_campaign(request, url_hash):
         branches = Branch.objects.defer(
             "country", "province", "city", "district", "date_created", "last_modified"
         ).filter(merchant__url_hash=url_hash, pk__in=permission_list)
-        if request.user.profile.is_manager == True and request.user.is_active == True:
+        if request.user.profile.is_manager and request.user.is_active:
             branches = Branch.objects.defer(
                 "country",
                 "province",
@@ -573,6 +579,7 @@ def create_campaign(request, url_hash):
         return render(
             request, "create-campaign.html", {"form": form, "branches": branches}
         )
+    print("Total queries executed:", connection.queries, len(connection.queries))
     return render(request, "401.html", status=401)
 
 
@@ -595,7 +602,7 @@ def edit_campaign(request, campaign_id):
         branches = Branch.objects.defer(
             "country", "province", "city", "district", "date_created", "last_modified"
         ).filter(merchant__url_hash=request.user.profile.merchant.url_hash)
-    if campaign.branch.pk in branches or request.user.profile.is_manager == True:
+    if campaign.branch.pk in branches or request.user.profile.is_manager:
         form = 0
         if request.method == "POST":
             form = CreateCampaign(request.POST, instance=campaign)
@@ -619,6 +626,7 @@ def edit_campaign(request, campaign_id):
                 "jalali_end_date": jalali_end_date,
             },
         )
+    print("Total queries executed:", connection.queries, len(connection.queries))
     return render(
         request, "edit-campaign.html", {"branches": branches, "campaign": campaign}
     )
@@ -633,6 +641,7 @@ def delete_campaign(request, campaign_id):
     if request.method == "POST":
         campaign.delete()
         return redirect("campaign", request.user.profile.merchant.url_hash)
+    print("Total queries executed:", connection.queries, len(connection.queries))
     return render(
         request,
         "delete-campaign.html",
@@ -722,6 +731,7 @@ def upload_excel_file_invoice(request, url_hash):
             )
     else:
         form = UploadInvoiceExcel()
+        print("Total queries executed:", connection.queries, len(connection.queries))
         return render(request, "upload_excel_invoice.html", {"form": form})
 
 

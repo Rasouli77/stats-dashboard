@@ -108,7 +108,7 @@ class District(models.Model):
 
 class Branch(models.Model):
     merchant = models.ForeignKey(
-        Merchant, on_delete=models.CASCADE, verbose_name="مرچنت"
+        Merchant, on_delete=models.CASCADE, verbose_name="مرچنت", db_index=True
     )
     country = models.ForeignKey(
         Country, on_delete=models.CASCADE, verbose_name="کشور", null=True, blank=True
@@ -234,7 +234,11 @@ class Campaign(models.Model):
 
 class UserProfile(models.Model):
     user = models.OneToOneField(
-        User, on_delete=models.CASCADE, related_name="profile", verbose_name="کاربر"
+        User,
+        on_delete=models.CASCADE,
+        related_name="profile",
+        verbose_name="کاربر",
+        db_index=True,
     )
     merchant = models.ForeignKey(
         Merchant,
@@ -246,7 +250,7 @@ class UserProfile(models.Model):
     mobile = models.CharField(
         max_length=11, verbose_name="شماره تلفن", null=True, blank=True
     )
-    is_manager = models.BooleanField(default=False, verbose_name="مدیر")
+    is_manager = models.BooleanField(default=False, verbose_name="مدیر", db_index=True)
 
     def __str__(self):
         return f"{self.user.first_name} {self.user.last_name}"
@@ -262,12 +266,14 @@ class PermissionToViewBranch(models.Model):
         on_delete=models.CASCADE,
         related_name="permissiontoviewbranch",
         verbose_name="کاربر",
+        db_index=True,
     )
     branch = models.ForeignKey(
         Branch,
         on_delete=models.CASCADE,
         related_name="permissiontoviewbranch",
         verbose_name="شعبه",
+        db_index=True,
     )
     date_created = models.DateTimeField(
         null=True, default=datetime.now, verbose_name="تاریخ ساخت"
@@ -302,4 +308,3 @@ class Invoice(models.Model):
 
     def __str__(self):
         return f"{self.pk}"
-
