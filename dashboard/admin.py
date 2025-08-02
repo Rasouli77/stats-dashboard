@@ -139,7 +139,7 @@ class UserProfileAdmin(admin.ModelAdmin):
 class InvoiceAdmin(admin.ModelAdmin):
     list_display = ["date", "branch", "total_amount", "total_items"]
     autocomplete_fields = ["branch"]
-    list_filter = ["branch"]
+    list_filter = ["branch", "date_created"]
     exclude = ["date_created"]
     list_per_page = 75
 

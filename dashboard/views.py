@@ -1005,14 +1005,11 @@ def invoice_counter(request, url_hash):
             except ValueError:
                 branches = []
             if branches:
-                print(branches)
                 invoices = invoices.filter(branch__pk__in=branches)
 
-        print(invoices)
         dates = [str(row["date"].strftime("%Y-%m-%d")) for row in invoices]
         total_items = [float(row["sum_total_items"]) for row in invoices]
         total_amount = [float(row["sum_total_amount"]) for row in invoices]
-        print(dates, total_items, total_amount)
 
         if request.headers.get("X-Requested-With") == "XMLHttpRequest":
             return JsonResponse(
