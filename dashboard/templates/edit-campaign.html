@@ -87,6 +87,16 @@
                     <label for="id_cost" class="form-label">هزینه:</label>
                     <input type="text" name="cost" value="{{ campaign.cost }}" maxlength="255" id="id_cost" class="form-control" placeholder="(هزینه کمپین به تومان)" aria-describedby="defaultFormControlHelp">
                 </div>
+
+                <div>
+                    <label for="id_campaign_type" class="form-label">نوع کمپین:</label>
+                    <select name="campaign_type" required id="id_campaign_type" class="form-select">
+                            <option value="">---------</option>
+                            <option value="ویترین">ویترین</option>
+                            <option value="فروش">فروش</option>
+                    </select>
+                </div>
+                
                 <button class="btn btn-primary" style="margin-top: 35px;" id="submit-btn">ثبت</button>
             </form>
         </div>

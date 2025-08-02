@@ -95,10 +95,11 @@ def people_counter(request, url_hash):
         .select_related("branch")
         .filter(user__pk=request.user.profile.pk)
     )
-    if len(permissions) == 0 and request.user.profile.is_manager != True:
+    if len(permissions) == 0 and not request.user.profile.is_manager:
         return render(request, "401.html", status=401)
     if request.user.profile.is_manager:
         branches = Branch.objects.only("name", "pk").filter(merchant__url_hash=url_hash)
+        campaigns = Campaign.objects.defer("date_created", "last_modified").filter(branch__merchant__url_hash=url_hash)
     else:
         permitted_branches = (
             PermissionToViewBranch.objects.defer("date_created", "last_modified")
@@ -111,7 +112,8 @@ def people_counter(request, url_hash):
         branches = Branch.objects.only("name", "pk").filter(
             merchant__url_hash=url_hash, pk__in=permitted_branches_list
         )
-
+        campaigns = Campaign.objects.defer("date_created", "last_modified").filter(branch__merchant__url_hash=url_hash, branch__pk__in=permitted_branches_list)
+        queryset = queryset.filter(branch__pk__in=permitted_branches_list)
     selected_branches = request.GET.getlist("branch")
     start_date_str = str(jalali_to_gregorian(request.GET.get("start-date")))
     end_date_str = str(jalali_to_gregorian(request.GET.get("end-date")))
@@ -172,6 +174,7 @@ def people_counter(request, url_hash):
             "exit_totals": json.dumps(exit_totals),
             "branches": branches,
             "branches_data": json.dumps(dict(branches_stats)),
+            "campaigns": campaigns
         },
     )
 

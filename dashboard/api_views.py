@@ -46,7 +46,8 @@ class MultipleBranches(APIView):
 
 class MultiBranchesInvoice(APIView):
     def get(self, request):
-        queryset = Invoice.objects.filter(branch__merchant__url_hash=request.user.profile.merchant.url_hash)
+        merchant = request.user.profile.merchant
+        queryset = Invoice.objects.filter(branch__merchant__url_hash=merchant.url_hash)
         start_date_str = str(jalali_to_gregorian(request.GET.get("start-date")))
         end_date_str = str(jalali_to_gregorian(request.GET.get("end-date")))
         if start_date_str and end_date_str:
@@ -60,7 +61,7 @@ class MultiBranchesInvoice(APIView):
         response = {"dates": dates, "invoice_data": {}}
         selected_branches = request.GET.getlist("branch")
         if selected_branches:
-            branches = Branch.objects.filter(merchant__url_hash=request.user.profile.merchant.url_hash, pk__in=selected_branches)
+            branches = Branch.objects.filter(merchant__url_hash=merchant.url_hash, pk__in=selected_branches)
             for branch in branches:
                 total_amounts = []
                 total_items = []
