@@ -1025,3 +1025,80 @@ def invoice_counter(request, url_hash):
     if not profile.is_manager:
         all_branches = all_branches.filter(pk__in=allowed_branches)
     return render(request, "invoice-counter.html", {"invoices": invoices, "branches": all_branches, "dates": json.dumps(dates), "total_amount": json.dumps(total_amount), "total_items": json.dumps(total_items)})
+
+
+@login_required
+def analysis(request, url_hash):
+    # Rights
+    if not perm_to_open(request, url_hash):
+        return render(request, "401.html", status=401)
+    # Permissions
+    allowed_branches = []
+    profile = request.user.profile
+    all_branches = Branch.objects.defer(
+            "country", "province", "city", "district", "date_created", "last_modified"
+    ).filter(merchant__url_hash=url_hash)
+    if not profile.is_manager:
+        permissions = (
+            PermissionToViewBranch.objects.defer("date_created", "last_modified")
+            .select_related("branch")
+            .filter(user__pk=profile.pk)
+        )
+        for permission in permissions:
+            allowed_branches.append(permission.branch.pk)
+    else:
+        for item in all_branches:
+            allowed_branches.append(item.pk)
+    try:
+        start_date_str = str(jalali_to_gregorian(request.GET.get("start-date")))
+        end_date_str = str(jalali_to_gregorian(request.GET.get("end-date")))
+        branches_str = request.GET.getlist("branch")
+    except Exception as e:
+        print(e)
+    branches = []
+    queryset = (
+        PeopleCounting.objects.filter(merchant__url_hash=url_hash, branch__pk__in=allowed_branches)
+        .values("date")
+        .annotate(total_entry=Sum("entry"))
+        .annotate(total_exit=Sum("exit"))
+        .order_by("date")
+    )
+    invoices = Invoice.objects.defer("date_created", "last_modified").values("date").annotate(sum_total_amount=Sum("total_amount")).annotate(sum_total_items=Sum("total_items")).filter(branch__pk__in=allowed_branches).order_by("date")
+    if start_date_str and end_date_str:
+        try:
+            start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
+            end_date = datetime.strptime(end_date_str, "%Y-%m-%d")
+            invoices = invoices.filter(date__range=(start_date, end_date))
+            queryset = queryset.filter(date__range=(start_date, end_date))
+            print(start_date, end_date)
+        except Exception as e:
+            print(e)
+        if branches_str:
+            print(branches_str)
+            try:
+                branches = [int(branch_str) for branch_str in branches_str if int(branch_str) in allowed_branches]
+            except ValueError:
+                branches = []
+            if branches:
+                invoices = invoices.filter(branch__pk__in=branches)
+                queryset = queryset.filter(branch__pk__in=branches)
+
+        dates_queryset = [str(row["date"].strftime("%Y-%m-%d")) for row in queryset]
+        dates_invoices = [str(row["date"].strftime("%Y-%m-%d")) for row in invoices]
+        total_items = [float(row["sum_total_items"]) for row in invoices]
+        total_amount = [float(row["sum_total_amount"]) for row in invoices]
+        entry_totals = [float(row["total_entry"]) for row in queryset]
+        print(len(dates_queryset), len(total_amount), len(total_items))
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return JsonResponse(
+                {
+                    "dates_queryset": dates_queryset,
+                    "dates_invoices": dates_invoices,
+                    "entry_totals": entry_totals,
+                    "total_items": total_items,
+                    "total_amount": total_amount
+                }
+            )
+    if not profile.is_manager:
+        all_branches = all_branches.filter(pk__in=allowed_branches)
+    return render(request, "analysis.html", {"branches": all_branches, "dates_queryset": json.dumps(dates_queryset), "dates_invoices": json.dumps(dates_invoices), "entry_totals": json.dumps(entry_totals), "total_amount": json.dumps(total_amount), "total_items": json.dumps(total_items)})

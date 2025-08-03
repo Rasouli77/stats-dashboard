@@ -36,7 +36,8 @@ from dashboard.views import (
     invoice_detail,
     invoice_delete,
     excel_template_generator,
-    invoice_counter
+    invoice_counter,
+    analysis
 )
 from dashboard.api_views import MultipleBranches, MultiBranchesInvoice
 from django.contrib.auth import views as auth_views
@@ -74,6 +75,7 @@ urlpatterns = [
     path("dashboard/invoice-delete/<int:invoice_pk>", invoice_delete, name='invoice_delete'),
     path("dashboard/excel-template-generator/<str:url_hash>", excel_template_generator, name='excel_template_generator'),
     path("dashboard/sales-counter/<str:url_hash>", invoice_counter, name='invoice_counter'),
+    path("dashboard/analysis/<str:url_hash>", analysis, name='analysis'),
     path("dashboard/account/login", custom_login, name="login"),
     path(
         "dashboard/account/logout/",
