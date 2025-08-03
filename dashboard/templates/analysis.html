@@ -152,6 +152,7 @@
             <div class="tab-content px-0 pt-2">
                 <div id="ratio-container" style="width: 100%; height: 400px; margin-top: 45px;"></div>
                 <div id="second-ratio-container" style="width: 100%; height: 400px; margin-top: 45px;"></div>
+                <div id="one-to-all-container" style="width: 100%; height: 400px; margin-top: 45px;"></div>
             </div>
             </div>
         </div>
@@ -317,6 +318,49 @@
             ]
         });
 
+        let oneToAllContainer = Highcharts.chart('one-to-all-container', {
+            chart: {
+                type: 'line',
+                backgroundColor: '#f9f9f9',
+                style: {
+                    fontFamily: 'tahoma',
+                    fontSize: '20px'
+                }
+            },
+            title: {
+                text: "نسبت ورودی یک فروشگاه به کل",
+                style: {
+                    fontSize: '25px',
+                    color: '#333'
+                }
+            },
+            xAxis: {
+                categories: [],
+                title: {
+                    text: "تاریخ",
+                    style: {
+                        fontSize: '20px',
+                        fontWeight: 'bold'
+                    }
+                }
+            },
+            yAxis: {
+                title: {
+                    text: "نسبت (%)",
+                    style: {
+                        fontSize: '20px',
+                        fontWeight: 'bold'
+                    }
+                }
+            },
+            series: [
+                {
+                    name: "نسبت (%)",
+                    data: []
+                },
+            ]
+        });
+
         document.getElementById('filter-form').addEventListener('submit', function(event) {
             event.preventDefault(); 
             const form = this;
@@ -353,6 +397,11 @@
                 amountMap[date] = data.total_amount[i];
                 });
 
+                const entryOverallMap = {};
+                data.dates_queryset.forEach((date, i) => {
+                entryOverallMap[date] = data.entry_overalls[i];
+                });
+
                 // Step 2: Find common dates preserving order
                 const commonDates = data.dates_queryset.filter(date => data.dates_invoices.includes(date));
 
@@ -361,15 +410,19 @@
                     const entry = entryMap[date];
                     const item = totalMap[date];
                     const amount = amountMap[date];
+                    const entryOverall = entryOverallMap[date];
                     const ratio = entry !== 0 ? +((item / entry)*100).toFixed(2) : 0;
                     const secondRatio = entry !== 0 ? Math.floor(amount / entry / 10) : 0;
+                    const thirdRatio = entryOverall !== 0 ? +((entry / entryOverall)*100).toFixed(2) : 0;
                     return {
                         date: date,
                         entry_totals: entry,
                         total_items: item,
                         total_amount: amount,
                         ratio: ratio,
-                        second_ratio: secondRatio
+                        second_ratio: secondRatio,
+                        entry_overall: entryOverall,
+                        third_ratio: thirdRatio
                     };
                 });
 
@@ -385,6 +438,8 @@
                 });
                 const ratioValues = result.map(row => row.ratio);
                 const secondRatioValues = result.map(row => row.second_ratio)
+                const oneToAllValues = result.map(row => row.third_ratio)
+
                 ratioChart.update({
                     xAxis: { categories: ratioDates },
                     series: [{ data: ratioValues }]
@@ -395,6 +450,18 @@
                     series: [{ data: secondRatioValues }]
                 });
 
+                if (document.querySelectorAll('input[type="checkbox"]:checked').length === 2) {
+                    oneToAllContainer.update({
+                    xAxis: { categories: ratioDates },
+                    series: [{ data: oneToAllValues }]
+                    });
+                } else {
+                    oneToAllContainer.update({
+                    xAxis: { categories: [] },
+                    series: [{ data: [] }]
+                    });
+                }
+                
                 loadingOverlay.style.display = 'none';
             })
             .catch(error => {

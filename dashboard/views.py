@@ -1056,6 +1056,7 @@ def analysis(request, url_hash):
     except Exception as e:
         print(e)
     branches = []
+    queryset_no_branch_filter = []
     queryset = (
         PeopleCounting.objects.filter(merchant__url_hash=url_hash, branch__pk__in=allowed_branches)
         .values("date")
@@ -1070,6 +1071,7 @@ def analysis(request, url_hash):
             end_date = datetime.strptime(end_date_str, "%Y-%m-%d")
             invoices = invoices.filter(date__range=(start_date, end_date))
             queryset = queryset.filter(date__range=(start_date, end_date))
+            queryset_no_branch_filter = queryset.filter(date__range=(start_date, end_date))
             print(start_date, end_date)
         except Exception as e:
             print(e)
@@ -1088,7 +1090,7 @@ def analysis(request, url_hash):
         total_items = [float(row["sum_total_items"]) for row in invoices]
         total_amount = [float(row["sum_total_amount"]) for row in invoices]
         entry_totals = [float(row["total_entry"]) for row in queryset]
-        print(len(dates_queryset), len(total_amount), len(total_items))
+        entry_overalls = [float(row["total_entry"]) for row in queryset_no_branch_filter]
         if request.headers.get("X-Requested-With") == "XMLHttpRequest":
             return JsonResponse(
                 {
@@ -1096,9 +1098,10 @@ def analysis(request, url_hash):
                     "dates_invoices": dates_invoices,
                     "entry_totals": entry_totals,
                     "total_items": total_items,
-                    "total_amount": total_amount
+                    "total_amount": total_amount,
+                    "entry_overalls": entry_overalls
                 }
             )
     if not profile.is_manager:
         all_branches = all_branches.filter(pk__in=allowed_branches)
-    return render(request, "analysis.html", {"branches": all_branches, "dates_queryset": json.dumps(dates_queryset), "dates_invoices": json.dumps(dates_invoices), "entry_totals": json.dumps(entry_totals), "total_amount": json.dumps(total_amount), "total_items": json.dumps(total_items)})
+    return render(request, "analysis.html", {"branches": all_branches, "dates_queryset": json.dumps(dates_queryset), "dates_invoices": json.dumps(dates_invoices), "entry_totals": json.dumps(entry_totals), "total_amount": json.dumps(total_amount), "total_items": json.dumps(total_items), "entry_overalls": json.dumps(entry_overalls)})
