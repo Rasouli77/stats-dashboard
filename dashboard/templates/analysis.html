@@ -153,6 +153,8 @@
                 <div id="ratio-container" style="width: 100%; height: 400px; margin-top: 45px;"></div>
                 <div id="second-ratio-container" style="width: 100%; height: 400px; margin-top: 45px;"></div>
                 <div id="one-to-all-container" style="width: 100%; height: 400px; margin-top: 45px;"></div>
+                <div id="ratio-container-multi-branch" style="width: 100%; height: 400px; margin-top: 45px;"></div>
+                <div id="second-ratio-container-multi-branch" style="width: 100%; height: 400px; margin-top: 45px;"></div>
             </div>
             </div>
         </div>
@@ -265,7 +267,8 @@
                         fontSize: '20px',
                         fontWeight: 'bold'
                     }
-                }
+                },
+                max: 100
             },
             series: [
                 {
@@ -351,7 +354,8 @@
                         fontSize: '20px',
                         fontWeight: 'bold'
                     }
-                }
+                },
+                max: 100
             },
             series: [
                 {
@@ -374,29 +378,23 @@
                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
             })
             .then(response => {
-                console.log(response)
                 if (!response.ok) throw new Error('Network response was not ok');
                 return response.json();
             })
             .then(data => {
-                console.log(data)
-
                 // Step 1: Build date-to-value maps
                 const entryMap = {};
                 data.dates_queryset.forEach((date, i) => {
                 entryMap[date] = data.entry_totals[i];
                 });
-
                 const totalMap = {};
                 data.dates_invoices.forEach((date, i) => {
                 totalMap[date] = data.total_items[i];
                 });
-
                 const amountMap = {};
                 data.dates_invoices.forEach((date, i) => {
                 amountMap[date] = data.total_amount[i];
                 });
-
                 const entryOverallMap = {};
                 data.dates_queryset.forEach((date, i) => {
                 entryOverallMap[date] = data.entry_overalls[i];
@@ -404,7 +402,6 @@
 
                 // Step 2: Find common dates preserving order
                 const commonDates = data.dates_queryset.filter(date => data.dates_invoices.includes(date));
-
                 // Step 3: Construct final array with ratio
                 const result = commonDates.map(date => {
                     const entry = entryMap[date];
@@ -425,9 +422,6 @@
                         third_ratio: thirdRatio
                     };
                 });
-
-                console.log(result);
-
                 const ratioDates = result.map(row => {
                 const date = new Date(row.date);
                 return date.toLocaleDateString('fa-IR', {
@@ -439,6 +433,7 @@
                 const ratioValues = result.map(row => row.ratio);
                 const secondRatioValues = result.map(row => row.second_ratio)
                 const oneToAllValues = result.map(row => row.third_ratio)
+                const overallAmounts = result.map(row => row.entry_overall)
 
                 ratioChart.update({
                     xAxis: { categories: ratioDates },
@@ -451,15 +446,25 @@
                 });
 
                 if (document.querySelectorAll('input[type="checkbox"]:checked').length === 2) {
-                    oneToAllContainer.update({
+                oneToAllContainer.update({
                     xAxis: { categories: ratioDates },
-                    series: [{ data: oneToAllValues }]
-                    });
+                    series: [{
+                    name: 'نسبت یک فروشگاه به کل', 
+                    data: oneToAllValues,
+                    tooltip: {
+                        pointFormatter: function () {
+                        const index = this.index;
+                        const overall = overallAmounts[index] || 0;
+                        return `<p>نسبت:</p> ٪${Math.round(this.y).toLocaleString('fa-IR')}<br><p>کل ورودی:</p> ${overall.toLocaleString('fa-IR')}`;
+                        }
+                    },
+                    }]
+                });
                 } else {
-                    oneToAllContainer.update({
+                oneToAllContainer.update({
                     xAxis: { categories: [] },
                     series: [{ data: [] }]
-                    });
+                });
                 }
                 
                 loadingOverlay.style.display = 'none';
@@ -479,7 +484,185 @@
         })
     })
 </script>
+<script>
+    function formatData(invoice_dates, people_counting_dates, invoice_data, people_counting_data) {
+        const commonDates = people_counting_dates.filter(date => invoice_dates.includes(date));
+        const invoice_data_indicies = commonDates.map(date => invoice_dates.indexOf(date))
+        const people_counting_indicies = commonDates.map(date => people_counting_dates.indexOf(date))
+        const dataMulti = {}
+        for (const branchId in invoice_data) {
+            const invoiceBranch = invoice_data[branchId]
+            const peopleCountingBranch = people_counting_data[branchId]
 
+            const total_amounts = invoice_data_indicies.map(i => invoiceBranch.total_amounts[i])
+            const total_items = invoice_data_indicies.map(i => invoiceBranch.total_items[i])
+            const entry_totals = people_counting_indicies.map(i => peopleCountingBranch.entry_totals[i])
+            const ratio = total_items.map((item, i) => {
+                const entry = entry_totals[i];
+                return entry ? +(item / entry * 100).toFixed(2) : 0;
+            });
+            const second_ratio = total_amounts.map((amount, i) => {
+                const entry = entry_totals[i];
+                return entry ? +Math.floor(amount / entry / 10) : 0;
+            })
+            dataMulti[branchId] = {
+                name: invoiceBranch.name,
+                total_amounts,
+                total_items,
+                entry_totals,
+                ratio,
+                second_ratio
+            }
+        }
+
+        return {"dates": commonDates, "data": dataMulti}
+    }
+    
+    $("#filter-form").on("submit", function (e) {
+        const startDate = $("#start-date").val();
+        const endDate = $("#end-date").val();
+
+        const selectedBranches = $(".real-check:checked").map(function () {
+            return $(this).val();
+        }).get();
+
+        $.ajax({
+            url: "/api/analysis",
+            data: {
+                "start-date": startDate,
+                "end-date": endDate,
+                "branch": selectedBranches
+            },
+            traditional: true, 
+            success: function (data) {
+                console.log(data)
+                final_data = formatData(data.invoice_dates, data.people_counting_dates, data.invoice_data, data.people_counting_data)
+                console.log(final_data)
+                const rawCategories = final_data.dates;
+                const categories = rawCategories.map(dateStr => {
+                const date = new Date(dateStr);
+                return date.toLocaleDateString('fa-IR', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit'
+                });
+                });
+                const series = Object.entries(final_data.data).map(([id, data]) => ({
+                    name: data.name,
+                    data: data.ratio
+                }));
+
+                Highcharts.chart("ratio-container-multi-branch", {
+                    chart: { type: "line",
+                        backgroundColor: '#f9f9f9',
+                        style: {
+                            fontFamily: 'tahoma',
+                            fontSize: '20px'
+                        }
+                        },
+                    title: { text: "مقایسه درصد تبدیل ورودی به فاکتور",
+                        style: {
+                            fontSize: '25px',
+                            color: '#333'
+                        } 
+                    },
+                    xAxis: { categories,
+                        title: {
+                        text: "تاریخ",
+                        style: {
+                        fontSize: '20px',
+                        fontWeight: 'bold'
+                        }
+                    }
+                        },
+                    yAxis: { title: { text: "درصد تبدیل (%)",
+                        style: {
+                            fontSize: '20px',
+                            fontWeight: 'bold'
+                            } 
+                        },
+                        max: 100 
+                    },
+                    series: series
+                });
+            },
+            error: function (xhr) {
+                console.error("Error loading data");
+                toastr.options = {
+                    positionClass: 'toast-top-center',
+                }
+                toastr.error("بازه زمانی یا شعب را انتخاب نمایید")
+            }
+        });
+
+        $.ajax({
+            url: "/api/analysis",
+            data: {
+                "start-date": startDate,
+                "end-date": endDate,
+                "branch": selectedBranches
+            },
+            traditional: true, 
+            success: function (data) {
+                final_data = formatData(data.invoice_dates, data.people_counting_dates, data.invoice_data, data.people_counting_data)
+                const rawCategories = final_data.dates;
+                const categories = rawCategories.map(dateStr => {
+                const date = new Date(dateStr);
+                return date.toLocaleDateString('fa-IR', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit'
+                });
+                });
+                const series = Object.entries(final_data.data).map(([id, data]) => ({
+                    name: data.name,
+                    data: data.second_ratio
+                }));
+
+                Highcharts.chart("second-ratio-container-multi-branch", {
+                    chart: { type: "line",
+                        backgroundColor: '#f9f9f9',
+                        style: {
+                            fontFamily: 'tahoma',
+                            fontSize: '20px'
+                        }
+                        },
+                    title: { text: "مقایسه نسبت ورودی به گردش مالی",
+                        style: {
+                            fontSize: '25px',
+                            color: '#333'
+                        } 
+                    },
+                    xAxis: { categories,
+                        title: {
+                        text: "تاریخ",
+                        style: {
+                        fontSize: '20px',
+                        fontWeight: 'bold'
+                        }
+                    }
+                        },
+                    yAxis: { title: { text: "نسبت (تومان)",
+                        style: {
+                            fontSize: '20px',
+                            fontWeight: 'bold'
+                            } 
+                        } 
+                    },
+                    series: series
+                });
+            },
+            error: function (xhr) {
+                console.error("Error loading data");
+                toastr.options = {
+                    positionClass: 'toast-top-center',
+                }
+                toastr.error("بازه زمانی یا شعب را انتخاب نمایید")
+            }
+        });
+    });
+        
+</script>
 {% endblock %}
 
 

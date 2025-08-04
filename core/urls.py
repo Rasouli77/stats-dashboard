@@ -39,7 +39,7 @@ from dashboard.views import (
     invoice_counter,
     analysis
 )
-from dashboard.api_views import MultipleBranches, MultiBranchesInvoice
+from dashboard.api_views import MultipleBranches, MultiBranchesInvoice, Analysis
 from django.contrib.auth import views as auth_views
 from django.contrib import admin
 
@@ -86,5 +86,6 @@ urlpatterns = [
     path("dashboard/<str:url_hash>", home, name="home"),
     path("api/multi-branch-data", MultipleBranches.as_view(), name="multi_branch_data"),
     path("api/multi-branch-invoice-data", MultiBranchesInvoice.as_view(), name="multi_branch_invoice_data"),
+    path("api/analysis", Analysis.as_view(), name="analysis"),
     path("test/", test, name="test"),
 ]
