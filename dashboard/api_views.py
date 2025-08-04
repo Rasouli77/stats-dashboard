@@ -89,6 +89,7 @@ class Analysis(APIView):
             .annotate(entry_totals=Sum("entry"))
             .order_by("date")
         )
+        people_counting_queryset_no_branch_filter = []
         invoice_queryset = Invoice.objects.filter(branch__merchant__url_hash=merchant.url_hash)
         start_date_str = str(jalali_to_gregorian(request.GET.get("start-date")))
         end_date_str = str(jalali_to_gregorian(request.GET.get("end-date")))
@@ -100,6 +101,7 @@ class Analysis(APIView):
         if start_date and end_date:
             try:
                 people_counting_queryset = people_counting_queryset.filter(date__range=(start_date, end_date))
+                people_counting_queryset_no_branch_filter = people_counting_queryset
                 invoice_queryset = invoice_queryset.filter(date__range=(start_date, end_date))
             except Exception as e:
                 print("error", e)
@@ -123,12 +125,17 @@ class Analysis(APIView):
                 }
             for branch in branches:
                 entry_totals = []
+                entry_overalls = []
                 for row in people_counting_queryset.filter(branch=branch):
                     count = row["entry_totals"]
                     entry_totals.append(count)
+                for row in people_counting_queryset:
+                    count_all = row["entry_totals"]
+                    entry_overalls.append(count_all)
                 response["people_counting_data"][str(branch.pk)] = {
                     "name": branch.name,
                     "entry_totals": entry_totals,
+                    "entry_overalls": entry_overalls
                 }
             print(response)
             return Response(response)

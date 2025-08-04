@@ -155,6 +155,7 @@
                 <div id="one-to-all-container" style="width: 100%; height: 400px; margin-top: 45px;"></div>
                 <div id="ratio-container-multi-branch" style="width: 100%; height: 400px; margin-top: 45px;"></div>
                 <div id="second-ratio-container-multi-branch" style="width: 100%; height: 400px; margin-top: 45px;"></div>
+                <div id="second-one-to-all-container" style="width: 100%; height: 400px; margin-top: 45px;"></div>
             </div>
             </div>
         </div>
@@ -497,6 +498,7 @@
             const total_amounts = invoice_data_indicies.map(i => invoiceBranch.total_amounts[i])
             const total_items = invoice_data_indicies.map(i => invoiceBranch.total_items[i])
             const entry_totals = people_counting_indicies.map(i => peopleCountingBranch.entry_totals[i])
+            const entry_overalls = people_counting_indicies.map(i => peopleCountingBranch.entry_overalls[i])
             const ratio = total_items.map((item, i) => {
                 const entry = entry_totals[i];
                 return entry ? +(item / entry * 100).toFixed(2) : 0;
@@ -505,13 +507,18 @@
                 const entry = entry_totals[i];
                 return entry ? +Math.floor(amount / entry / 10) : 0;
             })
+            const third_ratio = entry_totals.map((entry, i) => {
+                const overall = entry_overalls[i]
+                return overall ? +Math.floor(((entry / overall)*100)) : 0;
+            })
             dataMulti[branchId] = {
                 name: invoiceBranch.name,
                 total_amounts,
                 total_items,
                 entry_totals,
                 ratio,
-                second_ratio
+                second_ratio,
+                third_ratio
             }
         }
 
@@ -647,10 +654,100 @@
                             fontSize: '20px',
                             fontWeight: 'bold'
                             } 
-                        } 
+                        }
                     },
                     series: series
                 });
+            },
+            error: function (xhr) {
+                console.error("Error loading data");
+                toastr.options = {
+                    positionClass: 'toast-top-center',
+                }
+                toastr.error("بازه زمانی یا شعب را انتخاب نمایید")
+            }
+        });
+
+        $.ajax({
+            url: "/api/analysis",
+            data: {
+                "start-date": startDate,
+                "end-date": endDate,
+                "branch": selectedBranches
+            },
+            traditional: true, 
+            success: function (data) {
+                final_data = formatData(data.invoice_dates, data.people_counting_dates, data.invoice_data, data.people_counting_data)
+                const rawCategories = final_data.dates;
+                const categories = rawCategories.map(dateStr => {
+                const date = new Date(dateStr);
+                return date.toLocaleDateString('fa-IR', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit'
+                });
+                });
+                const series = Object.entries(final_data.data).map(([id, data]) => ({
+                    name: data.name,
+                    data: data.third_ratio
+                }));
+
+                Highcharts.chart("second-one-to-all-container", {
+                chart: {
+                    type: "column",
+                    backgroundColor: '#f9f9f9',
+                    style: {
+                        fontFamily: 'tahoma',
+                        fontSize: '20px'
+                    }
+                },
+                title: {
+                    text: "مقایسه نسبت ورودی فروشگاه ها به کل",
+                    style: {
+                        fontSize: '25px',
+                        color: '#333'
+                    } 
+                },
+                xAxis: {
+                    categories: categories,
+                    title: {
+                        text: "تاریخ",
+                        style: {
+                            fontSize: '20px',
+                            fontWeight: 'bold'
+                        }
+                    }
+                },
+                yAxis: {
+                    title: {
+                        text: "نسبت (%)",
+                        style: {
+                            fontSize: '20px',
+                            fontWeight: 'bold'
+                        } 
+                    },
+                    max: 100
+                },
+                plotOptions: {
+                    column: {
+                        stacking: 'normal', // Enables layering
+                        dataLabels: {
+                            enabled: true,
+                            format: '{y:.1f}%',
+                            style: {
+                                fontSize: '12px',
+                                fontFamily: 'tahoma'
+                            }
+                        }
+                    }
+                },
+                tooltip: {
+                    shared: true,
+                    pointFormat: '<span style="color:{series.color}">\u25CF</span> {series.name}: <b>%{point.y:.0f}</b><br/>'
+                },
+                series: series // your formatted stacked data
+            });
+
             },
             error: function (xhr) {
                 console.error("Error loading data");
