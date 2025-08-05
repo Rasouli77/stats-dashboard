@@ -13,7 +13,7 @@ from .models import (
     Cam,
     Invoice,
 )
-from django.db.models import Sum, F
+from django.db.models import Sum, F, Q
 from django.contrib.auth.models import User, Permission
 from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
@@ -114,40 +114,53 @@ def people_counter(request, url_hash):
         )
         campaigns = Campaign.objects.defer("date_created", "last_modified").filter(branch__merchant__url_hash=url_hash, branch__pk__in=permitted_branches_list)
         queryset = queryset.filter(branch__pk__in=permitted_branches_list)
-    selected_branches = request.GET.getlist("branch")
+    selected_branches_str = request.GET.getlist("branch")
     start_date_str = str(jalali_to_gregorian(request.GET.get("start-date")))
     end_date_str = str(jalali_to_gregorian(request.GET.get("end-date")))
     start_date = 0
     end_date = 0
-    branch_count = branches.count()
     entry_totals = []
     exit_totals = []
+    campaign_list = []
+    selected_branches = []
     branches_stats = {}
     if start_date_str and end_date_str:
         try:
             start_date = datetime.strptime(start_date_str, "%Y-%m-%d").date()
             end_date = datetime.strptime(end_date_str, "%Y-%m-%d").date()
             queryset = queryset.filter(date__range=(start_date, end_date))
+            campaigns = campaigns.filter(Q(start_date__lte=end_date) & Q(end_date__gte=start_date))
+            campaign_list = []
+            for campaign in campaigns:
+                dictionary = {
+                    "campaign_name": campaign.name,
+                    "campaign_start_date": campaign.start_date,
+                    "campaign_end_date": campaign.end_date,
+                    "campaign_branch_name": campaign.branch.name,
+                    "campaign_type": campaign.campaign_type,
+                    "campaign_cost": campaign.cost
+                }
+                campaign_list.append(dictionary)
         except Exception as e:
             print(e)
-
-    # If there is one branch
-    if len(selected_branches) == 1:
+    if selected_branches_str:
+        selected_branches = [int(pk) for pk in selected_branches_str]
         try:
-            queryset = queryset.filter(branch=selected_branches[0])
+            queryset = queryset.filter(branch__pk__in=selected_branches)
+            campaigns = campaigns.filter(branch__pk__in=selected_branches) 
             entry_totals = [float(row["total_entry"]) for row in queryset]
             exit_totals = [float(row["total_exit"]) for row in queryset]
-        except Exception as e:
-            print(e)
-
-    # If there is more than one branch
-    if len(selected_branches) > 1 and len(selected_branches) < branch_count:
-        branches_stats = defaultdict(lambda: {"date": [], "entry_totals": []})
-        try:
-            queryset = queryset.filter(branch__in=selected_branches)
-            for row in queryset:
-                branches_stats["date"].append(row["date"].strftime("%Y-%m-%d"))
-                branches_stats["entry_totals"].append(float(row["total_entry"]))
+            campaign_list = []
+            for campaign in campaigns:
+                dictionary = {
+                    "campaign_name": campaign.name,
+                    "campaign_start_date": campaign.start_date,
+                    "campaign_end_date": campaign.end_date,
+                    "campaign_branch_name": campaign.branch.name,
+                    "campaign_type": campaign.campaign_type,
+                    "campaign_cost": campaign.cost
+                }
+                campaign_list.append(dictionary)
         except Exception as e:
             print(e)
 
@@ -163,6 +176,7 @@ def people_counter(request, url_hash):
                 "dates": dates,
                 "entry_totals": entry_totals,
                 "exit_totals": exit_totals,
+                "campaigns": campaign_list
             }
         )
     return render(
@@ -174,7 +188,7 @@ def people_counter(request, url_hash):
             "exit_totals": json.dumps(exit_totals),
             "branches": branches,
             "branches_data": json.dumps(dict(branches_stats)),
-            "campaigns": campaigns
+            "campaigns": json.dumps(campaign_list)
         },
     )
 

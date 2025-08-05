@@ -48,26 +48,6 @@
         .highcharts-credits {
           display: none;
         }
-
-        .branches-grid {
-          display: grid;
-          grid-template-columns: repeat(7, 1fr);
-          gap: 10px;
-        }
-
-        /* Tablets */
-        @media (max-width: 992px) {
-          .branches-grid {
-            grid-template-columns: repeat(4, 1fr);
-          }
-        }
-
-        /* Phones */
-        @media (max-width: 576px) {
-          .branches-grid {
-            grid-template-columns: repeat(2, 1fr);
-          }
-        }
     </style>
 {% endblock %}
 {% block content %}
@@ -76,95 +56,96 @@
         <div class="loader"></div>
     </div>
     <div class="calendar-container">
-    <div class="container">
-        <div class="row" style="margin-bottom: 20px;">
-        <!-- Date Accordion -->
-            <div class="col-xl-4 col-lg-4 col-md-12 col-sm-12" style="margin-bottom: 10px;">
-            <h6>تاریخ</h6>
-            <div class="accordion mt-3 accordion-header-primary" id="accordionDate">
-                <div class="card accordion-item">
-                <h2 class="accordion-header d-flex align-items-center">
-                    <button type="button" class="accordion-button" data-bs-toggle="collapse" data-bs-target="#collapseDate" aria-expanded="true">
-                    <i class="menu-icon tf-icons bx bx-calendar"></i>
-                    انتخاب تاریخ
-                    </button>
-                </h2>
+        <div class="container">
+            <div class="row" style="margin-bottom: 20px;">
+                <!-- Date Accordion -->
+                <div class="col-xl-4 col-lg-4 col-md-12 col-sm-12" style="margin-bottom: 10px;">
+                <h6>تاریخ</h6>
+                <div class="accordion mt-3 accordion-header-primary" id="accordionDate">
+                    <div class="card accordion-item">
+                    <h2 class="accordion-header d-flex align-items-center">
+                        <button type="button" class="accordion-button" data-bs-toggle="collapse" data-bs-target="#collapseDate" aria-expanded="true">
+                        <i class="menu-icon tf-icons bx bx-calendar"></i>
+                        انتخاب تاریخ
+                        </button>
+                    </h2>
 
-                <div id="collapseDate" class="accordion-collapse collapse" data-bs-parent="#accordionDate">
-                    <div class="accordion-body" style="display: flex; justify-content: center; align-items: center;">
-                    <div id="date-range"></div>
-                    </div>
-                </div>
-                </div>
-            </div>              
-            </div>
-
-        <!-- Branch Accordion -->
-            <div class="col-xl-8 col-lg-8 col-md-12 col-sm-12" style="margin-bottom: 10px;">
-            <h6>شعب</h6>
-            <div class="accordion mt-3 accordion-header-primary" id="accordionBranch">
-                <div class="card accordion-item">
-                <h2 class="accordion-header d-flex align-items-center">
-                    <button type="button" class="accordion-button" data-bs-toggle="collapse" data-bs-target="#collapseBranch" aria-expanded="true">
-                    <i class="menu-icon tf-icons bx bx-map-alt"></i>
-                    انتخاب شعب
-                    </button>
-                </h2>
-
-                <div id="collapseBranch" class="accordion-collapse collapse" data-bs-parent="#accordionBranch">
-                    <div class="accordion-body">
-                    <div class="branches-grid mt-3">
-                        <div class="form-check mt-3">
-                            <input class="form-check-input" type="checkbox" id="select-all">
-                            <label class="form-check-label" for="defaultCheck1">انتخاب همه</label>
+                    <div id="collapseDate" class="accordion-collapse collapse" data-bs-parent="#accordionDate">
+                        <div class="accordion-body" style="display: flex; justify-content: center; align-items: center; position: absolute; z-index: 1001; width: 100%; background-color: white; box-shadow: 0 0.25rem 1rem rgba(147, 158, 170, 0.45);">
+                        <div id="date-range"></div>
                         </div>
-                        {% for branch in branches %}
-                        <div class="form-check mt-3">
-                            <input class="form-check-input fake-check" type="checkbox" value="{{ branch.pk }}">
-                            <label class="form-check-label" for="defaultCheck1">{{ branch.name }}</label>
-                        </div>
-                        {% endfor %}
                     </div>
                     </div>
+                </div>              
                 </div>
-                </div>
-            </div>   
-            </div>
+                <!-- Branch Accordion -->
+                <div class="col-xl-3 col-lg-3 col-md-12 col-sm-12" style="margin-bottom: 10px;">
+                <h6>شعب</h6>
+                <div class="accordion mt-3 accordion-header-primary" id="accordionBranch">
+                    <div class="card accordion-item">
+                    <h2 class="accordion-header d-flex align-items-center">
+                        <button type="button" class="accordion-button" data-bs-toggle="collapse" data-bs-target="#collapseBranch" aria-expanded="true">
+                        <i class="menu-icon tf-icons bx bx-map-alt"></i>
+                        انتخاب شعب
+                        </button>
+                    </h2>
 
-            <form action="" method="get" id="filter-form">
-                    <label style="display: none;" for="start-date">از تاریخ</label>
-                    <input type="text" name="start-date" id="start-date" style="display: none;">
-                    <label style="display: none;" for="end-date">تا</label>
-                    <input type="text" name="end-date" id="end-date" style="display: none;">
-                    {% for branch in branches %}
-                    <div class="form-check mt-3" style="display: none;">
-                        <input class="form-check-input real-check" type="checkbox" value="{{ branch.pk }}" name="branch">
-                        <label class="form-check-label" for="defaultCheck1">{{ branch.name }}</label>
+                    <div id="collapseBranch" class="accordion-collapse collapse" data-bs-parent="#accordionBranch">
+                        <div class="accordion-body" style="position: absolute; z-index: 999; width: 100%; background-color: white; box-shadow: 0 0.25rem 1rem rgba(147, 158, 170, 0.45);">
+                        <div class="branches-grid mt-3">
+                            <div class="form-check mt-3">
+                                <input class="form-check-input" type="checkbox" id="select-all">
+                                <label class="form-check-label" for="defaultCheck1">انتخاب همه</label>
+                            </div>
+                            {% for branch in branches %}
+                            <div class="form-check mt-3">
+                                <input class="form-check-input fake-check" type="checkbox" value="{{ branch.pk }}">
+                                <label class="form-check-label" for="defaultCheck1">{{ branch.name }}</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        </div>
                     </div>
-                    {% endfor %}
-                    <button class="btn btn-primary btn-lg" type="submit" id="filter-proxy-button" data-bs-toggle="collapse" data-bs-target="#collapseDate">اعمال فیلتر</button>
-            </form>
-        </div>
-        <div class="row">
-            <div class="col-lg-12">
-                <small class="text-light fw-semibold">منو</small>
-                <div class="demo-inline-spacing mt-3">
-                <div class="list-group list-group-horizontal-md text-md-center" role="tablist">
-                    <a class="list-group-item list-group-item-action active" id="home-list-item" data-bs-toggle="list" href="#horizontal-home" aria-selected="true" role="tab">ترافیک</a>
-                    <a class="list-group-item list-group-item-action" id="profile-list-item" data-bs-toggle="list" href="#horizontal-profile" aria-selected="false" role="tab" tabindex="-1">مقایسه شعب</a>
+                    </div>
+                </div>   
                 </div>
-                <div class="tab-content px-0 pt-2">
-                    <div class="tab-pane fade lh-2 active show" id="horizontal-home" role="tabpanel" aria-labelledby="#home-list-item">
-                    <div id="container" style="width: 100%; height: 400px; margin-top: 45px;"></div>
-                    </div>
-                    <div class="tab-pane fade lh-2" id="horizontal-profile" role="tabpanel" aria-labelledby="#profile-list-item">
-                    <div id="second-container" style="width: 100%; height: 400px; margin-top: 45px;"></div>
-                    </div>
+                <!-- Dropdown Display -->
+                <div class="col-xl-3 col-lg-3 col-md-12 col-sm-12" style="margin-bottom: 10px;">
+                    <h6>نمایش</h6>
+                    <select class="form-control" id="select-view">
+                        <option value="1">تجمیعی</option>
+                        <option value="2">مقایسه ای</option>
+                    </select>
                 </div>
+                <div class="col-xl-2 col-lg-2 col-md-12 col-sm-12" style="margin-top: 20px; display: flex; justify-content: center; align-items: center;">
+                    <form action="" method="get" id="filter-form">
+                            <label style="display: none;" for="start-date">از تاریخ</label>
+                            <input type="text" name="start-date" id="start-date" style="display: none;">
+                            <label style="display: none;" for="end-date">تا</label>
+                            <input type="text" name="end-date" id="end-date" style="display: none;">
+                            {% for branch in branches %}
+                            <div class="form-check mt-3" style="display: none;">
+                                <input class="form-check-input real-check" type="checkbox" value="{{ branch.pk }}" name="branch">
+                                <label class="form-check-label" for="defaultCheck1">{{ branch.name }}</label>
+                            </div>
+                            {% endfor %}
+                            <button class="btn btn-primary btn-md" type="submit" id="filter-proxy-button">فیلتر</button>
+                    </form>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="demo-inline-spacing mt-3">
+                    <div class="tab-content px-0 pt-2">
+                        <!-- total traffic aggregation -->
+                        <div id="container" style="width: 100%; height: 400px; margin-top: 45px;"></div>
+                        <!-- total traffic aggregation by branches -->
+                        <div id="second-container" style="width: 100%; height: 400px; margin-top: 45px;"></div>
+                    </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
     </div><br>
 {% endblock %}
 {% block extra_js %}
@@ -188,7 +169,7 @@
         });
 
         const entry_totals = JSON.parse('{{ entry_totals|safe }}');
-        const exit_totals = JSON.parse('{{ exit_totals|safe }}')
+        const exit_totals = JSON.parse('{{ exit_totals|safe }}');
         lineChart = Highcharts.chart(
             'container', {
                 chart: {
@@ -255,6 +236,7 @@
                 return response.json();
             })
             .then(data => {
+                console.log(data)
                 const newCategories = data.dates.map(dateStr => {
                     const date = new Date(dateStr);
                     return date.toLocaleDateString('fa-IR', {
