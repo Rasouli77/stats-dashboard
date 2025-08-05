@@ -54,7 +54,6 @@ def perm_to_open(request, url_hash):
         else:
             return False
     except Exception as e:
-        print(e)
         return False
 
 
@@ -65,7 +64,6 @@ def jalali_to_gregorian(date_str: str):
         gregorian_date = jdatetime.date(jyear, jmonth, jday).togregorian()
         return gregorian_date
     except Exception as e:
-        print(e)
         return None
 
 
@@ -99,7 +97,9 @@ def people_counter(request, url_hash):
         return render(request, "401.html", status=401)
     if request.user.profile.is_manager:
         branches = Branch.objects.only("name", "pk").filter(merchant__url_hash=url_hash)
-        campaigns = Campaign.objects.defer("date_created", "last_modified").filter(branch__merchant__url_hash=url_hash)
+        campaigns = Campaign.objects.defer("date_created", "last_modified").filter(
+            branch__merchant__url_hash=url_hash
+        )
     else:
         permitted_branches = (
             PermissionToViewBranch.objects.defer("date_created", "last_modified")
@@ -112,7 +112,9 @@ def people_counter(request, url_hash):
         branches = Branch.objects.only("name", "pk").filter(
             merchant__url_hash=url_hash, pk__in=permitted_branches_list
         )
-        campaigns = Campaign.objects.defer("date_created", "last_modified").filter(branch__merchant__url_hash=url_hash, branch__pk__in=permitted_branches_list)
+        campaigns = Campaign.objects.defer("date_created", "last_modified").filter(
+            branch__merchant__url_hash=url_hash, branch__pk__in=permitted_branches_list
+        )
         queryset = queryset.filter(branch__pk__in=permitted_branches_list)
     selected_branches_str = request.GET.getlist("branch")
     start_date_str = str(jalali_to_gregorian(request.GET.get("start-date")))
@@ -129,7 +131,9 @@ def people_counter(request, url_hash):
             start_date = datetime.strptime(start_date_str, "%Y-%m-%d").date()
             end_date = datetime.strptime(end_date_str, "%Y-%m-%d").date()
             queryset = queryset.filter(date__range=(start_date, end_date))
-            campaigns = campaigns.filter(Q(start_date__lte=end_date) & Q(end_date__gte=start_date))
+            campaigns = campaigns.filter(
+                Q(start_date__lte=end_date) & Q(end_date__gte=start_date)
+            )
             campaign_list = []
             for campaign in campaigns:
                 dictionary = {
@@ -138,7 +142,7 @@ def people_counter(request, url_hash):
                     "campaign_end_date": campaign.end_date,
                     "campaign_branch_name": campaign.branch.name,
                     "campaign_type": campaign.campaign_type,
-                    "campaign_cost": campaign.cost
+                    "campaign_cost": campaign.cost,
                 }
                 campaign_list.append(dictionary)
         except Exception as e:
@@ -147,7 +151,7 @@ def people_counter(request, url_hash):
         selected_branches = [int(pk) for pk in selected_branches_str]
         try:
             queryset = queryset.filter(branch__pk__in=selected_branches)
-            campaigns = campaigns.filter(branch__pk__in=selected_branches) 
+            campaigns = campaigns.filter(branch__pk__in=selected_branches)
             entry_totals = [float(row["total_entry"]) for row in queryset]
             exit_totals = [float(row["total_exit"]) for row in queryset]
             campaign_list = []
@@ -158,7 +162,7 @@ def people_counter(request, url_hash):
                     "campaign_end_date": campaign.end_date,
                     "campaign_branch_name": campaign.branch.name,
                     "campaign_type": campaign.campaign_type,
-                    "campaign_cost": campaign.cost
+                    "campaign_cost": campaign.cost,
                 }
                 campaign_list.append(dictionary)
         except Exception as e:
@@ -167,8 +171,6 @@ def people_counter(request, url_hash):
     entry_totals = [float(row["total_entry"]) for row in queryset]
     exit_totals = [float(row["total_exit"]) for row in queryset]
     dates = [str(row["date"].strftime("%Y-%m-%d")) for row in queryset]
-    # After your view or queryset logic
-    print("Total queries executed:", len(connection.queries))
 
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
         return JsonResponse(
@@ -176,7 +178,7 @@ def people_counter(request, url_hash):
                 "dates": dates,
                 "entry_totals": entry_totals,
                 "exit_totals": exit_totals,
-                "campaigns": campaign_list
+                "campaigns": campaign_list,
             }
         )
     return render(
@@ -188,7 +190,7 @@ def people_counter(request, url_hash):
             "exit_totals": json.dumps(exit_totals),
             "branches": branches,
             "branches_data": json.dumps(dict(branches_stats)),
-            "campaigns": json.dumps(campaign_list)
+            "campaigns": json.dumps(campaign_list),
         },
     )
 
@@ -205,7 +207,6 @@ def users_list(request, url_hash):
         and request.user.profile.is_manager
         and request.user.is_active
     ):
-        print("Total queries executed:", connection.queries, len(connection.queries))
         return render(request, "users.html", {"users": users})
     return render(request, "401.html", status=401)
 
@@ -233,7 +234,6 @@ def generate_user(request, url_hash):
                 )
             except Exception as e:
                 print(e)
-        print("Total queries executed:", connection.queries, len(connection.queries))
         return render(request, "create-user.html", {"form": form})
     return render(request, "401.html", status=401)
 
@@ -253,7 +253,6 @@ def user_permissions(request, user_id):
                 return redirect("profile", user.pk)
         else:
             form = UserPermissions(instance=user)
-        print("Total queries executed:", connection.queries, len(connection.queries))
         return render(request, "user-permissions.html", {"user": user, "form": form})
     return render(request, "401.html", status=401)
 
@@ -299,7 +298,6 @@ def branch_permissions(request, user_id):
                 "allowed_branch_count": len(allowed_branches),
             },
         )
-    print("Total queries executed:", connection.queries, len(connection.queries))
     return render(request, "401.html", status=401)
 
 
@@ -332,12 +330,10 @@ def home(request, url_hash):
             / previous_7_days_entry["total_entry"]
         ) * 100
     except Exception as e:
-        print(e)
         diff_7_per = 0
     try:
         rounded_diff_7_per = round(diff_7_per, 2)
     except Exception as e:
-        print(e)
         rounded_diff_7_per = 0
 
     # branches
@@ -384,12 +380,10 @@ def home(request, url_hash):
             / previous_30_days_entry["total_entry"]
         ) * 100
     except Exception as e:
-        print(e)
         diff_30_per = 0
     try:
         rounded_diff_30_per = round(diff_30_per, 2)
     except Exception as e:
-        print(e)
         rounded_diff_30_per = 0
 
     # branches
@@ -418,7 +412,6 @@ def home(request, url_hash):
         )
         .order_by("-total_entry")
     )
-    print("Total queries executed:", connection.queries, len(connection.queries))
     return render(
         request,
         "home.html",
@@ -449,7 +442,6 @@ def profile(request, user_id):
         "date_created", "last_modified"
     ).filter(user=user_profile.pk)
     if request.user.pk == user.pk and request.user.is_active:
-        print("Total queries executed:", connection.queries, len(connection.queries))
         return render(
             request,
             "profile.html",
@@ -475,7 +467,6 @@ def profile(request, user_id):
                 "branch_length": len(allowed_branches),
             },
         )
-    print("Total queries executed:", connection.queries, len(connection.queries))
     return render(request, "401.html", status=401)
 
 
@@ -489,10 +480,8 @@ def ping_ip(ip, timeout=15):
         )
         return result.returncode == 0
     except subprocess.TimeoutExpired:
-        print(f"Timeout: Ping to {ip} took too long.")
         return False
     except Exception as e:
-        print(f"Error: {e}")
         return False
 
 
@@ -511,11 +500,8 @@ def test(request):
                 "branch_id": cam.branch.pk,
             }
         )
-    print(ips)
     for ip in ips:
-        print(ip)
         if ping_ip(ip["ip"]):
-            print(ip["ip"])
             try:
                 data = get_custom_date_camera_data(ip["ip"], yesterday, yesterday)
                 update_or_create_camera_data(
@@ -550,7 +536,6 @@ def campaign(request, url_hash):
     ).filter(merchant__url_hash=url_hash, pk__in=permission_list)
     if not request.user.profile.is_manager:
         campaigns = campaigns.filter(branch__pk__in=branches).order_by("pk")
-    print("Total queries executed:", connection.queries, len(connection.queries))
     return render(request, "campaign.html", {"campaigns": campaigns})
 
 
@@ -591,7 +576,6 @@ def create_campaign(request, url_hash):
         return render(
             request, "create-campaign.html", {"form": form, "branches": branches}
         )
-    print("Total queries executed:", connection.queries, len(connection.queries))
     return render(request, "401.html", status=401)
 
 
@@ -638,7 +622,6 @@ def edit_campaign(request, campaign_id):
                 "jalali_end_date": jalali_end_date,
             },
         )
-    print("Total queries executed:", connection.queries, len(connection.queries))
     return render(
         request, "edit-campaign.html", {"branches": branches, "campaign": campaign}
     )
@@ -653,7 +636,6 @@ def delete_campaign(request, campaign_id):
     if request.method == "POST":
         campaign.delete()
         return redirect("campaign", request.user.profile.merchant.url_hash)
-    print("Total queries executed:", connection.queries, len(connection.queries))
     return render(
         request,
         "delete-campaign.html",
@@ -739,7 +721,6 @@ def upload_excel_file_invoice(request, url_hash):
             )
     else:
         form = UploadInvoiceExcel()
-        print("Total queries executed:", connection.queries, len(connection.queries))
         return render(request, "upload_excel_invoice.html", {"form": form})
 
 
@@ -797,7 +778,6 @@ def invoices(request, url_hash):
             except Exception as e:
                 print(e)
             return JsonResponse({"invoices": list(invoices.values())})
-    print("Total queries executed:", connection.queries, len(connection.queries))
     return render(
         request, "invoices.html", {"invoices": invoices, "branches": branches}
     )
@@ -832,7 +812,6 @@ def invoice_detail(request, invoice_pk):
         else:
             messages.error(request, f"{form.errors}")
             return redirect(reverse("invoice_detail", args=[invoice_pk]))
-    print("Total queries executed:", connection.queries, len(connection.queries))
     return render(request, "invoice_detail.html", {"invoice": invoice, "form": form})
 
 
@@ -973,7 +952,6 @@ def excel_template_generator(request, url_hash):
             return response
     except Exception as e:
         print(e)
-    print("Total queries executed:", connection.queries, len(connection.queries))
     return render(request, "create-excel-template.html", {"branches": branches})
 
 
@@ -986,7 +964,7 @@ def invoice_counter(request, url_hash):
     allowed_branches = []
     profile = request.user.profile
     all_branches = Branch.objects.defer(
-            "country", "province", "city", "district", "date_created", "last_modified"
+        "country", "province", "city", "district", "date_created", "last_modified"
     ).filter(merchant__url_hash=url_hash)
     if not profile.is_manager:
         permissions = (
@@ -1006,19 +984,28 @@ def invoice_counter(request, url_hash):
     except Exception as e:
         print(e)
     branches = []
-    invoices = Invoice.objects.defer("date_created", "last_modified").values("date").annotate(sum_total_amount=Sum("total_amount")).annotate(sum_total_items=Sum("total_items")).filter(branch__pk__in=allowed_branches).order_by("date")
+    invoices = (
+        Invoice.objects.defer("date_created", "last_modified")
+        .values("date")
+        .annotate(sum_total_amount=Sum("total_amount"))
+        .annotate(sum_total_items=Sum("total_items"))
+        .filter(branch__pk__in=allowed_branches)
+        .order_by("date")
+    )
     if start_date_str and end_date_str:
         try:
             start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
             end_date = datetime.strptime(end_date_str, "%Y-%m-%d")
             invoices = invoices.filter(date__range=(start_date, end_date))
-            print(start_date, end_date)
         except Exception as e:
             print(e)
         if branches_str:
-            print(branches_str)
             try:
-                branches = [int(branch_str) for branch_str in branches_str if int(branch_str) in allowed_branches]
+                branches = [
+                    int(branch_str)
+                    for branch_str in branches_str
+                    if int(branch_str) in allowed_branches
+                ]
             except ValueError:
                 branches = []
             if branches:
@@ -1033,12 +1020,22 @@ def invoice_counter(request, url_hash):
                 {
                     "dates": dates,
                     "total_items": total_items,
-                    "total_amount": total_amount
+                    "total_amount": total_amount,
                 }
             )
     if not profile.is_manager:
         all_branches = all_branches.filter(pk__in=allowed_branches)
-    return render(request, "invoice-counter.html", {"invoices": invoices, "branches": all_branches, "dates": json.dumps(dates), "total_amount": json.dumps(total_amount), "total_items": json.dumps(total_items)})
+    return render(
+        request,
+        "invoice-counter.html",
+        {
+            "invoices": invoices,
+            "branches": all_branches,
+            "dates": json.dumps(dates),
+            "total_amount": json.dumps(total_amount),
+            "total_items": json.dumps(total_items),
+        },
+    )
 
 
 @login_required
@@ -1050,7 +1047,7 @@ def analysis(request, url_hash):
     allowed_branches = []
     profile = request.user.profile
     all_branches = Branch.objects.defer(
-            "country", "province", "city", "district", "date_created", "last_modified"
+        "country", "province", "city", "district", "date_created", "last_modified"
     ).filter(merchant__url_hash=url_hash)
     if not profile.is_manager:
         permissions = (
@@ -1072,27 +1069,40 @@ def analysis(request, url_hash):
     branches = []
     queryset_no_branch_filter = []
     queryset = (
-        PeopleCounting.objects.filter(merchant__url_hash=url_hash, branch__pk__in=allowed_branches)
+        PeopleCounting.objects.filter(
+            merchant__url_hash=url_hash, branch__pk__in=allowed_branches
+        )
         .values("date")
         .annotate(total_entry=Sum("entry"))
         .annotate(total_exit=Sum("exit"))
         .order_by("date")
     )
-    invoices = Invoice.objects.defer("date_created", "last_modified").values("date").annotate(sum_total_amount=Sum("total_amount")).annotate(sum_total_items=Sum("total_items")).filter(branch__pk__in=allowed_branches).order_by("date")
+    invoices = (
+        Invoice.objects.defer("date_created", "last_modified")
+        .values("date")
+        .annotate(sum_total_amount=Sum("total_amount"))
+        .annotate(sum_total_items=Sum("total_items"))
+        .filter(branch__pk__in=allowed_branches)
+        .order_by("date")
+    )
     if start_date_str and end_date_str:
         try:
             start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
             end_date = datetime.strptime(end_date_str, "%Y-%m-%d")
             invoices = invoices.filter(date__range=(start_date, end_date))
             queryset = queryset.filter(date__range=(start_date, end_date))
-            queryset_no_branch_filter = queryset.filter(date__range=(start_date, end_date))
-            print(start_date, end_date)
+            queryset_no_branch_filter = queryset.filter(
+                date__range=(start_date, end_date)
+            )
         except Exception as e:
             print(e)
         if branches_str:
-            print(branches_str)
             try:
-                branches = [int(branch_str) for branch_str in branches_str if int(branch_str) in allowed_branches]
+                branches = [
+                    int(branch_str)
+                    for branch_str in branches_str
+                    if int(branch_str) in allowed_branches
+                ]
             except ValueError:
                 branches = []
             if branches:
@@ -1104,7 +1114,9 @@ def analysis(request, url_hash):
         total_items = [float(row["sum_total_items"]) for row in invoices]
         total_amount = [float(row["sum_total_amount"]) for row in invoices]
         entry_totals = [float(row["total_entry"]) for row in queryset]
-        entry_overalls = [float(row["total_entry"]) for row in queryset_no_branch_filter]
+        entry_overalls = [
+            float(row["total_entry"]) for row in queryset_no_branch_filter
+        ]
         if request.headers.get("X-Requested-With") == "XMLHttpRequest":
             return JsonResponse(
                 {
@@ -1113,9 +1125,21 @@ def analysis(request, url_hash):
                     "entry_totals": entry_totals,
                     "total_items": total_items,
                     "total_amount": total_amount,
-                    "entry_overalls": entry_overalls
+                    "entry_overalls": entry_overalls,
                 }
             )
     if not profile.is_manager:
         all_branches = all_branches.filter(pk__in=allowed_branches)
-    return render(request, "analysis.html", {"branches": all_branches, "dates_queryset": json.dumps(dates_queryset), "dates_invoices": json.dumps(dates_invoices), "entry_totals": json.dumps(entry_totals), "total_amount": json.dumps(total_amount), "total_items": json.dumps(total_items), "entry_overalls": json.dumps(entry_overalls)})
+    return render(
+        request,
+        "analysis.html",
+        {
+            "branches": all_branches,
+            "dates_queryset": json.dumps(dates_queryset),
+            "dates_invoices": json.dumps(dates_invoices),
+            "entry_totals": json.dumps(entry_totals),
+            "total_amount": json.dumps(total_amount),
+            "total_items": json.dumps(total_items),
+            "entry_overalls": json.dumps(entry_overalls),
+        },
+    )

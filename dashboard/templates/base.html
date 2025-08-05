@@ -16,10 +16,6 @@
 
     <!-- Icons. Uncomment required icon fonts -->
     <link rel="stylesheet" href="{% static 'assets/vendor/fonts/boxicons.css' %}">
-
-    <!-- <link rel="stylesheet" href="../../assets/vendor/fonts/fontawesome.css" /> -->
-    <!-- <link rel="stylesheet" href="../../assets/vendor/fonts/flag-icons.css" /> -->
-
     <!-- Core CSS -->
     <link rel="stylesheet" href="{% static 'assets/vendor/css/rtl/core.css' %}">
     <link rel="stylesheet" href="{% static 'assets/vendor/css/rtl/theme-default.css' %}">
@@ -303,38 +299,9 @@
     <!-- Page JS -->
     <script src="{% static 'assets/js/extended-ui-drag-and-drop.js' %}"></script>
     <!-- Persian for HighChart Utils -->
-    <script>
-        // Observe the DOM for new menu items
-        const observer = new MutationObserver(() => {
-            const buttons = document.querySelectorAll(".highcharts-menu-item");
-            const listContainer = document.querySelector(".highcharts-menu");
-            if (buttons.length >= 5) {
-                buttons[2].style.display = 'none';
-                buttons[3].style.display = 'none';
-                buttons[4].style.display = 'none';
-                buttons[0].textContent = 'نمایش تمام صفحه';
-                buttons[1].textContent = 'PDF خروجی';
-                buttons[5].textContent = 'CSV خروجی';
-                buttons[6].textContent = 'XLS خروجی';
-                buttons[7].textContent = 'نمایش جدول';
-                observer.disconnect();
-            }
-        });
-    
-      
-        observer.observe(document.body, {
-            childList: true,
-            subtree: true
-        });   
-    </script>
-    <!-- Logout Form Logic -->
-    <script>
-      buttonLogout = document.getElementById("fake-logout")
-      form = document.getElementById("logout-form")
-      buttonLogout.addEventListener("click", () => {
-        form.submit()
-      })
-    </script>
+    <script src="{% static 'assets/js/persian-highchart-utils.js' %}"></script>
+    <!-- Logout JS -->
+     <script src="{% static 'assets/js/logout.js' %}"></script>
     <!-- Page JS -->
   </body>
 </html>

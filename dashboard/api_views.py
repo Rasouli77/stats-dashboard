@@ -6,6 +6,7 @@ from django.db.models import F
 from .views import jalali_to_gregorian
 from datetime import datetime
 
+
 class MultipleBranches(APIView):
     def get(self, request):
         queryset = (
@@ -42,7 +43,7 @@ class MultipleBranches(APIView):
                 "entry_totals": entry_totals,
             }
         return Response(response)
-    
+
 
 class MultiBranchesInvoice(APIView):
     def get(self, request):
@@ -61,7 +62,9 @@ class MultiBranchesInvoice(APIView):
         response = {"dates": dates, "invoice_data": {}}
         selected_branches = request.GET.getlist("branch")
         if selected_branches:
-            branches = Branch.objects.filter(merchant__url_hash=merchant.url_hash, pk__in=selected_branches)
+            branches = Branch.objects.filter(
+                merchant__url_hash=merchant.url_hash, pk__in=selected_branches
+            )
             for branch in branches:
                 total_amounts = []
                 total_items = []
@@ -73,7 +76,7 @@ class MultiBranchesInvoice(APIView):
                 response["invoice_data"][str(branch.pk)] = {
                     "name": branch.name,
                     "total_amounts": total_amounts,
-                    "total_items": total_items
+                    "total_items": total_items,
                 }
             return Response(response)
 
@@ -81,7 +84,7 @@ class MultiBranchesInvoice(APIView):
 class Analysis(APIView):
     def get(self, request):
         merchant = request.user.profile.merchant
-        people_counting_queryset =  (
+        people_counting_queryset = (
             PeopleCounting.objects.filter(
                 merchant__url_hash=request.user.profile.merchant.url_hash
             )
@@ -89,7 +92,9 @@ class Analysis(APIView):
             .annotate(entry_totals=Sum("entry"))
             .order_by("date")
         )
-        invoice_queryset = Invoice.objects.filter(branch__merchant__url_hash=merchant.url_hash)
+        invoice_queryset = Invoice.objects.filter(
+            branch__merchant__url_hash=merchant.url_hash
+        )
         start_date_str = str(jalali_to_gregorian(request.GET.get("start-date")))
         end_date_str = str(jalali_to_gregorian(request.GET.get("end-date")))
         selected_branches = request.GET.getlist("branch")
@@ -99,15 +104,28 @@ class Analysis(APIView):
         end_date = datetime.strptime(end_date_str, "%Y-%m-%d").date()
         if start_date and end_date:
             try:
-                people_counting_queryset = people_counting_queryset.filter(date__range=(start_date, end_date))
-                invoice_queryset = invoice_queryset.filter(date__range=(start_date, end_date))
+                people_counting_queryset = people_counting_queryset.filter(
+                    date__range=(start_date, end_date)
+                )
+                invoice_queryset = invoice_queryset.filter(
+                    date__range=(start_date, end_date)
+                )
             except Exception as e:
                 print("error", e)
         invoice_dates = sorted(set(invoice_queryset.values_list("date", flat=True)))
-        people_counting_dates = sorted(set(people_counting_queryset.values_list("date", flat=True)))
-        response = {"invoice_dates": invoice_dates, "invoice_data": {}, "people_counting_dates": people_counting_dates, "people_counting_data": {}}
+        people_counting_dates = sorted(
+            set(people_counting_queryset.values_list("date", flat=True))
+        )
+        response = {
+            "invoice_dates": invoice_dates,
+            "invoice_data": {},
+            "people_counting_dates": people_counting_dates,
+            "people_counting_data": {},
+        }
         if selected_branches:
-            branches = Branch.objects.filter(merchant__url_hash=merchant.url_hash, pk__in=selected_branches)
+            branches = Branch.objects.filter(
+                merchant__url_hash=merchant.url_hash, pk__in=selected_branches
+            )
             for branch in branches:
                 total_amounts = []
                 total_items = []
@@ -119,7 +137,7 @@ class Analysis(APIView):
                 response["invoice_data"][str(branch.pk)] = {
                     "name": branch.name,
                     "total_amounts": total_amounts,
-                    "total_items": total_items
+                    "total_items": total_items,
                 }
             for branch in branches:
                 entry_totals = []
@@ -133,7 +151,7 @@ class Analysis(APIView):
                 response["people_counting_data"][str(branch.pk)] = {
                     "name": branch.name,
                     "entry_totals": entry_totals,
-                    "entry_overalls": entry_overalls
+                    "entry_overalls": entry_overalls,
                 }
             print(response)
             return Response(response)

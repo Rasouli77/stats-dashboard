@@ -153,12 +153,10 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="{% static 'assets/vendor/libs/toastr/toastr.js' %}"></script>
 <script src="{% static 'assets/js/ui-toasts.js' %}"></script>
-<!-- HighChart chart paint and Ajax for the traffic section of the page -->
+<!-- HighChart Chart Paint (Aggregation) Raw JavaScript -->
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-
         const rawCategories = JSON.parse('{{ dates|safe }}');  
-
         const categories = rawCategories.map(dateStr => {
             const date = new Date(dateStr);
             return date.toLocaleDateString('fa-IR', {
@@ -167,7 +165,6 @@
                 day: '2-digit'
             });
         });
-
         const entry_totals = JSON.parse('{{ entry_totals|safe }}');
         const exit_totals = JSON.parse('{{ exit_totals|safe }}');
         lineChart = Highcharts.chart(
@@ -218,7 +215,6 @@
                 ]
             }
         );
-        
         document.getElementById('filter-form').addEventListener('submit', function(event) {
             event.preventDefault(); 
             const form = this;
@@ -226,7 +222,6 @@
             const queryString = new URLSearchParams(formData).toString();
             const loadingOverlay = document.getElementById('loading-overlay');
             loadingOverlay.style.display = 'flex';
-        
             fetch(`{% url 'people_counter' url_hash=request.user.profile.merchant.url_hash %}?${queryString}`, {
                 method: 'GET',
                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -236,7 +231,6 @@
                 return response.json();
             })
             .then(data => {
-                console.log(data)
                 const newCategories = data.dates.map(dateStr => {
                     const date = new Date(dateStr);
                     return date.toLocaleDateString('fa-IR', {
@@ -252,7 +246,6 @@
                     {data: data.exit_totals}
                     ],
                 });
-                
                 loadingOverlay.style.display = 'none';
             })
             .catch(error => {
@@ -262,7 +255,6 @@
             });
         });
     });
-    
     document.getElementById("select-all").addEventListener("change", () => {
         const isChecked = document.getElementById("select-all").checked
         document.querySelectorAll(".fake-check").forEach((item) => {
@@ -270,16 +262,14 @@
         })
     })
 </script>
-<!-- HighChart chart paint for multi-display line charts and Ajax for the comparison section of the page -->
+<!-- HighChart Chart Paint (Branch Separation) JQuery -->
 <script>
     $("#filter-form").on("submit", function (e) {
         const startDate = $("#start-date").val();
         const endDate = $("#end-date").val();
-
         const selectedBranches = $(".real-check:checked").map(function () {
             return $(this).val();
-        }).get();  // convert to array
-
+        }).get(); 
         $.ajax({
             url: "/api/multi-branch-data",
             data: {
@@ -298,19 +288,17 @@
                     day: '2-digit'
                 });
                 });
-
                 const series = Object.entries(data.branches).map(([id, branchData]) => ({
                     name: branchData.name,
                     data: branchData.entry_totals
                 }));
-
                 Highcharts.chart("second-container", {
                     chart: { type: "line",
                         backgroundColor: '#f9f9f9',
                         style: {
                             fontFamily: 'tahoma',
                             fontSize: '20px'
-                        }
+                            }
                         },
                     title: { text: "مقایسه ترافیک شعب",
                         style: {
@@ -324,8 +312,8 @@
                         style: {
                         fontSize: '20px',
                         fontWeight: 'bold'
+                            }
                         }
-                    }
                         },
                     yAxis: { title: { text: "ترافیک",
                         style: {
@@ -359,53 +347,8 @@
 <script src="{% static 'assets/vendor/libs/flatpickr/l10n/fa-jdate.js' %}"></script>
 <script src="{% static 'assets/js/app-calendar-events.js' %}"></script>
 <script src="{% static 'assets/js/app-calendar.js' %}"></script>
-<!-- FlatPicker (JS Calendar) Persian Configuration as well as checks for branches -->
-<script>
-    flatpickr("#date-range", {
-        inline: true,
-        locale: "fa",
-        mode: "range",
-        dateFormat: "Y-m-d",
-        onChange: function(selectedDates, dateStr, instance) {
-        selectedRange = selectedDates;
-        }
-    });
-    const filterProxyButton = document.getElementById("filter-proxy-button");
-    const realFilterForm = document.getElementById("filter-form");
-    filterProxyButton.addEventListener("click", () => {
-        function formatJalaliDate(jdateObj) {
-        if (!jdateObj || !jdateObj._cached_date) return "";
-        const [year, month, day] = jdateObj._cached_date;
-        return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-        }
-
-        const fakeChecks = document.querySelectorAll(".fake-check");
-        const realChecks = document.querySelectorAll(".real-check");
-        let startDate = selectedRange[0]
-        let endDate = selectedRange[1]
-        let startJalaiDate = formatJalaliDate(startDate);
-        let endJalaliDate = formatJalaliDate(endDate);
-        const realJalaliStartDate = document.getElementById("start-date");
-        const realJalaliEndDate = document.getElementById("end-date");
-        realJalaliStartDate.value = startJalaiDate;
-        realJalaliEndDate.value = endJalaliDate;
-        fakeChecks.forEach((item) => {
-        if (item.checked == true) {
-            realChecks.forEach((sitem) => {
-            if (item.value == sitem.value) {
-                sitem.checked = true;
-            }
-            }); 
-        } else {
-            realChecks.forEach((sitem) => {
-            if (item.value == sitem.value) {
-                sitem.checked = false;
-            }
-            }); 
-        }
-        });
-    })
-</script>
+<!-- FlatPicker (JS Calendar) Persian Configuration / Form Checks -->
+<script src="{% static 'assets/js/persian-flatpicker-and-form-checks.js' %}"></script>
 {% endblock %}
 
 

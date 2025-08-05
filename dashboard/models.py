@@ -212,14 +212,17 @@ class PeopleCounting(models.Model):  # former name: Stats
 
 
 class Campaign(models.Model):
-    campaign_types = [
-        ("ویترین", "ویترین"),
-        ("فروش", "فروش")
-    ]
+    campaign_types = [("ویترین", "ویترین"), ("فروش", "فروش")]
     name = models.CharField(max_length=255, verbose_name="نام کمپین")
     start_date = models.DateField(verbose_name="تاریخ")
     end_date = models.DateField(verbose_name="تاریخ پایان", null=True, blank=True)
-    campaign_type = models.CharField(choices=campaign_types, null=True, blank=True, max_length=10, verbose_name="نوع کمپین")
+    campaign_type = models.CharField(
+        choices=campaign_types,
+        null=True,
+        blank=True,
+        max_length=10,
+        verbose_name="نوع کمپین",
+    )
     branch = models.ForeignKey(Branch, on_delete=models.CASCADE, verbose_name="شعبه")
     cost = models.CharField(max_length=255, verbose_name="هزینه", null=True, blank=True)
     date_created = models.DateTimeField(

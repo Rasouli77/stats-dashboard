@@ -162,63 +162,12 @@
 <script src="{% static 'assets/vendor/libs/flatpickr/l10n/fa-jdate.js' %}"></script>
 <script src="{% static 'assets/js/app-calendar-events.js' %}"></script>
 <script src="{% static 'assets/js/app-calendar.js' %}"></script>
-<script>
-    flatpickr("#date-range", {
-        inline: true,
-        locale: "fa",
-        mode: "range",
-        dateFormat: "Y-m-d",
-        onChange: function(selectedDates, dateStr, instance) {
-        selectedRange = selectedDates;
-        }
-    });
-    const filterProxyButton = document.getElementById("filter-proxy-button");
-    const realFilterForm = document.getElementById("filter-form");
-    filterProxyButton.addEventListener("click", () => {
-        function formatJalaliDate(jdateObj) {
-        if (!jdateObj || !jdateObj._cached_date) return "";
-        const [year, month, day] = jdateObj._cached_date;
-        return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-        }
-        const fakeChecks = document.querySelectorAll(".fake-check");
-        const realChecks = document.querySelectorAll(".real-check");
-        let startDate = selectedRange[0]
-        let endDate = selectedRange[1]
-        let startJalaiDate = formatJalaliDate(startDate);
-        let endJalaliDate = formatJalaliDate(endDate);
-        const realJalaliStartDate = document.getElementById("start-date");
-        const realJalaliEndDate = document.getElementById("end-date");
-        realJalaliStartDate.value = startJalaiDate;
-        realJalaliEndDate.value = endJalaliDate;
-        fakeChecks.forEach((item) => {
-        if (item.checked == true) {
-            realChecks.forEach((sitem) => {
-            if (item.value == sitem.value) {
-                sitem.checked = true;
-            }
-            }); 
-        } else {
-            realChecks.forEach((sitem) => {
-            if (item.value == sitem.value) {
-                sitem.checked = false;
-            }
-            }); 
-        }
-        });
-    });
-  document.getElementById("select-all").addEventListener("change", () => {
-      const isChecked = document.getElementById("select-all").checked
-      document.querySelectorAll(".fake-check").forEach((item) => {
-          item.checked = isChecked
-      })
-  })
-</script>
-<!-- HighChart chart paint and Ajax for the traffic section of the page -->
+<!-- FlatPicker (JS Calendar) Persian Configuration / Form Checks -->
+<script src="{% static 'assets/js/persian-flatpicker-and-form-checks.js' %}"></script>
+<!-- HighChart Chart Paint (Invoice Aggregation) Raw JavaScript -->
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-
         const rawCategories = JSON.parse('{{ dates|safe }}');  
-
         const categories = rawCategories.map(dateStr => {
             const date = new Date(dateStr);
             return date.toLocaleDateString('fa-IR', {
@@ -374,38 +323,14 @@
         })
     })
 </script>
-<script>
-    document.addEventListener("DOMContentLoaded", () => {
-    const selectView = document.querySelector("#select-view");
-    const secondContainer = document.querySelector("#second-container");
-    const thirdContainer = document.querySelector("#third-container");
-    const forthContainer = document.querySelector("#forth-container")
-    selectView.addEventListener("change", (event) => {
-     const value = event.target.value;
-     if (value === "1") {
-        container.style.display = "block";
-        thirdContainer.style.display = "block";
-        secondContainer.style.display = "none";
-        forthContainer.style.display = "none";
-     }
-     else {
-        container.style.display = "none";
-        thirdContainer.style.display = "none";
-        secondContainer.style.display = "block";
-        forthContainer.style.display = "block";
-     }
-    });
-    });
-</script>
+<!-- HighChart Chart Paint (Invoice Separation) JQuery -->
 <script>
     $("#filter-form").on("submit", function (e) {
         const startDate = $("#start-date").val();
         const endDate = $("#end-date").val();
-
         const selectedBranches = $(".real-check:checked").map(function () {
             return $(this).val();
-        }).get();  // convert to array
-
+        }).get();  
         $.ajax({
             url: "/api/multi-branch-invoice-data",
             data: {
@@ -428,7 +353,6 @@
                     name: invoiceData.name,
                     data: invoiceData.total_amounts
                 }));
-
                 Highcharts.chart("second-container", {
                     chart: { type: "line",
                         backgroundColor: '#f9f9f9',
@@ -470,7 +394,6 @@
                 toastr.error("بازه زمانی یا شعب را انتخاب نمایید")
             }
         });
-
         $.ajax({
             url: "/api/multi-branch-invoice-data",
             data: {
@@ -493,7 +416,6 @@
                     name: invoiceData.name,
                     data: invoiceData.total_items
                 }));
-
                 Highcharts.chart("forth-container", {
                     chart: { type: "line",
                         backgroundColor: '#f9f9f9',
@@ -535,6 +457,30 @@
                 toastr.error("بازه زمانی یا شعب را انتخاب نمایید")
             }
         });
+    });
+</script>
+<!-- Display Toggles -->
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+    const selectView = document.querySelector("#select-view");
+    const secondContainer = document.querySelector("#second-container");
+    const thirdContainer = document.querySelector("#third-container");
+    const forthContainer = document.querySelector("#forth-container")
+    selectView.addEventListener("change", (event) => {
+     const value = event.target.value;
+     if (value === "1") {
+        container.style.display = "block";
+        thirdContainer.style.display = "block";
+        secondContainer.style.display = "none";
+        forthContainer.style.display = "none";
+     }
+     else {
+        container.style.display = "none";
+        thirdContainer.style.display = "none";
+        secondContainer.style.display = "block";
+        forthContainer.style.display = "block";
+     }
+    });
     });
 </script>
 {% endblock %}

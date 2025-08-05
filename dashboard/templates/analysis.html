@@ -180,61 +180,11 @@
 <script src="{% static 'assets/vendor/libs/flatpickr/l10n/fa-jdate.js' %}"></script>
 <script src="{% static 'assets/js/app-calendar-events.js' %}"></script>
 <script src="{% static 'assets/js/app-calendar.js' %}"></script>
-<script>
-    flatpickr("#date-range", {
-        inline: true,
-        locale: "fa",
-        mode: "range",
-        dateFormat: "Y-m-d",
-        onChange: function(selectedDates, dateStr, instance) {
-        selectedRange = selectedDates;
-        }
-    });
-    const filterProxyButton = document.getElementById("filter-proxy-button");
-    const realFilterForm = document.getElementById("filter-form");
-    filterProxyButton.addEventListener("click", () => {
-        function formatJalaliDate(jdateObj) {
-        if (!jdateObj || !jdateObj._cached_date) return "";
-        const [year, month, day] = jdateObj._cached_date;
-        return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-        }
-        const fakeChecks = document.querySelectorAll(".fake-check");
-        const realChecks = document.querySelectorAll(".real-check");
-        let startDate = selectedRange[0]
-        let endDate = selectedRange[1]
-        let startJalaiDate = formatJalaliDate(startDate);
-        let endJalaliDate = formatJalaliDate(endDate);
-        const realJalaliStartDate = document.getElementById("start-date");
-        const realJalaliEndDate = document.getElementById("end-date");
-        realJalaliStartDate.value = startJalaiDate;
-        realJalaliEndDate.value = endJalaliDate;
-        fakeChecks.forEach((item) => {
-        if (item.checked == true) {
-            realChecks.forEach((sitem) => {
-            if (item.value == sitem.value) {
-                sitem.checked = true;
-            }
-            }); 
-        } else {
-            realChecks.forEach((sitem) => {
-            if (item.value == sitem.value) {
-                sitem.checked = false;
-            }
-            }); 
-        }
-        });
-    });
-  document.getElementById("select-all").addEventListener("change", () => {
-      const isChecked = document.getElementById("select-all").checked
-      document.querySelectorAll(".fake-check").forEach((item) => {
-          item.checked = isChecked
-      })
-  })
-</script>
-<!-- HighChart chart paint and Ajax for the traffic section of the page -->
+<!-- FlatPicker (JS Calendar) Persian Configuration / Form Checks -->
+<script src="{% static 'assets/js/persian-flatpicker-and-form-checks.js' %}"></script>
+<!-- HighChart Chart Paint (Analytic Aggregation) Raw JavaScript -->
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-
         let ratioChart = Highcharts.chart('ratio-container', {
             chart: {
                 type: 'line',
@@ -321,7 +271,6 @@
                 },
             ]
         });
-
         let oneToAllContainer = Highcharts.chart('one-to-all-container', {
             chart: {
                 type: 'line',
@@ -365,7 +314,6 @@
                 },
             ]
         });
-
         document.getElementById('filter-form').addEventListener('submit', function(event) {
             event.preventDefault(); 
             const form = this;
@@ -373,7 +321,6 @@
             const queryString = new URLSearchParams(formData).toString();
             const loadingOverlay = document.getElementById('loading-overlay');
             loadingOverlay.style.display = 'flex';
-        
             fetch(`{% url 'analysis' url_hash=request.user.profile.merchant.url_hash %}?${queryString}`, {
                 method: 'GET',
                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -383,7 +330,6 @@
                 return response.json();
             })
             .then(data => {
-                // Step 1: Build date-to-value maps
                 const entryMap = {};
                 data.dates_queryset.forEach((date, i) => {
                 entryMap[date] = data.entry_totals[i];
@@ -400,10 +346,7 @@
                 data.dates_queryset.forEach((date, i) => {
                 entryOverallMap[date] = data.entry_overalls[i];
                 });
-
-                // Step 2: Find common dates preserving order
                 const commonDates = data.dates_queryset.filter(date => data.dates_invoices.includes(date));
-                // Step 3: Construct final array with ratio
                 const result = commonDates.map(date => {
                     const entry = entryMap[date];
                     const item = totalMap[date];
@@ -477,7 +420,6 @@
             });
         });
     });
-    
     document.getElementById("select-all").addEventListener("change", () => {
         const isChecked = document.getElementById("select-all").checked;
         document.querySelectorAll(".fake-check").forEach((item) => {
@@ -485,6 +427,7 @@
         })
     })
 </script>
+<!-- HighChart Chart Paint (Analytic Separation) JQuery -->
 <script>
     function formatData(invoice_dates, people_counting_dates, invoice_data, people_counting_data) {
         const commonDates = people_counting_dates.filter(date => invoice_dates.includes(date));
@@ -521,18 +464,15 @@
                 third_ratio
             }
         }
-
         return {"dates": commonDates, "data": dataMulti}
     }
     
     $("#filter-form").on("submit", function (e) {
         const startDate = $("#start-date").val();
         const endDate = $("#end-date").val();
-
         const selectedBranches = $(".real-check:checked").map(function () {
             return $(this).val();
         }).get();
-
         $.ajax({
             url: "/api/analysis",
             data: {
@@ -601,7 +541,6 @@
                 toastr.error("بازه زمانی یا شعب را انتخاب نمایید")
             }
         });
-
         $.ajax({
             url: "/api/analysis",
             data: {
@@ -667,7 +606,6 @@
                 toastr.error("بازه زمانی یا شعب را انتخاب نمایید")
             }
         });
-
         $.ajax({
             url: "/api/analysis",
             data: {
@@ -730,7 +668,7 @@
                 },
                 plotOptions: {
                     column: {
-                        stacking: 'normal', // Enables layering
+                        stacking: 'normal', 
                         dataLabels: {
                             enabled: true,
                             format: '{y:.1f}%',
@@ -745,9 +683,8 @@
                     shared: true,
                     pointFormat: '<span style="color:{series.color}">\u25CF</span> {series.name}: <b>%{point.y:.0f}</b><br/>'
                 },
-                series: series // your formatted stacked data
+                series: series 
             });
-
             },
             error: function (xhr) {
                 console.error("Error loading data");
@@ -758,7 +695,6 @@
             }
         });
     });
-        
 </script>
 {% endblock %}
 

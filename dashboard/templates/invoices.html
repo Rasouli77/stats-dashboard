@@ -199,125 +199,77 @@
 <script src="{% static 'assets/vendor/libs/flatpickr/l10n/fa-jdate.js' %}"></script>
 <script src="{% static 'assets/js/app-calendar-events.js' %}"></script>
 <script src="{% static 'assets/js/app-calendar.js' %}"></script>
+<!-- FlatPicker (JS Calendar) Persian Configuration / Form Checks -->
+<script src="{% static 'assets/js/persian-flatpicker-and-form-checks.js' %}"></script>
+<!-- Dynamic Ajax Filter (Invoice Rows) / Gregorian Jalali Conversion Raw JavaScript -->
 <script>
-    flatpickr("#date-range", {
-        inline: true,
-        locale: "fa",
-        mode: "range",
-        dateFormat: "Y-m-d",
-        onChange: function(selectedDates, dateStr, instance) {
-        selectedRange = selectedDates;
-        }
-    });
-    const filterProxyButton = document.getElementById("filter-proxy-button");
-    const realFilterForm = document.getElementById("filter-form");
-    filterProxyButton.addEventListener("click", () => {
-        function formatJalaliDate(jdateObj) {
-        if (!jdateObj || !jdateObj._cached_date) return "";
-        const [year, month, day] = jdateObj._cached_date;
-        return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-        }
-        const fakeChecks = document.querySelectorAll(".fake-check");
-        const realChecks = document.querySelectorAll(".real-check");
-        let startDate = selectedRange[0]
-        let endDate = selectedRange[1]
-        let startJalaiDate = formatJalaliDate(startDate);
-        let endJalaliDate = formatJalaliDate(endDate);
-        const realJalaliStartDate = document.getElementById("start-date");
-        const realJalaliEndDate = document.getElementById("end-date");
-        realJalaliStartDate.value = startJalaiDate;
-        realJalaliEndDate.value = endJalaliDate;
-        fakeChecks.forEach((item) => {
-        if (item.checked == true) {
-            realChecks.forEach((sitem) => {
-            if (item.value == sitem.value) {
-                sitem.checked = true;
-            }
-            }); 
-        } else {
-            realChecks.forEach((sitem) => {
-            if (item.value == sitem.value) {
-                sitem.checked = false;
-            }
-            }); 
-        }
-        });
-    });
-  document.getElementById("select-all").addEventListener("change", () => {
-      const isChecked = document.getElementById("select-all").checked
-      document.querySelectorAll(".fake-check").forEach((item) => {
-          item.checked = isChecked
+    document.getElementById("filter-form").addEventListener("submit", (event) => {
+      event.preventDefault();
+      const form = document.getElementById("filter-form");
+      const formData = new FormData(form);
+      const queryString = new URLSearchParams(formData).toString();
+      const loadingOverlay = document.getElementById("loading-overlay");
+      loadingOverlay.style.display = "flex";
+      fetch(`{% url 'invoices' url_hash=request.user.profile.merchant.url_hash %}?${queryString}`, {
+        method: "GET",
+        headers: {"X-Requested-With": "XMLHttpRequest"}
       })
-  })
-</script>
-<script>
-  document.getElementById("filter-form").addEventListener("submit", (event) => {
-    event.preventDefault();
-    const form = document.getElementById("filter-form");
-    const formData = new FormData(form);
-    const queryString = new URLSearchParams(formData).toString();
-    const loadingOverlay = document.getElementById("loading-overlay");
-    loadingOverlay.style.display = "flex";
-    fetch(`{% url 'invoices' url_hash=request.user.profile.merchant.url_hash %}?${queryString}`, {
-      method: "GET",
-      headers: {"X-Requested-With": "XMLHttpRequest"}
-    })
-    .then(response => {
-        if (!response.ok) throw new Error('Network response was not ok');
-        console.log("data is recieved")
+      .then(response => {
+          if (!response.ok) throw new Error('Network response was not ok');
+          console.log("data is recieved")
+          loadingOverlay.style.display = "none";
+          return response.json()
+          console.log(response.json())
+      })
+      .then( data => { 
+        document.querySelector(".table-border-bottom-0").innerHTML = "";
+        data.invoices.forEach(invoice => {
+        const rowhtml = `
+                <tr>
+                    <td>
+                        ${invoice.date} 
+                    </td>
+                    <td class="greg-date">
+                        ${invoice.date}
+                    </td>
+                    <td>
+                        ${invoice.branch_id}
+                    </td>
+                    <td>
+                        ${invoice.branch_name}
+                    </td>
+                    <td>
+                        ${invoice.total_items}
+                    </td>
+                    <td>
+                        ${invoice.total_amount}
+                    </td>
+                    <td>
+                    <a href="invoice-detail/${invoice.id}">مشاهده</a>
+                    </td>
+                </tr>
+                `
+                document.querySelector(".table-border-bottom-0").insertAdjacentHTML("beforeend", rowhtml);
+        })},
+      )      
+      .catch((error) => {
+        console.log("Error:", error);
         loadingOverlay.style.display = "none";
-        return response.json()
-        console.log(response.json())
-    })
-    .then( data => { 
-      document.querySelector(".table-border-bottom-0").innerHTML = "";
-      data.invoices.forEach(invoice => {
-      const rowhtml = `
-              <tr>
-                  <td>
-                      ${invoice.date} 
-                  </td>
-                  <td class="greg-date">
-                      ${invoice.date}
-                  </td>
-                  <td>
-                      ${invoice.branch_id}
-                  </td>
-                  <td>
-                      ${invoice.branch_name}
-                  </td>
-                  <td>
-                      ${invoice.total_items}
-                  </td>
-                  <td>
-                      ${invoice.total_amount}
-                  </td>
-                  <td>
-                  <a href="invoice-detail/${invoice.id}">مشاهده</a>
-                  </td>
-              </tr>
-              `
-              document.querySelector(".table-border-bottom-0").insertAdjacentHTML("beforeend", rowhtml);
-      })},
-    )      
-    .catch((error) => {
-      console.log("Error:", error);
-      loadingOverlay.style.display = "none";
-    }
-    );
-    function jalaliDateConvertor() {
-      document.querySelectorAll(".greg-date").forEach(el => {
-      console.log(el)
-      const gregorian = el.innerHTML.split("-");
-      const gYear = parseInt(gregorian[0]);
-      const gMonth = parseInt(gregorian[1]);
-      const gDay = parseInt(gregorian[2]);
-      const jdate = jalaali.toJalaali(gYear, gMonth, gDay);
-      el.innerText = `${jdate.jy}/${String(jdate.jm).padStart(2, '0')}/${String(jdate.jd).padStart(2, '0')}`;
-      });
-    }
-    setTimeout(jalaliDateConvertor, 500)
-  });
+      }
+      );
+      function jalaliDateConvertor() {
+        document.querySelectorAll(".greg-date").forEach(el => {
+        console.log(el)
+        const gregorian = el.innerHTML.split("-");
+        const gYear = parseInt(gregorian[0]);
+        const gMonth = parseInt(gregorian[1]);
+        const gDay = parseInt(gregorian[2]);
+        const jdate = jalaali.toJalaali(gYear, gMonth, gDay);
+        el.innerText = `${jdate.jy}/${String(jdate.jm).padStart(2, '0')}/${String(jdate.jd).padStart(2, '0')}`;
+        });
+      }
+      setTimeout(jalaliDateConvertor, 500)
+    });
 </script>
 {% endblock %}
 
