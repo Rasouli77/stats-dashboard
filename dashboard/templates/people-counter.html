@@ -145,6 +145,28 @@
                     </div>
                 </div>
             </div>
+            <div class="row">
+                <div class="card">
+                <h5 class="card-header heading-color">کمپین ها</h5>
+                <a href="{% url 'create_campaign' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="btn btn-success" type="button" style="width: 200px; margin: 20px;">ساخت کمپین جدید</a>
+                <div class="table-responsive text-nowrap" style="margin-bottom: 100px;">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                            <th>نام کمپین</th>
+                            <th>تاریخ شروع</th>
+                            <th>تاریخ پایان</th>
+                            <th>شعبه</th>
+                            <th>هزینه</th>
+                            <th>نوع کمپین</th>
+                            </tr>
+                        </thead>
+                        <tbody class="table-border-bottom-0">
+                        </tbody>
+                    </table>
+                </div>
+                </div>
+            </div>
         </div>
     </div><br>
 {% endblock %}
@@ -245,6 +267,32 @@
                     series: [{ data: data.entry_totals},
                     {data: data.exit_totals}
                     ],
+                });
+                document.querySelector(".table-border-bottom-0").innerHTML = "";
+                data.campaigns.forEach(campaign => {
+                const rowhtml = `
+                    <tr>
+                        <td>
+                            ${campaign.campaign_name} 
+                        </td>
+                        <td class="greg-date">
+                            ${campaign.campaign_start_date}
+                        </td>
+                        <td>
+                            ${campaign.campaign_end_date}
+                        </td>
+                        <td>
+                            ${campaign.campaign_branch_name}
+                        </td>
+                        <td>
+                            ${campaign.campaign_type}
+                        </td>
+                        <td>
+                            ${campaign.campaign_cost}
+                        </td>
+                    </tr>
+                    `
+                document.querySelector(".table-border-bottom-0").insertAdjacentHTML("beforeend", rowhtml);
                 });
                 loadingOverlay.style.display = 'none';
             })
@@ -349,6 +397,8 @@
 <script src="{% static 'assets/js/app-calendar.js' %}"></script>
 <!-- FlatPicker (JS Calendar) Persian Configuration / Form Checks -->
 <script src="{% static 'assets/js/persian-flatpicker-and-form-checks.js' %}"></script>
+<!-- Gregorian Jalali Conversion Raw JavaScript -->
+<script src="{% static 'assets/js/campaign-gregorian-to-jalali-date-convert.js' %}"></script>
 {% endblock %}
 
 

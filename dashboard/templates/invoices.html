@@ -219,9 +219,8 @@
           console.log("data is recieved")
           loadingOverlay.style.display = "none";
           return response.json()
-          console.log(response.json())
       })
-      .then( data => { 
+      .then( data => {
         document.querySelector(".table-border-bottom-0").innerHTML = "";
         data.invoices.forEach(invoice => {
         const rowhtml = `
@@ -249,7 +248,7 @@
                     </td>
                 </tr>
                 `
-                document.querySelector(".table-border-bottom-0").insertAdjacentHTML("beforeend", rowhtml);
+        document.querySelector(".table-border-bottom-0").insertAdjacentHTML("beforeend", rowhtml);
         })},
       )      
       .catch((error) => {

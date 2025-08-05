@@ -53,7 +53,7 @@
 {% block content %}
 <div class="loading-overlay" id="loading-overlay"></div>
 <div class="container">
-  <div class="row">
+    <div class="row">
         <!-- Date Accordion -->
         <div class="col-xl-4 col-lg-4 col-md-12 col-sm-12" style="margin-bottom: 10px;">
         <h6>تاریخ</h6>
@@ -140,6 +140,28 @@
                 <div id="forth-container" style="width: 100%; height: 400px; margin-top: 45px; display: none;"></div>
             </div>
             </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="card">
+        <h5 class="card-header heading-color">کمپین ها</h5>
+        <a href="{% url 'create_campaign' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="btn btn-success" type="button" style="width: 200px; margin: 20px;">ساخت کمپین جدید</a>
+        <div class="table-responsive text-nowrap" style="margin-bottom: 100px;">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                    <th>نام کمپین</th>
+                    <th>تاریخ شروع</th>
+                    <th>تاریخ پایان</th>
+                    <th>شعبه</th>
+                    <th>هزینه</th>
+                    <th>نوع کمپین</th>
+                    </tr>
+                </thead>
+                <tbody class="table-border-bottom-0">
+                </tbody>
+            </table>
+        </div>
         </div>
     </div>
 </div>
@@ -306,6 +328,33 @@
                     series: [{ data: data.total_items }]
                 });
                 
+                document.querySelector(".table-border-bottom-0").innerHTML = "";
+                data.campaigns.forEach(campaign => {
+                const rowhtml = `
+                    <tr>
+                        <td>
+                            ${campaign.campaign_name} 
+                        </td>
+                        <td class="greg-date">
+                            ${campaign.campaign_start_date}
+                        </td>
+                        <td>
+                            ${campaign.campaign_end_date}
+                        </td>
+                        <td>
+                            ${campaign.campaign_branch_name}
+                        </td>
+                        <td>
+                            ${campaign.campaign_type}
+                        </td>
+                        <td>
+                            ${campaign.campaign_cost}
+                        </td>
+                    </tr>
+                    `
+                document.querySelector(".table-border-bottom-0").insertAdjacentHTML("beforeend", rowhtml);
+                });
+
                 loadingOverlay.style.display = 'none';
             })
             .catch(error => {
@@ -483,6 +532,8 @@
     });
     });
 </script>
+<!-- Gregorian Jalali Conversion Raw JavaScript -->
+<script src="{% static 'assets/js/campaign-gregorian-to-jalali-date-convert.js' %}"></script>
 {% endblock %}
 
 

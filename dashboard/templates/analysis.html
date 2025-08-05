@@ -48,79 +48,59 @@
         .highcharts-credits {
           display: none;
         }
-
-        .branches-grid {
-          display: grid;
-          grid-template-columns: repeat(7, 1fr);
-          gap: 10px;
-        }
-
-        /* Tablets */
-        @media (max-width: 992px) {
-          .branches-grid {
-            grid-template-columns: repeat(4, 1fr);
-          }
-        }
-
-        /* Phones */
-        @media (max-width: 576px) {
-          .branches-grid {
-            grid-template-columns: repeat(2, 1fr);
-          }
-        }
     </style>
 {% endblock %}
 {% block content %}
 <div class="loading-overlay" id="loading-overlay"></div>
 <div class="container">
-  <div class="row">
+    <div class="row">
     <!-- Date Accordion -->
     <div class="col-xl-4 col-lg-4 col-md-12 col-sm-12" style="margin-bottom: 10px;">
-      <h6>تاریخ</h6>
-      <div class="accordion mt-3 accordion-header-primary" id="accordionDate">
-          <div class="card accordion-item">
-          <h2 class="accordion-header d-flex align-items-center">
-              <button type="button" class="accordion-button" data-bs-toggle="collapse" data-bs-target="#collapseDate" aria-expanded="true">
-              <i class="menu-icon tf-icons bx bx-calendar"></i>
-              انتخاب تاریخ
-              </button>
-          </h2>
+        <h6>تاریخ</h6>
+        <div class="accordion mt-3 accordion-header-primary" id="accordionDate">
+            <div class="card accordion-item">
+            <h2 class="accordion-header d-flex align-items-center">
+                <button type="button" class="accordion-button" data-bs-toggle="collapse" data-bs-target="#collapseDate" aria-expanded="true">
+                <i class="menu-icon tf-icons bx bx-calendar"></i>
+                انتخاب تاریخ
+                </button>
+            </h2>
 
-          <div id="collapseDate" class="accordion-collapse collapse" data-bs-parent="#accordionDate">
-              <div class="accordion-body" style="display: flex; justify-content: center; align-items: center; position: absolute; z-index: 1001; width: 100%; background-color: white; box-shadow: 0 0.25rem 1rem rgba(147, 158, 170, 0.45);">
-              <div id="date-range"></div>
-              </div>
-          </div>
-          </div>
-      </div>              
+            <div id="collapseDate" class="accordion-collapse collapse" data-bs-parent="#accordionDate">
+                <div class="accordion-body" style="display: flex; justify-content: center; align-items: center; position: absolute; z-index: 1001; width: 100%; background-color: white; box-shadow: 0 0.25rem 1rem rgba(147, 158, 170, 0.45);">
+                <div id="date-range"></div>
+                </div>
+            </div>
+            </div>
+        </div>              
     </div>
     <!-- Branch Accordion -->
     <div class="col-xl-3 col-lg-3 col-md-12 col-sm-12" style="margin-bottom: 10px;">
     <h6>شعب</h6>
-      <div class="accordion mt-3 accordion-header-primary" id="accordionBranch">
-          <div class="card accordion-item">
-          <h2 class="accordion-header d-flex align-items-center">
-              <button type="button" class="accordion-button" data-bs-toggle="collapse" data-bs-target="#collapseBranch" aria-expanded="true">
-              <i class="menu-icon tf-icons bx bx-map-alt"></i>
-              انتخاب شعب
-              </button>
-          </h2>
-          <div id="collapseBranch" class="accordion-collapse collapse" data-bs-parent="#accordionBranch">
-              <div class="accordion-body" style="position: absolute; z-index: 999; width: 100%; background-color: white; box-shadow: 0 0.25rem 1rem rgba(147, 158, 170, 0.45);">
-                  <div class="form-check">
-                      <input class="form-check-input" type="checkbox" id="select-all">
-                      <label class="form-check-label" for="defaultCheck1">انتخاب همه</label>
-                  </div>
-                  {% for branch in branches %}
-                  <div class="form-check">
-                      <input class="form-check-input fake-check" type="checkbox" value="{{ branch.pk }}">
-                      <label class="form-check-label" for="defaultCheck1">{{ branch.name }}</label>
-                  </div>
-                  {% endfor %}
-              </div>
-          </div>
-          </div>
-      </div>   
+        <div class="accordion mt-3 accordion-header-primary" id="accordionBranch">
+            <div class="card accordion-item">
+            <h2 class="accordion-header d-flex align-items-center">
+                <button type="button" class="accordion-button" data-bs-toggle="collapse" data-bs-target="#collapseBranch" aria-expanded="true">
+                <i class="menu-icon tf-icons bx bx-map-alt"></i>
+                انتخاب شعب
+                </button>
+            </h2>
+            <div id="collapseBranch" class="accordion-collapse collapse" data-bs-parent="#accordionBranch">
+                <div class="accordion-body" style="position: absolute; z-index: 999; width: 100%; background-color: white; box-shadow: 0 0.25rem 1rem rgba(147, 158, 170, 0.45);">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="select-all">
+                        <label class="form-check-label" for="defaultCheck1">انتخاب همه</label>
+                    </div>
+                    {% for branch in branches %}
+                    <div class="form-check">
+                        <input class="form-check-input fake-check" type="checkbox" value="{{ branch.pk }}">
+                        <label class="form-check-label" for="defaultCheck1">{{ branch.name }}</label>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            </div>
+        </div>   
     </div>
     <!-- Dropdown Display -->
     <div class="col-xl-3 col-lg-3 col-md-12 col-sm-12" style="margin-bottom: 10px;">
@@ -145,7 +125,7 @@
             <button class="btn btn-primary btn-md" type="submit" id="filter-proxy-button">فیلتر</button>
         </form>
     </div>
-  </div>
+    </div>
     <div class="row">
         <div class="col-lg-12">
             <div class="demo-inline-spacing mt-3">
@@ -158,6 +138,28 @@
                 <div id="second-one-to-all-container" style="width: 100%; height: 400px; margin-top: 45px;"></div>
             </div>
             </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="card">
+        <h5 class="card-header heading-color">کمپین ها</h5>
+        <a href="{% url 'create_campaign' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="btn btn-success" type="button" style="width: 200px; margin: 20px;">ساخت کمپین جدید</a>
+        <div class="table-responsive text-nowrap" style="margin-bottom: 100px;">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                    <th>نام کمپین</th>
+                    <th>تاریخ شروع</th>
+                    <th>تاریخ پایان</th>
+                    <th>شعبه</th>
+                    <th>هزینه</th>
+                    <th>نوع کمپین</th>
+                    </tr>
+                </thead>
+                <tbody class="table-border-bottom-0">
+                </tbody>
+            </table>
+        </div>
         </div>
     </div>
 </div>
@@ -390,7 +392,7 @@
                 });
 
                 if (document.querySelectorAll('input[type="checkbox"]:checked').length === 2) {
-                oneToAllContainer.update({
+                    oneToAllContainer.update({
                     xAxis: { categories: ratioDates },
                     series: [{
                     name: 'نسبت یک فروشگاه به کل', 
@@ -405,12 +407,37 @@
                     }]
                 });
                 } else {
-                oneToAllContainer.update({
+                    oneToAllContainer.update({
                     xAxis: { categories: [] },
                     series: [{ data: [] }]
                 });
                 }
-                
+                document.querySelector(".table-border-bottom-0").innerHTML = "";
+                data.campaigns.forEach(campaign => {
+                const rowhtml = `
+                    <tr>
+                        <td>
+                            ${campaign.campaign_name} 
+                        </td>
+                        <td class="greg-date">
+                            ${campaign.campaign_start_date}
+                        </td>
+                        <td>
+                            ${campaign.campaign_end_date}
+                        </td>
+                        <td>
+                            ${campaign.campaign_branch_name}
+                        </td>
+                        <td>
+                            ${campaign.campaign_type}
+                        </td>
+                        <td>
+                            ${campaign.campaign_cost}
+                        </td>
+                    </tr>
+                    `
+                document.querySelector(".table-border-bottom-0").insertAdjacentHTML("beforeend", rowhtml);
+                });
                 loadingOverlay.style.display = 'none';
             })
             .catch(error => {
@@ -694,6 +721,8 @@
         });
     });
 </script>
+<!-- Gregorian Jalali Conversion Raw JavaScript -->
+<script src="{% static 'assets/js/campaign-gregorian-to-jalali-date-convert.js' %}"></script>
 {% endblock %}
 
 
