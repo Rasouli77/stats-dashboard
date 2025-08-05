@@ -482,9 +482,7 @@
             },
             traditional: true, 
             success: function (data) {
-                console.log(data)
                 final_data = formatData(data.invoice_dates, data.people_counting_dates, data.invoice_data, data.people_counting_data)
-                console.log(final_data)
                 const rawCategories = final_data.dates;
                 const categories = rawCategories.map(dateStr => {
                 const date = new Date(dateStr);

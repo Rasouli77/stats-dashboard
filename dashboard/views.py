@@ -962,6 +962,7 @@ def invoice_counter(request, url_hash):
         return render(request, "401.html", status=401)
     # Permissions
     allowed_branches = []
+    campaign_list = []
     profile = request.user.profile
     all_branches = Branch.objects.defer(
         "country", "province", "city", "district", "date_created", "last_modified"
@@ -981,6 +982,7 @@ def invoice_counter(request, url_hash):
         start_date_str = str(jalali_to_gregorian(request.GET.get("start-date")))
         end_date_str = str(jalali_to_gregorian(request.GET.get("end-date")))
         branches_str = request.GET.getlist("branch")
+    
     except Exception as e:
         print(e)
     branches = []
@@ -992,11 +994,28 @@ def invoice_counter(request, url_hash):
         .filter(branch__pk__in=allowed_branches)
         .order_by("date")
     )
+    campaigns = Campaign.objects.defer("date_created", "last_modified").filter(
+            branch__merchant__url_hash=url_hash, branch__pk__in=allowed_branches
+        )
     if start_date_str and end_date_str:
         try:
             start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
             end_date = datetime.strptime(end_date_str, "%Y-%m-%d")
             invoices = invoices.filter(date__range=(start_date, end_date))
+            campaigns = campaigns.filter(
+                Q(start_date__lte=end_date) & Q(end_date__gte=start_date)
+            )
+            campaign_list = []
+            for campaign in campaigns:
+                dictionary = {
+                    "campaign_name": campaign.name,
+                    "campaign_start_date": campaign.start_date,
+                    "campaign_end_date": campaign.end_date,
+                    "campaign_branch_name": campaign.branch.name,
+                    "campaign_type": campaign.campaign_type,
+                    "campaign_cost": campaign.cost,
+                }
+                campaign_list.append(dictionary)
         except Exception as e:
             print(e)
         if branches_str:
@@ -1010,10 +1029,22 @@ def invoice_counter(request, url_hash):
                 branches = []
             if branches:
                 invoices = invoices.filter(branch__pk__in=branches)
+                campaigns = campaigns.filter(branch__pk__in=branches)
 
         dates = [str(row["date"].strftime("%Y-%m-%d")) for row in invoices]
         total_items = [float(row["sum_total_items"]) for row in invoices]
         total_amount = [float(row["sum_total_amount"]) for row in invoices]
+        campaign_list = []
+        for campaign in campaigns:
+            dictionary = {
+                "campaign_name": campaign.name,
+                "campaign_start_date": campaign.start_date,
+                "campaign_end_date": campaign.end_date,
+                "campaign_branch_name": campaign.branch.name,
+                "campaign_type": campaign.campaign_type,
+                "campaign_cost": campaign.cost,
+            }
+            campaign_list.append(dictionary)
 
         if request.headers.get("X-Requested-With") == "XMLHttpRequest":
             return JsonResponse(
@@ -1021,6 +1052,7 @@ def invoice_counter(request, url_hash):
                     "dates": dates,
                     "total_items": total_items,
                     "total_amount": total_amount,
+                    "campaigns": campaign_list
                 }
             )
     if not profile.is_manager:
@@ -1045,6 +1077,7 @@ def analysis(request, url_hash):
         return render(request, "401.html", status=401)
     # Permissions
     allowed_branches = []
+    campaign_list = []
     profile = request.user.profile
     all_branches = Branch.objects.defer(
         "country", "province", "city", "district", "date_created", "last_modified"
@@ -1085,6 +1118,9 @@ def analysis(request, url_hash):
         .filter(branch__pk__in=allowed_branches)
         .order_by("date")
     )
+    campaigns = Campaign.objects.defer("date_created", "last_modified").filter(
+            branch__merchant__url_hash=url_hash, branch__pk__in=allowed_branches
+        )
     if start_date_str and end_date_str:
         try:
             start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
@@ -1094,6 +1130,20 @@ def analysis(request, url_hash):
             queryset_no_branch_filter = queryset.filter(
                 date__range=(start_date, end_date)
             )
+            campaigns = campaigns.filter(
+                Q(start_date__lte=end_date) & Q(end_date__gte=start_date)
+            )
+            campaign_list = []
+            for campaign in campaigns:
+                dictionary = {
+                    "campaign_name": campaign.name,
+                    "campaign_start_date": campaign.start_date,
+                    "campaign_end_date": campaign.end_date,
+                    "campaign_branch_name": campaign.branch.name,
+                    "campaign_type": campaign.campaign_type,
+                    "campaign_cost": campaign.cost,
+                }
+                campaign_list.append(dictionary)
         except Exception as e:
             print(e)
         if branches_str:
@@ -1108,6 +1158,7 @@ def analysis(request, url_hash):
             if branches:
                 invoices = invoices.filter(branch__pk__in=branches)
                 queryset = queryset.filter(branch__pk__in=branches)
+                campaigns = campaigns.filter(branch__pk__in=branches)
 
         dates_queryset = [str(row["date"].strftime("%Y-%m-%d")) for row in queryset]
         dates_invoices = [str(row["date"].strftime("%Y-%m-%d")) for row in invoices]
@@ -1117,6 +1168,17 @@ def analysis(request, url_hash):
         entry_overalls = [
             float(row["total_entry"]) for row in queryset_no_branch_filter
         ]
+        campaign_list = []
+        for campaign in campaigns:
+            dictionary = {
+                "campaign_name": campaign.name,
+                "campaign_start_date": campaign.start_date,
+                "campaign_end_date": campaign.end_date,
+                "campaign_branch_name": campaign.branch.name,
+                "campaign_type": campaign.campaign_type,
+                "campaign_cost": campaign.cost,
+            }
+            campaign_list.append(dictionary)
         if request.headers.get("X-Requested-With") == "XMLHttpRequest":
             return JsonResponse(
                 {
@@ -1126,6 +1188,7 @@ def analysis(request, url_hash):
                     "total_items": total_items,
                     "total_amount": total_amount,
                     "entry_overalls": entry_overalls,
+                    "campaigns": campaign_list
                 }
             )
     if not profile.is_manager:
