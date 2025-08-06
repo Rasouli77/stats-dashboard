@@ -1,6 +1,6 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .models import PeopleCounting, Branch, Invoice
+from .models import PeopleCounting, Branch, Invoice, PermissionToViewBranch, Campaign
 from django.db.models import Sum
 from django.db.models import F
 from .views import jalali_to_gregorian
@@ -155,3 +155,45 @@ class Analysis(APIView):
                 }
             print(response)
             return Response(response)
+        
+def special_jalali_to_gregorian(jalali_str):
+    import jdatetime
+    english = jalali_str.translate(str.maketrans("۰۱۲۳۴۵۶۷۸۹", "0123456789"))
+    y, m, d = map(int, english.split("/"))
+    return jdatetime.date(y, m, d).togregorian()
+
+class GetCampaignEachPoint(APIView):
+    def post(self, request):
+        profile = request.user.profile
+        permitted_branches_str = []
+        permitted_branches = []
+        if not request.user.profile.is_manager:
+            branch_permissions = PermissionToViewBranch.objects.defer("date_created", "date_modified").select_related("branch").filter(user=profile)
+            for branch_permission in branch_permissions:
+                permitted_branches_str.append(branch_permission.branch.pk)
+            permitted_branches = [ int(i) for i in permitted_branches_str ]
+        else:
+            branches = Branch.objects.filter(merchant__url_hash=profile.merchant.url_hash)
+            for branch in branches:
+                permitted_branches.append(branch.pk)
+        try:
+            q_date = request.data.get("date")
+            query_branch = request.data.get("branch")
+        except Exception as e:
+            print(e)
+        query_date = special_jalali_to_gregorian(q_date)
+        campaigns = Campaign.objects.defer("date_created", "last_modified").filter(branch__pk__in=permitted_branches, start_date__lte=query_date, end_date__gte=query_date)
+        print(campaigns)
+        if query_branch not in ["ترافیک", "ورودی", "خروجی"]:
+            campaigns = campaigns.filter(branch__name=query_branch)
+        print(campaigns)
+        campaigns_list = []
+        for campaign in campaigns:
+            campaigns_list.append({
+                "campaign_name": campaign.name,
+                "campaign_type": campaign.campaign_type
+            })
+        return Response(campaigns_list)
+
+
+

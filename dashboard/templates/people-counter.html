@@ -169,6 +169,29 @@
             </div>
         </div>
     </div><br>
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" style="display: none;">
+    <!-- Modal -->
+    <div class="modal fade" id="info-modal" tabindex="-1" aria-hidden="true" role="" aria-modal="">
+        <div class="modal-dialog modal-lg modal-simple modal-edit-user">
+            <div class="modal-content p-3 p-md-5">
+                <div class="modal-body">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <div class="text-center mb-4 mt-0 mt-md-n2">
+                    <h3 class="secondary-font">اطلاعات تکمیلی</h3>
+                    <p id="stat_name"></p>
+                    <p id="stat_date"></p>
+                    <div id="modal-campaign"></div>
+                    </div>
+                    <div class="col-12 text-center mt-4">
+                        <button type="reset" class="btn btn-label-secondary" data-bs-dismiss="modal" aria-label="Close">
+                        انصراف
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<!--/ Modal -->
 {% endblock %}
 {% block extra_js %}
 <!-- JQuery and Toastr Scripts -->
@@ -189,54 +212,91 @@
         });
         const entry_totals = JSON.parse('{{ entry_totals|safe }}');
         const exit_totals = JSON.parse('{{ exit_totals|safe }}');
-        lineChart = Highcharts.chart(
-            'container', {
-                chart: {
-                    type: 'line',
-                    backgroundColor: '#f9f9f9',
-                    style: {
-                        fontFamily: 'tahoma',
-                        fontSize: '20px'
-                    }
-                },
-                title: {
-                    text: "ترافیک",
-                    style: {
-                        fontSize: '25px',
-                        color: '#333'
-                    }
-                },
-                xAxis: {
-                    categories : categories,
-                    title: {
-                        text: "تاریخ",
-                        style: {
-                        fontSize: '20px',
-                        fontWeight: 'bold'
-                        }
-                    }
-                },
-                yAxis: {
-                    title: {
-                        text: "ترافیک",
-                        style: {
-                        fontSize: '20px',
-                        fontWeight: 'bold'
-                        }
-                    }
-                },
-                series: [
-                    {
-                        name: "ورودی",
-                        data: entry_totals
-                    },
-                    {
-                        name: "خروجی",
-                        data: exit_totals
-                    }
-                ]
+        lineChart = Highcharts.chart('container', {
+        chart: {
+            type: 'line',
+            backgroundColor: '#f9f9f9',
+            style: {
+                fontFamily: 'tahoma',
+                fontSize: '20px'
             }
-        );
+        },
+        title: {
+            text: "ترافیک",
+            style: {
+                fontSize: '25px',
+                color: '#333'
+            }
+        },
+        xAxis: {
+            categories: categories,
+            title: {
+                text: "تاریخ",
+                style: {
+                    fontSize: '20px',
+                    fontWeight: 'bold'
+                }
+            }
+        },
+        yAxis: {
+            title: {
+                text: "ترافیک",
+                style: {
+                    fontSize: '20px',
+                    fontWeight: 'bold'
+                }
+            }
+        },
+        plotOptions: {
+            series: {
+                point: {
+                    events: {
+                        click: function () {
+                            const apiUrl = "/api/get-campaign-each-point";
+                            const date = this.category;
+                            const branch = this.series.name;
+                            const body = document.querySelector("body");
+                            const infoModal = document.querySelector("#info-modal");
+                            console.log(date, branch)
+                            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                            fetch(apiUrl, {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    "X-CSRFToken": csrftoken,
+                                },
+                                body: JSON.stringify({date: date, branch: branch})
+                            }).then(response => {
+                                if (!response.ok) throw new Error("Invalid Response");
+                                return response.json()
+                            }).then(data => {
+                                console.log(data)
+                                body.classList.add("modal-open")
+                                body.style.overflow = "hidden";
+                                body.style.paddingRight = "20px";
+                                infoModal.role = "dialog";
+                                infoModal.ariaModal = true;
+                                infoModal.ariaHidden = false;
+                                infoModal.classList.add("show");
+                            })
+
+                        }
+                    }
+                }
+            }
+        },
+        series: [
+            {
+                name: "ورودی",
+                data: entry_totals
+            },
+            {
+                name: "خروجی",
+                data: exit_totals
+            }
+        ]
+    });
+
         document.getElementById('filter-form').addEventListener('submit', function(event) {
             event.preventDefault(); 
             const form = this;
@@ -261,7 +321,6 @@
                         day: '2-digit'
                     });
                 });
-
                 lineChart.update({
                     xAxis: { categories: newCategories },
                     series: [{ data: data.entry_totals},
@@ -400,6 +459,7 @@
 <!-- Gregorian Jalali Conversion Raw JavaScript -->
 <script src="{% static 'assets/js/campaign-gregorian-to-jalali-date-convert.js' %}"></script>
 {% endblock %}
+
 
 
 
