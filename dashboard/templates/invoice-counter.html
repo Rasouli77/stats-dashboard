@@ -262,6 +262,8 @@
                                         return response.json()
                                     }).then(data => {
                                         console.log(data)
+                                        const rawNum = Number(this.y);
+                                        const num = rawNum.toLocaleString("fa-IR");
                                         let htmlCampaigns = data.map((camp, index) =>
                                             `<p style='margin-bottom: 0px;' style='margin-bottom: 0px; margin-top: 0px;'>${index + 1}. ${camp.campaign_name}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${camp.campaign_type}</p>`
                                         ).join('')
@@ -269,7 +271,7 @@
                                             htmlCampaigns = `<p>هیچ کمپینی یافت نشد.</p>`
                                         }
                                         Swal.fire({
-                                        html: `<h3 style='margin-bottom: 0px;'>${this.y}</h3><p>${this.category}</p>
+                                        html: `<h3 style='margin-bottom: 0px;'>${num}</h3><p>${this.category}</p>
                                         <p style='margin-bottom: 0px;'>کمپین ها:</p>
                                         ${htmlCampaigns}
                                         `,

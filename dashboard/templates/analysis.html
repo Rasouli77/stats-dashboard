@@ -54,8 +54,87 @@
 <div class="loading-overlay" id="loading-overlay">
     <div class="loader"></div>
 </div>
-
-<div class="container">
+<div class="container" id="menu">
+    <div class="row">
+        <div class="col-xl-3 col-lg-3 col-md-4 col-sm-12" style="margin: 20px 0px; color: rgb(0, 0, 0); cursor: pointer;" id="agg-con-percent">
+            <div class="card" style="background-color: #f8f2dbcc;">
+                <div class="card-body">
+                    <h4 class="card-title">نرخ تبدیل ترافیک (TCR)</h4>
+                    <p class="card-text">
+                        این نمودار نشان می‌دهد که در هر روز، به‌صورت تجمیعی در همه شعب، چه درصدی از ورودی‌ها به خرید منجر شده‌اند. 
+                        محاسبه به این شکل است که تعداد کل فاکتورها تقسیم بر تعداد کل ورودی‌ها شده و در 100 ضرب می‌شود.
+                        <br>❓<strong>پاسخ به سؤال:</strong> در هر روز چه درصدی از افرادی که وارد شعب شده‌اند، خرید انجام داده‌اند؟
+                    </p>
+                    <p style="text-decoration: underline;">مشاهده</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-3 col-md-4 col-sm-12" style="margin: 20px 0px; color: rgb(0, 0, 0); cursor: pointer;" id="branch-con-percent">
+            <div class="card">
+                <div class="card-body" style="background-color: #daedfacd;">
+                    <h4 class="card-title">نرخ تبدیل به تفکیک شعب (BTCR)</h4>
+                    <p class="card-text">
+                        این نمودار مشابه "نرخ تبدیل ترافیک" است با این تفاوت که آمار هر شعبه به‌صورت جداگانه و همزمان نمایش داده می‌شود.
+                        <br>❓<strong>پاسخ به سؤال:</strong> نرخ تبدیل هر شعبه در هر روز چگونه با دیگر شعب مقایسه می‌شود؟
+                    </p>
+                    <p style="text-decoration: underline;">مشاهده</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-3 col-md-4 col-sm-12" style="margin: 20px 0px; color: rgb(0, 0, 0); cursor: pointer;" id="agg-entry-val">
+            <div class="card">
+                <div class="card-body" style="background-color: #fddcdcbc;">
+                    <h4 class="card-title">ارزش ورودی (EV)</h4>
+                    <p>
+                        این نمودار میانگین ارزش تومانی هر ورودی را در همه شعب و برای هر روز نشان می‌دهد. 
+                        محاسبه به این شکل است که مجموع مبلغ فاکتورها تقسیم بر تعداد کل ورودی‌ها می‌شود.
+                        <br>❓<strong>پاسخ به سؤال:</strong> در هر روز به‌طور میانگین هر ورودی چه مقدار فروش ایجاد کرده است؟
+                    </p>
+                    <p style="text-decoration: underline;">مشاهده</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-3 col-md-4 col-sm-12" style="margin: 20px 0px; color: rgb(0, 0, 0); cursor: pointer;" id="branch-entry-val">
+            <div class="card" style="background-color: #f2fcdcdc;">
+                <div class="card-body">
+                    <h4 class="card-title">ارزش ورودی به تفکیک شعب (BEV)</h4>
+                    <p>
+                        این نمودار همان "ارزش ورودی" است با این تفاوت که امکان مشاهده آمار به‌صورت همزمان یا تفکیکی برای هر شعبه وجود دارد.
+                        <br>❓<strong>پاسخ به سؤال:</strong> میانگین ارزش هر ورودی در هر شعبه چقدر است و چقدر با سایر شعب تفاوت دارد؟
+                    </p>
+                    <p style="text-decoration: underline;">مشاهده</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xl-3 col-lg-3 col-md-4 col-sm-12" style="margin: 20px 0px; color: rgb(0, 0, 0); cursor: pointer;" id="one-to-all-entry">
+            <div class="card" style="background-color: #eadafdcc;">
+                <div class="card-body">
+                    <h4 class="card-title">سهم ترافیک شعبه (BTS)</h4>
+                    <p>
+                        این نمودار نشان می‌دهد که در هر روز، چه درصدی از کل ترافیک ورودی همه شعب، مربوط به یک شعبه خاص بوده است.
+                        <br>❓<strong>پاسخ به سؤال:</strong> سهم یک شعبه از کل ورودی‌های روزانه چند درصد است؟
+                    </p>
+                    <p style="text-decoration: underline;">مشاهده</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-3 col-md-4 col-sm-12" style="margin: 20px 0px; color: rgb(0, 0, 0); cursor: pointer;" id="all-to-all-entry">
+            <div class="card">
+                <div class="card-body" style="background-color: #e7e7e7cd;">
+                    <h4 class="card-title">سهم ترافیک همه شعب (TBTS)</h4>
+                    <p>
+                        این نمودار درصد سهم هر شعبه از کل ورودی‌های هر روز را نشان می‌دهد. همه شعب همزمان نمایش داده می‌شوند و مجموع درصدها برابر با 100% است.
+                        <br>❓<strong>پاسخ به سؤال:</strong> سهم هر شعبه از ترافیک کل در هر روز به چه شکل توزیع شده است؟
+                    </p>
+                    <p style="text-decoration: underline;">مشاهده</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="container" id="body">
     <div class="row">
     <!-- Date Accordion -->
     <div class="col-xl-4 col-lg-4 col-md-12 col-sm-12" style="margin-bottom: 10px;">
@@ -105,14 +184,6 @@
             </div>
         </div>   
     </div>
-    <!-- Dropdown Display -->
-    <div class="col-xl-3 col-lg-3 col-md-12 col-sm-12" style="margin-bottom: 10px;">
-    <h6>نمایش</h6>
-        <select class="form-control" id="select-view">
-            <option value="1">تجمیعی</option>
-            <option value="2">مقایسه ای</option>
-        </select>
-    </div>
     <div class="col-xl-2 col-lg-2 col-md-12 col-sm-12" style="margin-top: 20px; display: flex; justify-content: center; align-items: center;">
         <form action="" method="get" id="filter-form">
             <label style="display: none;" for="start-date">از تاریخ</label>
@@ -146,7 +217,6 @@
     <div class="row">
         <div class="card">
         <h5 class="card-header heading-color">کمپین ها</h5>
-        <a href="{% url 'create_campaign' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="btn btn-success" type="button" style="width: 200px; margin: 20px;">ساخت کمپین جدید</a>
         <div class="table-responsive text-nowrap" style="margin-bottom: 100px;">
             <table class="table table-hover">
                 <thead>
@@ -165,6 +235,7 @@
         </div>
         </div>
     </div>
+    <button class="btn btn-secondary btn-md" id="return" style="margin-top: 25px;">بازگشت</button>
 </div>
 {% endblock %}
 {% block extra_js %}
@@ -337,7 +408,8 @@
                                     if (!response.ok) throw new Error("Invalid Response");
                                     return response.json()
                                 }).then(data => {
-                                    console.log(data)
+                                    const rawNum = this.y;
+                                    const num = rawNum.toLocaleString("fa-IR");
                                     let htmlCampaigns = data.map((camp, index) =>
                                         `<p style='margin-bottom: 0px;' style='margin-bottom: 0px; margin-top: 0px;'>${index + 1}. ${camp.campaign_name}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${camp.campaign_type}</p>`
                                     ).join('')
@@ -345,7 +417,7 @@
                                         htmlCampaigns = `<p>هیچ کمپینی یافت نشد.</p>`
                                     }
                                     Swal.fire({
-                                    html: `<h3 style='margin-bottom: 0px;'>${this.y}</h3><p>${this.category}</p>
+                                    html: `<h3 style='margin-bottom: 0px;'>${num}</h3><p>${this.category}</p>
                                     <p style='margin-bottom: 0px;'>کمپین ها:</p>
                                     ${htmlCampaigns}
                                     `,
@@ -515,7 +587,7 @@
                         <td class="greg-date">
                             ${campaign.campaign_start_date}
                         </td>
-                        <td>
+                        <td class="greg-date">
                             ${campaign.campaign_end_date}
                         </td>
                         <td>
@@ -524,7 +596,7 @@
                         <td>
                             ${campaign.campaign_type}
                         </td>
-                        <td>
+                        <td class="campaign-cost">
                             ${campaign.campaign_cost}
                         </td>
                     </tr>
@@ -532,6 +604,22 @@
                 document.querySelector(".table-border-bottom-0").insertAdjacentHTML("beforeend", rowhtml);
                 });
                 loadingOverlay.style.display = 'none';
+                function jalaliDateConvertor() {
+                document.querySelectorAll(".greg-date").forEach(el => {
+                    const gregorian = el.innerHTML.split("-");
+                    const gYear = parseInt(gregorian[0]);
+                    const gMonth = parseInt(gregorian[1]);
+                    const gDay = parseInt(gregorian[2]);
+                    const jdate = jalaali.toJalaali(gYear, gMonth, gDay);
+                    el.innerText = `${jdate.jy}/${String(jdate.jm).padStart(2, '0')}/${String(jdate.jd).padStart(2, '0')}`;
+                    });
+                }
+                document.querySelectorAll(".campaign-cost").forEach(el => {
+                    const cost = Number(el.innerText);
+                    const separatedCost = cost.toLocaleString('fa-IR');
+                    el.innerText = separatedCost;
+                })
+                setTimeout(jalaliDateConvertor, 500)
             })
             .catch(error => {
                 console.error('Error:', error);
@@ -648,7 +736,52 @@
                         },
                         max: 100 
                     },
-                    series: series
+                    series: series,
+                    plotOptions: {
+                    series: {
+                        point: {
+                            events: {
+                                click: function () {
+                                    const apiUrl = "/api/get-campaign-each-point";
+                                    const date = this.category;
+                                    const branch = this.series.name;
+                                    const body = document.querySelector("body");
+                                    const infoModal = document.querySelector("#info-modal");
+                                    console.log(date, branch)
+                                    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                                    fetch(apiUrl, {
+                                        method: "POST",
+                                        headers: {
+                                            "Content-Type": "application/json",
+                                            "X-CSRFToken": csrftoken,
+                                        },
+                                        body: JSON.stringify({date: date, branch: branch})
+                                    }).then(response => {
+                                        if (!response.ok) throw new Error("Invalid Response");
+                                        return response.json()
+                                    }).then(data => {
+                                        console.log(data)
+                                        let htmlCampaigns = data.map((camp, index) =>
+                                            `<p style='margin-bottom: 0px;' style='margin-bottom: 0px; margin-top: 0px;'>${index + 1}. ${camp.campaign_name}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${camp.campaign_type}</p>`
+                                        ).join('')
+                                        if (data.length === 0) {
+                                            htmlCampaigns = `<p>هیچ کمپینی یافت نشد.</p>`
+                                        }
+                                        Swal.fire({
+                                        html: `<h3 style='margin-bottom: 0px;'>${this.y}</h3><p style='margin-bottom: 0px; margin-top: 0px;'>${this.series.name}</p><p style='margin-top: 0px;'>${this.category}</p>
+                                        <p style='margin-bottom: 0px;'>کمپین ها:</p>
+                                        ${htmlCampaigns}
+                                        `,
+                                        confirmButtonText: 'بستن',
+                                        confirmButtonColor: '#5a8dee'
+                                    });
+                                    })
+
+                                }
+                            }
+                        }
+                    }
+                }
                 });
             },
             error: function (xhr) {
@@ -713,7 +846,53 @@
                             } 
                         }
                     },
-                    series: series
+                    series: series,
+                    plotOptions: {
+                    series: {
+                        point: {
+                            events: {
+                                click: function () {
+                                    const apiUrl = "/api/get-campaign-each-point";
+                                    const date = this.category;
+                                    const branch = this.series.name;
+                                    const body = document.querySelector("body");
+                                    const infoModal = document.querySelector("#info-modal");
+                                    console.log(date, branch)
+                                    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                                    fetch(apiUrl, {
+                                        method: "POST",
+                                        headers: {
+                                            "Content-Type": "application/json",
+                                            "X-CSRFToken": csrftoken,
+                                        },
+                                        body: JSON.stringify({date: date, branch: branch})
+                                    }).then(response => {
+                                        if (!response.ok) throw new Error("Invalid Response");
+                                        return response.json()
+                                    }).then(data => {
+                                        const rawNum = this.y;
+                                        const num = rawNum.toLocaleString("fa-IR")
+                                        let htmlCampaigns = data.map((camp, index) =>
+                                            `<p style='margin-bottom: 0px;' style='margin-bottom: 0px; margin-top: 0px;'>${index + 1}. ${camp.campaign_name}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${camp.campaign_type}</p>`
+                                        ).join('')
+                                        if (data.length === 0) {
+                                            htmlCampaigns = `<p>هیچ کمپینی یافت نشد.</p>`
+                                        }
+                                        Swal.fire({
+                                        html: `<h3 style='margin-bottom: 0px;'>${num}</h3><p style='margin-bottom: 0px; margin-top: 0px;'>${this.series.name}</p><p style='margin-top: 0px;'>${this.category}</p>
+                                        <p style='margin-bottom: 0px;'>کمپین ها:</p>
+                                        ${htmlCampaigns}
+                                        `,
+                                        confirmButtonText: 'بستن',
+                                        confirmButtonColor: '#5a8dee'
+                                    });
+                                    })
+
+                                }
+                            }
+                        }
+                    }
+                }
                 });
             },
             error: function (xhr) {
@@ -794,6 +973,47 @@
                                 fontSize: '12px',
                                 fontFamily: 'tahoma'
                             }
+                        },
+                        point: {
+                            events: {
+                                click: function () {
+                                    const apiUrl = "/api/get-campaign-each-point";
+                                    const date = this.category;
+                                    const branch = this.series.name;
+                                    const body = document.querySelector("body");
+                                    const infoModal = document.querySelector("#info-modal");
+                                    console.log(date, branch)
+                                    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                                    fetch(apiUrl, {
+                                        method: "POST",
+                                        headers: {
+                                            "Content-Type": "application/json",
+                                            "X-CSRFToken": csrftoken,
+                                        },
+                                        body: JSON.stringify({date: date, branch: branch})
+                                    }).then(response => {
+                                        if (!response.ok) throw new Error("Invalid Response");
+                                        return response.json()
+                                    }).then(data => {
+                                        console.log(data)
+                                        let htmlCampaigns = data.map((camp, index) =>
+                                            `<p style='margin-bottom: 0px;' style='margin-bottom: 0px; margin-top: 0px;'>${index + 1}. ${camp.campaign_name}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${camp.campaign_type}</p>`
+                                        ).join('')
+                                        if (data.length === 0) {
+                                            htmlCampaigns = `<p>هیچ کمپینی یافت نشد.</p>`
+                                        }
+                                        Swal.fire({
+                                        html: `<h3 style='margin-bottom: 0px;'>${this.y} %</h3><p style='margin-bottom: 0px; margin-top: 0px;'>${this.series.name}</p><p style='margin-top: 0px;'>${this.category}</p>
+                                        <p style='margin-bottom: 0px;'>کمپین ها:</p>
+                                        ${htmlCampaigns}
+                                        `,
+                                        confirmButtonText: 'بستن',
+                                        confirmButtonColor: '#5a8dee'
+                                    });
+                                    })
+
+                                }
+                            }
                         }
                     }
                 },
@@ -801,7 +1021,7 @@
                     shared: true,
                     pointFormat: '<span style="color:{series.color}">\u25CF</span> {series.name}: <b>%{point.y:.0f}</b><br/>'
                 },
-                series: series 
+                series: series,
             });
             },
             error: function (xhr) {
