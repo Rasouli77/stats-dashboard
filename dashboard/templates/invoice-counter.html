@@ -132,6 +132,7 @@
         <div class="col-lg-12">
             <div class="demo-inline-spacing mt-3">
             <div class="tab-content px-0 pt-2">
+                <h6 id="instruction" style="display: none;">برای مشاهده مقایسه ای شعب باید یک یا چند شعبه انتخاب شوند.</h6>
                 <!-- total amount aggregation -->
                 <div id="container" style="width: 100%; height: 400px; margin-top: 45px;"></div>
                 <!-- total amount aggregation by branches -->
@@ -147,7 +148,6 @@
     <div class="row">
         <div class="card">
         <h5 class="card-header heading-color">کمپین ها</h5>
-        <a href="{% url 'create_campaign' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="btn btn-success" type="button" style="width: 200px; margin: 20px;">ساخت کمپین جدید</a>
         <div class="table-responsive text-nowrap" style="margin-bottom: 100px;">
             <table class="table table-hover">
                 <thead>
@@ -156,8 +156,8 @@
                     <th>تاریخ شروع</th>
                     <th>تاریخ پایان</th>
                     <th>شعبه</th>
-                    <th>هزینه</th>
                     <th>نوع کمپین</th>
+                    <th>هزینه</th>
                     </tr>
                 </thead>
                 <tbody class="table-border-bottom-0">
@@ -238,6 +238,51 @@
                         }
                     }
                 },
+                plotOptions: {
+                    series: {
+                        point: {
+                            events: {
+                                click: function () {
+                                    const apiUrl = "/api/get-campaign-each-point";
+                                    const date = this.category;
+                                    const branch = this.series.name;
+                                    const body = document.querySelector("body");
+                                    const infoModal = document.querySelector("#info-modal");
+                                    console.log(date, branch)
+                                    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                                    fetch(apiUrl, {
+                                        method: "POST",
+                                        headers: {
+                                            "Content-Type": "application/json",
+                                            "X-CSRFToken": csrftoken,
+                                        },
+                                        body: JSON.stringify({date: date, branch: branch})
+                                    }).then(response => {
+                                        if (!response.ok) throw new Error("Invalid Response");
+                                        return response.json()
+                                    }).then(data => {
+                                        console.log(data)
+                                        let htmlCampaigns = data.map((camp, index) =>
+                                            `<p style='margin-bottom: 0px;' style='margin-bottom: 0px; margin-top: 0px;'>${index + 1}. ${camp.campaign_name}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${camp.campaign_type}</p>`
+                                        ).join('')
+                                        if (data.length === 0) {
+                                            htmlCampaigns = `<p>هیچ کمپینی یافت نشد.</p>`
+                                        }
+                                        Swal.fire({
+                                        html: `<h3 style='margin-bottom: 0px;'>${this.y}</h3><p>${this.category}</p>
+                                        <p style='margin-bottom: 0px;'>کمپین ها:</p>
+                                        ${htmlCampaigns}
+                                        `,
+                                        confirmButtonText: 'بستن',
+                                        confirmButtonColor: '#5a8dee'
+                                    });
+                                    })
+
+                                }
+                            }
+                        }
+                    }
+                },
                 series: [
                     {
                         name: "مبلغ فاکتور",
@@ -281,6 +326,51 @@
                         style: {
                         fontSize: '20px',
                         fontWeight: 'bold'
+                        }
+                    }
+                },
+                plotOptions: {
+                    series: {
+                        point: {
+                            events: {
+                                click: function () {
+                                    const apiUrl = "/api/get-campaign-each-point";
+                                    const date = this.category;
+                                    const branch = this.series.name;
+                                    const body = document.querySelector("body");
+                                    const infoModal = document.querySelector("#info-modal");
+                                    console.log(date, branch)
+                                    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                                    fetch(apiUrl, {
+                                        method: "POST",
+                                        headers: {
+                                            "Content-Type": "application/json",
+                                            "X-CSRFToken": csrftoken,
+                                        },
+                                        body: JSON.stringify({date: date, branch: branch})
+                                    }).then(response => {
+                                        if (!response.ok) throw new Error("Invalid Response");
+                                        return response.json()
+                                    }).then(data => {
+                                        console.log(data)
+                                        let htmlCampaigns = data.map((camp, index) =>
+                                            `<p style='margin-bottom: 0px;' style='margin-bottom: 0px; margin-top: 0px;'>${index + 1}. ${camp.campaign_name}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${camp.campaign_type}</p>`
+                                        ).join('')
+                                        if (data.length === 0) {
+                                            htmlCampaigns = `<p>هیچ کمپینی یافت نشد.</p>`
+                                        }
+                                        Swal.fire({
+                                        html: `<h3 style='margin-bottom: 0px;'>${this.y}</h3><p>${this.category}</p>
+                                        <p style='margin-bottom: 0px;'>کمپین ها:</p>
+                                        ${htmlCampaigns}
+                                        `,
+                                        confirmButtonText: 'بستن',
+                                        confirmButtonColor: '#5a8dee'
+                                    });
+                                    })
+
+                                }
+                            }
                         }
                     }
                 },
@@ -340,7 +430,7 @@
                         <td class="greg-date">
                             ${campaign.campaign_start_date}
                         </td>
-                        <td>
+                        <td class="greg-date">
                             ${campaign.campaign_end_date}
                         </td>
                         <td>
@@ -349,7 +439,7 @@
                         <td>
                             ${campaign.campaign_type}
                         </td>
-                        <td>
+                        <td class="campaign-cost">
                             ${campaign.campaign_cost}
                         </td>
                     </tr>
@@ -358,6 +448,22 @@
                 });
 
                 loadingOverlay.style.display = 'none';
+                function jalaliDateConvertor() {
+                document.querySelectorAll(".greg-date").forEach(el => {
+                    const gregorian = el.innerHTML.split("-");
+                    const gYear = parseInt(gregorian[0]);
+                    const gMonth = parseInt(gregorian[1]);
+                    const gDay = parseInt(gregorian[2]);
+                    const jdate = jalaali.toJalaali(gYear, gMonth, gDay);
+                    el.innerText = `${jdate.jy}/${String(jdate.jm).padStart(2, '0')}/${String(jdate.jd).padStart(2, '0')}`;
+                    });
+                }
+                document.querySelectorAll(".campaign-cost").forEach(el => {
+                    const cost = Number(el.innerText);
+                    const separatedCost = cost.toLocaleString('fa-IR');
+                    el.innerText = separatedCost;
+                })
+                setTimeout(jalaliDateConvertor, 500)
             })
             .catch(error => {
                 console.error('Error:', error);
@@ -434,7 +540,52 @@
                             } 
                         } 
                     },
-                    series: series
+                    series: series,
+                    plotOptions: {
+                        series: {
+                            point: {
+                                events: {
+                                    click: function () {
+                                        const apiUrl = "/api/get-campaign-each-point";
+                                        const date = this.category;
+                                        const branch = this.series.name;
+                                        const body = document.querySelector("body");
+                                        const infoModal = document.querySelector("#info-modal");
+                                        console.log(date, branch)
+                                        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                                        fetch(apiUrl, {
+                                            method: "POST",
+                                            headers: {
+                                                "Content-Type": "application/json",
+                                                "X-CSRFToken": csrftoken,
+                                            },
+                                            body: JSON.stringify({date: date, branch: branch})
+                                        }).then(response => {
+                                            if (!response.ok) throw new Error("Invalid Response");
+                                            return response.json()
+                                        }).then(data => {
+                                            console.log(data)
+                                            let htmlCampaigns = data.map((camp, index) =>
+                                                `<p style='margin-bottom: 0px;' style='margin-bottom: 0px; margin-top: 0px;'>${index + 1}. ${camp.campaign_name}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${camp.campaign_type}</p>`
+                                            ).join('')
+                                            if (data.length === 0) {
+                                                htmlCampaigns = `<p>هیچ کمپینی یافت نشد.</p>`
+                                            }
+                                            Swal.fire({
+                                            html: `<h3 style='margin-bottom: 0px;'>${this.y}</h3><p style='margin-bottom: 0px; margin-top: 0px;'>${this.series.name}</p><p style='margin-top: 0px;'>${this.category}</p>
+                                            <p style='margin-bottom: 0px;'>کمپین ها:</p>
+                                            ${htmlCampaigns}
+                                            `,
+                                            confirmButtonText: 'بستن',
+                                            confirmButtonColor: '#5a8dee'
+                                        });
+                                        })
+
+                                    }
+                                }
+                            }
+                        }
+                    }
                 });
             },
             error: function (xhr) {
@@ -497,7 +648,52 @@
                             } 
                         } 
                     },
-                    series: series
+                    series: series,
+                    plotOptions: {
+                        series: {
+                            point: {
+                                events: {
+                                    click: function () {
+                                        const apiUrl = "/api/get-campaign-each-point";
+                                        const date = this.category;
+                                        const branch = this.series.name;
+                                        const body = document.querySelector("body");
+                                        const infoModal = document.querySelector("#info-modal");
+                                        console.log(date, branch)
+                                        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                                        fetch(apiUrl, {
+                                            method: "POST",
+                                            headers: {
+                                                "Content-Type": "application/json",
+                                                "X-CSRFToken": csrftoken,
+                                            },
+                                            body: JSON.stringify({date: date, branch: branch})
+                                        }).then(response => {
+                                            if (!response.ok) throw new Error("Invalid Response");
+                                            return response.json()
+                                        }).then(data => {
+                                            console.log(data)
+                                            let htmlCampaigns = data.map((camp, index) =>
+                                                `<p style='margin-bottom: 0px;' style='margin-bottom: 0px; margin-top: 0px;'>${index + 1}. ${camp.campaign_name}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${camp.campaign_type}</p>`
+                                            ).join('')
+                                            if (data.length === 0) {
+                                                htmlCampaigns = `<p>هیچ کمپینی یافت نشد.</p>`
+                                            }
+                                            Swal.fire({
+                                            html: `<h3 style='margin-bottom: 0px;'>${this.y}</h3><p style='margin-bottom: 0px; margin-top: 0px;'>${this.series.name}</p><p style='margin-top: 0px;'>${this.category}</p>
+                                            <p style='margin-bottom: 0px;'>کمپین ها:</p>
+                                            ${htmlCampaigns}
+                                            `,
+                                            confirmButtonText: 'بستن',
+                                            confirmButtonColor: '#5a8dee'
+                                        });
+                                        })
+
+                                    }
+                                }
+                            }
+                        }
+                    }
                 });
             },
             error: function (xhr) {
@@ -516,7 +712,8 @@
     const selectView = document.querySelector("#select-view");
     const secondContainer = document.querySelector("#second-container");
     const thirdContainer = document.querySelector("#third-container");
-    const forthContainer = document.querySelector("#forth-container")
+    const forthContainer = document.querySelector("#forth-container");
+    const intruction = document.querySelector("#instruction");
     selectView.addEventListener("change", (event) => {
      const value = event.target.value;
      if (value === "1") {
@@ -524,18 +721,22 @@
         thirdContainer.style.display = "block";
         secondContainer.style.display = "none";
         forthContainer.style.display = "none";
+        intruction.style.display = "none";
      }
      else {
         container.style.display = "none";
         thirdContainer.style.display = "none";
         secondContainer.style.display = "block";
         forthContainer.style.display = "block";
+        intruction.style.display = "block";
      }
     });
     });
 </script>
 <!-- Gregorian Jalali Conversion Raw JavaScript -->
 <script src="{% static 'assets/js/campaign-gregorian-to-jalali-date-convert.js' %}"></script>
+<!-- Sweet Alert CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 {% endblock %}
 
 
