@@ -211,6 +211,19 @@ class PeopleCounting(models.Model):  # former name: Stats
         verbose_name_plural = "شمارشگر"
 
 
+class CampaignSpecialId(models.Model):    
+    merchant = models.ForeignKey(Merchant, on_delete=models.CASCADE, verbose_name="مرچنت", null=True)
+    name = models.CharField(max_length=255, verbose_name="نام", null=True, blank=True)
+    special_id = models.IntegerField(verbose_name="کد ویزه کمپین")
+
+    def __str__(self):
+        return str(self.special_id)
+    
+    class Meta:
+        verbose_name = "کد ویژه کمپین ها"
+        verbose_name_plural = "کد ویژه کمپین ها"
+
+
 class Campaign(models.Model):
     campaign_types = [("ویترین", "ویترین"), ("فروش", "فروش")]
     name = models.CharField(max_length=255, verbose_name="نام کمپین")
@@ -231,6 +244,7 @@ class Campaign(models.Model):
     last_modified = models.DateTimeField(
         auto_now=True, verbose_name="تاریخ آخرین تغییر"
     )
+    special_campaign_id = models.ForeignKey(CampaignSpecialId, on_delete=models.CASCADE, verbose_name="کد ویژه کمپین", null=True, blank=True, related_name="special")
 
     def __str__(self):
         return self.name

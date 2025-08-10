@@ -12,6 +12,7 @@ from .models import (
     UserProfile,
     PermissionToViewBranch,
     Invoice,
+    CampaignSpecialId
 )
 from rangefilter.filters import DateRangeFilter
 
@@ -156,3 +157,4 @@ admin.site.register(Merchant, MerchantAdmin)
 admin.site.register(UserProfile, UserProfileAdmin)
 admin.site.register(PermissionToViewBranch, PermissionToViewBranchAdmin)
 admin.site.register(Invoice, InvoiceAdmin)
+admin.site.register(CampaignSpecialId)

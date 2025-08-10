@@ -86,6 +86,16 @@
                     </select>
                 </div>
 
+                <div>
+                    <label for="id_special_campaign_id" class="form-label">کد ویژه کمپین:</label>
+                    <select name="special_campaign_id" required id="id_special_campaign_id" class="form-select">
+                        <option value="">---------</option>
+                        {% for special_id in special_ids %}
+                        <option value="{{ special_id.pk }}">{{ special_id.special_id }}. {{ special_id.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
                 <button class="btn btn-primary" style="margin-top: 35px;" id="submit-btn">ثبت</button>
             </form>
         </div>

@@ -92,8 +92,18 @@
                     <label for="id_campaign_type" class="form-label">نوع کمپین:</label>
                     <select name="campaign_type" required id="id_campaign_type" class="form-select">
                             <option value="">---------</option>
-                            <option value="ویترین">ویترین</option>
-                            <option value="فروش">فروش</option>
+                            <option value="ویترین" {% if campaign.campaign_type == 'ویترین' %}selected{% endif %}>ویترین</option>
+                            <option value="فروش" {% if campaign.campaign_type == 'فروش' %}selected{% endif %}>فروش</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="id_special_campaign_id" class="form-label">کد ویژه کمپین:</label>
+                    <select name="special_campaign_id" required id="id_special_campaign_id" class="form-select">
+                        <option value="">---------</option>
+                        {% for special_id in special_ids %}
+                        <option value="{{ special_id.pk }}" {% if campaign.special_campaign_id.pk == special_id.pk %}selected{% endif %}>{{ special_id.special_id }}. {{ special_id.name }}</option>
+                        {% endfor %}
                     </select>
                 </div>
                 

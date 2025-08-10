@@ -183,10 +183,8 @@ class GetCampaignEachPoint(APIView):
             print(e)
         query_date = special_jalali_to_gregorian(q_date)
         campaigns = Campaign.objects.defer("date_created", "last_modified").filter(branch__pk__in=permitted_branches, start_date__lte=query_date, end_date__gte=query_date)
-        print(campaigns)
         if query_branch not in ["ترافیک", "ورودی", "خروجی", "مبلغ فاکتور", "تعداد فاکتور", "درصد نرخ تبدیل (%)", "نسبت (تومان)", "نسبت (%)"]:
             campaigns = campaigns.filter(branch__name=query_branch)
-        print(campaigns)
         campaigns_list = []
         for campaign in campaigns:
             campaigns_list.append({

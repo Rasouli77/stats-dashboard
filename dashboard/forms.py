@@ -69,7 +69,7 @@ class AssignBranchPermissions(forms.ModelForm):
 class CreateCampaign(forms.ModelForm):
     class Meta:
         model = Campaign
-        fields = ["name", "start_date", "end_date", "branch", "cost", "campaign_type"]
+        fields = ["name", "start_date", "end_date", "branch", "cost", "campaign_type", "special_campaign_id"]
 
 
 class UploadInvoiceExcel(forms.Form):

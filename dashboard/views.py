@@ -12,6 +12,7 @@ from .models import (
     Campaign,
     Cam,
     Invoice,
+    CampaignSpecialId
 )
 from django.db.models import Sum, F, Q
 from django.contrib.auth.models import User, Permission
@@ -522,7 +523,8 @@ def campaign(request, url_hash):
         return render(request, "401.html", status=401)
     campaigns = Campaign.objects.filter(
         branch__merchant__url_hash=request.user.profile.merchant.url_hash
-    ).order_by("pk")
+    ).order_by("-last_modified")
+    special_ids = CampaignSpecialId.objects.filter(merchant=request.user.profile.merchant)
     permissions = (
         PermissionToViewBranch.objects.defer("date_created", "last_modified")
         .select_related("branch")
@@ -535,8 +537,8 @@ def campaign(request, url_hash):
         "country", "province", "city", "district", "date_created", "last_modified"
     ).filter(merchant__url_hash=url_hash, pk__in=permission_list)
     if not request.user.profile.is_manager:
-        campaigns = campaigns.filter(branch__pk__in=branches).order_by("pk")
-    return render(request, "campaign.html", {"campaigns": campaigns})
+        campaigns = campaigns.filter(branch__pk__in=branches).order_by("-last_modified")
+    return render(request, "campaign.html", {"campaigns": campaigns, "special_ids": special_ids})
 
 
 @login_required
@@ -566,6 +568,7 @@ def create_campaign(request, url_hash):
                 "date_created",
                 "last_modified",
             ).filter(merchant__url_hash=url_hash)
+        special_ids = CampaignSpecialId.objects.filter(merchant=request.user.profile.merchant)
         form = CreateCampaign(request.POST)
         if request.method == "POST":
             if form.is_valid():
@@ -574,7 +577,7 @@ def create_campaign(request, url_hash):
             else:
                 messages.error(request, "مشکلی در اطلاعات وارد شده وجود دارد")
         return render(
-            request, "create-campaign.html", {"form": form, "branches": branches}
+            request, "create-campaign.html", {"form": form, "branches": branches, "special_ids": special_ids}
         )
     return render(request, "401.html", status=401)
 
@@ -583,6 +586,7 @@ def create_campaign(request, url_hash):
 def edit_campaign(request, campaign_id):
     """This edits each campaign using a form if permitted."""
     campaign = Campaign.objects.get(pk=campaign_id)
+    special_ids = CampaignSpecialId.objects.filter(merchant=request.user.profile.merchant)
     permissions = (
         PermissionToViewBranch.objects.defer("date_created", "last_modified")
         .select_related("branch")
@@ -620,10 +624,11 @@ def edit_campaign(request, campaign_id):
                 "branches": branches,
                 "jalali_start_date": jalali_start_date,
                 "jalali_end_date": jalali_end_date,
+                "special_ids": special_ids
             },
         )
     return render(
-        request, "edit-campaign.html", {"branches": branches, "campaign": campaign}
+        request, "edit-campaign.html", {"branches": branches, "campaign": campaign, "special_ids": special_ids}
     )
 
 
@@ -1206,3 +1211,41 @@ def analysis(request, url_hash):
             "entry_overalls": json.dumps(entry_overalls),
         },
     )
+
+
+@login_required
+def campaign_detail(request, campaign_id):
+    # Permissions
+    allowed_branches = []
+    profile = request.user.profile
+    all_branches = Branch.objects.defer(
+        "country", "province", "city", "district", "date_created", "last_modified"
+    ).filter(merchant__url_hash=profile.merchant.url_hash)
+    if not profile.is_manager:
+        permissions = (
+            PermissionToViewBranch.objects.defer("date_created", "last_modified")
+            .select_related("branch")
+            .filter(user__pk=profile.pk)
+        )
+        for permission in permissions:
+            allowed_branches.append(permission.branch.pk)
+    else:
+        for item in all_branches:
+            allowed_branches.append(item.pk)
+    campaign = Campaign.objects.get(pk=campaign_id)
+    if campaign.branch.pk not in allowed_branches:
+        return render(request, "401.html", status=401)
+    people_counting_info = PeopleCounting.objects.filter(branch=campaign.branch, date__range=(campaign.start_date, campaign.end_date))
+    invoice_info = Invoice.objects.filter(branch=campaign.branch, date__range=(campaign.start_date, campaign.end_date))
+    people_counting_series = [float(row.entry) for row in people_counting_info]
+    invoice_sales_series = [float(row.total_amount) for row in invoice_info]
+    invoice_count_series = [float(row.total_items) for row in invoice_info]
+    dates = [str(row.date.strftime("%Y-%m-%d")) for row in people_counting_info]
+    return render(request, "campaign-solo-analysis.html", {
+        "campaign": campaign,
+        "dates": json.dumps(dates),
+        "entry_totals": json.dumps(people_counting_series),
+        "total_amount": json.dumps(invoice_sales_series),
+        "total_items": json.dumps(invoice_count_series)
+    })
+    
