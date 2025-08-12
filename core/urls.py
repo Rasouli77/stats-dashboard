@@ -38,7 +38,7 @@ from dashboard.views import (
     excel_template_generator,
     invoice_counter,
     analysis,
-    campaign_detail
+    campaign_detail,
 )
 from dashboard.api_views import MultipleBranches, MultiBranchesInvoice, Analysis, GetCampaignEachPoint
 from django.contrib.auth import views as auth_views
@@ -68,8 +68,8 @@ urlpatterns = [
     ),
     path("dashboard/campaigns/<str:url_hash>", campaign, name="campaign"),
     path("dashboard/create-campaign/<str:url_hash>", create_campaign, name="create_campaign"),
-    path("dashboard/edit-campaign/<int:campaign_id>", edit_campaign, name="edit_campaign"),
-    path("dashboard/delete-campaign/<int:campaign_id>", delete_campaign, name='delete_campaign'),
+    path("dashboard/edit-campaign/<str:url_hash>/<uuid:group_id>", edit_campaign, name="edit_campaign"),
+    path("dashboard/delete-campaign/<str:url_hash>/<uuid:group_id>", delete_campaign, name='delete_campaign'),
     path("dashboard/campaign-solo-analysis/<int:campaign_id>", campaign_detail, name='campaign_solo_analysis'),
     path("dashboard/create-invoice-from-excel/<str:url_hash>", upload_excel_file_invoice, name='upload_excel_file_invoice'),
     path("dashboard/invoices/<str:url_hash>", invoices, name='invoices'),

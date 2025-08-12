@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from datetime import datetime
 
 
-# Create your models here.
+
 class Merchant(models.Model):
     name = models.CharField(max_length=255, verbose_name="نام")
     rep_first_name = models.CharField(max_length=255, verbose_name="نام نماینده")
@@ -131,7 +131,7 @@ class Branch(models.Model):
     )
 
     def __str__(self):
-        return f"{self.merchant.name} | {self.name}"
+        return self.name
 
     class Meta:
         verbose_name = "شعبه"
@@ -211,21 +211,9 @@ class PeopleCounting(models.Model):  # former name: Stats
         verbose_name_plural = "شمارشگر"
 
 
-class CampaignSpecialId(models.Model):    
-    merchant = models.ForeignKey(Merchant, on_delete=models.CASCADE, verbose_name="مرچنت", null=True)
-    name = models.CharField(max_length=255, verbose_name="نام", null=True, blank=True)
-    special_id = models.IntegerField(verbose_name="کد ویزه کمپین")
-
-    def __str__(self):
-        return str(self.special_id)
-    
-    class Meta:
-        verbose_name = "کد ویژه کمپین ها"
-        verbose_name_plural = "کد ویژه کمپین ها"
-
-
 class Campaign(models.Model):
     campaign_types = [("ویترین", "ویترین"), ("فروش", "فروش")]
+    group_id = models.CharField(max_length=36, null=True, blank=True)
     name = models.CharField(max_length=255, verbose_name="نام کمپین")
     start_date = models.DateField(verbose_name="تاریخ")
     end_date = models.DateField(verbose_name="تاریخ پایان", null=True, blank=True)
@@ -244,7 +232,6 @@ class Campaign(models.Model):
     last_modified = models.DateTimeField(
         auto_now=True, verbose_name="تاریخ آخرین تغییر"
     )
-    special_campaign_id = models.ForeignKey(CampaignSpecialId, on_delete=models.CASCADE, verbose_name="کد ویژه کمپین", null=True, blank=True, related_name="special")
 
     def __str__(self):
         return self.name

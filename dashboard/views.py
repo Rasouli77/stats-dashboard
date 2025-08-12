@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse, HttpResponse
 from django.urls import reverse
 from datetime import datetime, date, timedelta
-
+import uuid
 import openpyxl.styles
 from .models import (
     PeopleCounting,
@@ -12,9 +12,8 @@ from .models import (
     Campaign,
     Cam,
     Invoice,
-    CampaignSpecialId
 )
-from django.db.models import Sum, F, Q
+from django.db.models import Sum, F, Q, Count, Min, Max
 from django.contrib.auth.models import User, Permission
 from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
@@ -39,7 +38,6 @@ import subprocess
 import openpyxl
 from io import BytesIO
 import random
-
 
 def perm_to_open(request, url_hash):
     """Checks if the user has the right to open the page."""
@@ -521,24 +519,16 @@ def campaign(request, url_hash):
     # Rights
     if not perm_to_open(request, url_hash):
         return render(request, "401.html", status=401)
+    if not request.user.profile.is_manager:
+        return render(request, "401.html", status=401)
     campaigns = Campaign.objects.filter(
         branch__merchant__url_hash=request.user.profile.merchant.url_hash
-    ).order_by("-last_modified")
-    special_ids = CampaignSpecialId.objects.filter(merchant=request.user.profile.merchant)
-    permissions = (
-        PermissionToViewBranch.objects.defer("date_created", "last_modified")
-        .select_related("branch")
-        .filter(user__pk=request.user.profile.pk)
-    )
-    permission_list = []
-    for permission in permissions:
-        permission_list.append(permission.branch.pk)
-    branches = Branch.objects.defer(
-        "country", "province", "city", "district", "date_created", "last_modified"
-    ).filter(merchant__url_hash=url_hash, pk__in=permission_list)
-    if not request.user.profile.is_manager:
-        campaigns = campaigns.filter(branch__pk__in=branches).order_by("-last_modified")
-    return render(request, "campaign.html", {"campaigns": campaigns, "special_ids": special_ids})
+    ).values("group_id").annotate(campaign_name=Min("name"), campaign_start_date=Min("start_date"), campaign_end_date=Max("end_date"), campaign_cost=Sum("cost"), campaign_type=Min("campaign_type"), campaign_last_modified=Max("last_modified"), campaign_group_id=Min("group_id")).order_by("-campaign_last_modified")
+
+    for campaign in campaigns:
+        branch_names = Campaign.objects.filter(group_id=campaign["campaign_group_id"]).values_list("branch__name", flat=True).distinct()
+        campaign["branch_names"] = ", ".join(branch_names)
+    return render(request, "campaign.html", {"campaigns": campaigns})
 
 
 @login_required
@@ -568,78 +558,82 @@ def create_campaign(request, url_hash):
                 "date_created",
                 "last_modified",
             ).filter(merchant__url_hash=url_hash)
-        special_ids = CampaignSpecialId.objects.filter(merchant=request.user.profile.merchant)
         form = CreateCampaign(request.POST)
         if request.method == "POST":
             if form.is_valid():
-                form.save()
+                items = form.cleaned_data.pop("branch")
+                cost = form.cleaned_data.pop("cost")
+                group_id = uuid.uuid4()
+                number_selected = len(items)
+                cost = int(cost) / number_selected
+                for item in items:
+                    Campaign.objects.create(branch=item, cost = str(int(cost)), group_id=group_id, **form.cleaned_data)
                 messages.success(request, "کمپین با موفقیت ساخته شد")
             else:
                 messages.error(request, "مشکلی در اطلاعات وارد شده وجود دارد")
         return render(
-            request, "create-campaign.html", {"form": form, "branches": branches, "special_ids": special_ids}
+            request, "create-campaign.html", {"form": form, "branches": branches}
         )
     return render(request, "401.html", status=401)
 
 
 @login_required
-def edit_campaign(request, campaign_id):
-    """This edits each campaign using a form if permitted."""
-    campaign = Campaign.objects.get(pk=campaign_id)
-    special_ids = CampaignSpecialId.objects.filter(merchant=request.user.profile.merchant)
-    permissions = (
-        PermissionToViewBranch.objects.defer("date_created", "last_modified")
-        .select_related("branch")
-        .filter(user__pk=request.user.profile.pk)
-    )
-    permission_list = []
-    for permission in permissions:
-        permission_list.append(permission.branch.pk)
-    branches = Branch.objects.defer(
-        "country", "province", "city", "district", "date_created", "last_modified"
-    ).filter(pk__in=permission_list)
-    if request.user.profile.is_manager:
-        branches = Branch.objects.defer(
-            "country", "province", "city", "district", "date_created", "last_modified"
-        ).filter(merchant__url_hash=request.user.profile.merchant.url_hash)
-    if campaign.branch.pk in branches or request.user.profile.is_manager:
-        form = 0
+def edit_campaign(request, url_hash, group_id):
+    """Using this, users can create campaigns."""
+    if not perm_to_open(request, url_hash):
+        return render(request, "401.html", status=401)
+    if not request.user.profile.is_manager:
+        return render(request, "401.html", status=401)
+    campaign = Campaign.objects.filter(group_id=group_id).values("group_id").annotate(campaign_name=Min("name"), campaign_start_date=Min("start_date"), campaign_end_date=Max("end_date"), campaign_cost=Sum("cost"), campaign_type=Min("campaign_type"), campaign_last_modified=Max("last_modified"), campaign_group_id=Min("group_id")).order_by("campaign_last_modified").first()
+    branch_pks = Campaign.objects.filter(group_id=campaign["campaign_group_id"]).values_list("branch__pk", flat=True).distinct()
+    campaign["branch_pks"] = branch_pks
+    selected_branch_pks = [row for row in campaign["branch_pks"]]
+    start_date = convert_gregorian_to_jalali(campaign["campaign_start_date"])
+    end_date = convert_gregorian_to_jalali(campaign["campaign_end_date"])
+    if request.user.profile.merchant.url_hash == url_hash:
+        if request.user.profile.is_manager and request.user.is_active:
+            branches = Branch.objects.defer(
+                "country",
+                "province",
+                "city",
+                "district",
+                "date_created",
+                "last_modified",
+            ).filter(merchant__url_hash=url_hash)
+        form = CreateCampaign(request.POST)
         if request.method == "POST":
-            form = CreateCampaign(request.POST, instance=campaign)
             if form.is_valid():
-                form.save()
-                messages.success(request, "کمپین با موفقیت تغییر یافت")
+                items = form.cleaned_data.pop("branch")
+                cost = form.cleaned_data.pop("cost")
+                new_group_id = uuid.uuid4()
+                number_selected = len(items)
+                cost = int(float(cost)) / number_selected
+                for item in items:
+                    Campaign.objects.create(branch=item, cost = str(int(cost)), group_id=new_group_id, **form.cleaned_data)
+                Campaign.objects.filter(group_id=group_id).delete()
+                return redirect("campaign", request.user.profile.merchant.url_hash)
             else:
-                messages.error(request, "مشکلی در اطلاعات وارد شده وجود دارد")
-        else:
-            form = CreateCampaign(instance=campaign)
-        jalali_start_date = convert_gregorian_to_jalali(campaign.start_date)
-        jalali_end_date = convert_gregorian_to_jalali(campaign.end_date)
+                messages.error(request, "لطفا همه فیلد ها را پر کنید")
         return render(
-            request,
-            "edit-campaign.html",
-            {
-                "form": form,
-                "campaign": campaign,
-                "branches": branches,
-                "jalali_start_date": jalali_start_date,
-                "jalali_end_date": jalali_end_date,
-                "special_ids": special_ids
-            },
+            request, "edit-campaign.html", {"form": form, "branches": branches, "campaign": campaign, "selected_branch_pks": selected_branch_pks, "start_date": start_date, "end_date": end_date}
         )
-    return render(
-        request, "edit-campaign.html", {"branches": branches, "campaign": campaign, "special_ids": special_ids}
-    )
+    return render(request, "401.html", status=401)
 
 
 @login_required
-def delete_campaign(request, campaign_id):
+def delete_campaign(request, url_hash, group_id):
     """This deletes each campaign by its id."""
-    campaign = get_object_or_404(Campaign, pk=campaign_id)
-    jalali_start_date = convert_gregorian_to_jalali(campaign.start_date)
-    jalali_end_date = convert_gregorian_to_jalali(campaign.end_date)
+    if not perm_to_open(request, url_hash):
+        return render(request, "401.html", status=401)
+    if not request.user.profile.is_manager:
+        return render(request, "401.html", status=401)
+    campaign = Campaign.objects.filter(group_id=group_id).values("group_id").annotate(campaign_name=Min("name"), campaign_start_date=Min("start_date"), campaign_end_date=Max("end_date"), campaign_cost=Sum("cost"), campaign_type=Min("campaign_type"), campaign_last_modified=Max("last_modified"), campaign_group_id=Min("group_id")).order_by("campaign_last_modified").first()
+    branch_names = Campaign.objects.filter(group_id=campaign["campaign_group_id"]).values_list("branch__name", flat=True).distinct()
+    campaign["branch_names"] = ", ".join(branch_names)
+    jalali_start_date = convert_gregorian_to_jalali(campaign["campaign_start_date"])
+    jalali_end_date = convert_gregorian_to_jalali(campaign["campaign_end_date"])
     if request.method == "POST":
-        campaign.delete()
+        Campaign.objects.filter(group_id=group_id).delete()
         return redirect("campaign", request.user.profile.merchant.url_hash)
     return render(
         request,

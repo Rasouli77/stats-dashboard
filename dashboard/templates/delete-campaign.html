@@ -13,7 +13,7 @@
         <div class="card-header d-flex align-items-center justify-content-between">
             <div class="d-flex align-items-center me-3">
             <div class="card-title mb-0">
-                <h5 class="mb-0">{{ campaign.name }}</h5>
+                <h5 class="mb-0">{{ campaign.campaign_name }}</h5>
                 <small class="text-muted primary-font">آیا مایلید کمپین زیر را حذف نمایید؟</small>
             </div>
             </div>
@@ -30,11 +30,15 @@
             </div>
             <div class="d-flex flex-column me-2">
                 <h6>هزینه کمپین</h6>
-                <span>{{ campaign.cost }}</span>
+                <span>{{ campaign.campaign_cost|floatformat:0 }}</span>
+            </div>
+            <div class="d-flex flex-column me-2">
+                <h6>نوع کمپین</h6>
+                <span>{{ campaign.campaign_type }}</span>
             </div>
             <div class="d-flex flex-column me-2">
                 <h6>شعبه</h6>
-                <span>{{ campaign.branch.name }}</span>
+                <span>{{ campaign.branch_names }}</span>
             </div>
             </div>
             <form action="" method="post">

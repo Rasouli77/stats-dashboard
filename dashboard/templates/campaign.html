@@ -4,7 +4,7 @@
     کمپین ها
 {% endblock %}
 {% block meta_description %}
-	کمپین ها
+	  کمپین ها
 {% endblock %}
 {% block content %}
 <div class="card">
@@ -15,7 +15,6 @@
       <thead>
         <tr>
           <th>نام کمپین</th>
-          <th>کد ویژه</th>
           <th>تاریخ شروع</th>
           <th>تاریخ پایان</th>
           <th>شعبه</th>
@@ -27,17 +26,16 @@
       <tbody class="table-border-bottom-0">
         {% for campaign in campaigns %}
         <tr>
-          <td><i class="align-middle fab fa-angular fa-lg text-danger me-3"></i><strong>{{ campaign.name }}</strong></td>
-          <td>{{ campaign.special_campaign_id.special_id }}</td>
-          <td class="date">{{ campaign.start_date|date:"Y-m-d" }}</td>
+          <td><i class="align-middle fab fa-angular fa-lg text-danger me-3"></i><strong>{{ campaign.campaign_name }}</strong></td>
+          <td class="date">{{ campaign.campaign_start_date|date:"Y-m-d" }}</td>
           <td class="date">
-              {{ campaign.end_date|date:"Y-m-d"}}
+              {{ campaign.campaign_end_date|date:"Y-m-d"}}
           </td>
           <td>
-              {{ campaign.branch }}
+              {{ campaign.branch_names }}
           </td>
           <td>
-            {{ campaign.cost }}
+            {{ campaign.campaign_cost|floatformat:0 }}
           </td>
           <td>
             {{ campaign.campaign_type }}
@@ -48,9 +46,9 @@
                 <i class="bx bx-dots-vertical-rounded"></i>
               </button>
               <div class="dropdown-menu">
-                <a class="dropdown-item" href="{% url 'campaign_solo_analysis' campaign_id=campaign.pk %}"><i class="menu-icon tf-icons bx bx-chart"></i>تحلیل آمار</a>
-                <a class="dropdown-item" href="{% url 'edit_campaign' campaign_id=campaign.pk %}"><i class="bx bx-edit-alt me-1"></i>ویرایش</a>
-                <a class="dropdown-item" href="{% url 'delete_campaign' campaign_id=campaign.pk %}"><i class="bx bx-trash me-1"></i>حذف</a>
+                <a class="dropdown-item" href=""><i class="menu-icon tf-icons bx bx-chart"></i>تحلیل آمار</a>
+                <a class="dropdown-item" href="{% url 'edit_campaign' request.user.profile.merchant.url_hash campaign.group_id %}"><i class="bx bx-edit-alt me-1"></i>ویرایش</a>
+                <a class="dropdown-item" href="{% url 'delete_campaign' request.user.profile.merchant.url_hash campaign.group_id %}"><i class="bx bx-trash me-1"></i>حذف</a>
               </div>
             </div>
           </td>
@@ -60,51 +58,6 @@
     </table>
   </div>
 </div>
-{% if request.user.profile.is_manager %}
-<div class="card">
-  <h5 class="card-header heading-color">کمپین ها</h5>
-  <a href="{% url 'create_campaign' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="btn btn-success" type="button" style="width: 200px; margin: 20px;">ساخت کمپین جدید</a>
-  <div class="table-responsive text-nowrap" style="margin-bottom: 100px;">
-    <table class="table table-hover">
-      <thead>
-        <tr>
-          <th>نام کمپین</th>
-          <th>کد ویژه</th>
-          <th>تاریخ شروع</th>
-          <th>تاریخ پایان</th>
-          <th>نوع کمپین</th>
-          <th>عمل‌ها</th>
-        </tr>
-      </thead>
-      <tbody class="table-border-bottom-0">
-        {% for campaign in special_ids %}
-        <tr>
-          <td><i class="align-middle fab fa-angular fa-lg text-danger me-3"></i><strong>{{ campaign.name }}</strong></td>
-          <td>{{ campaign.special_id }}</td>
-          <td class="date">{{ campaign.special.first.start_date|date:"Y-m-d" }}</td>
-          <td class="date">
-              {{ campaign.special.first.end_date|date:"Y-m-d"}}
-          </td>
-          <td>
-            {{ campaign.special.first.campaign_type }}
-          </td>
-          <td>
-            <div class="dropdown">
-              <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
-                <i class="bx bx-dots-vertical-rounded"></i>
-              </button>
-              <div class="dropdown-menu">
-                <a class="dropdown-item" href="#"><i class="menu-icon tf-icons bx bx-chart"></i>تحلیل آمار</a>
-              </div>
-            </div>
-          </td>
-        </tr>
-        {% endfor %}
-        </tbody>
-    </table>
-  </div>
-</div>
-{% endif %}
 {% endblock %}
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/jalaali-js@1.2.8/dist/jalaali.min.js"></script>

@@ -34,10 +34,8 @@
 {% endif %}
 {% if messages %}
 {% for message in messages %}
-    {% if message.tags == 'success' %}
-    <div class="alert alert-success" style="width: 50%;">{{ message }}</div>
-    {% else %}
-    <div class="alert alert-danger" style="width: 50%;">{{ message }}</div>
+    {% if message.tags != 'success' %}
+    <div class="alert alert-danger" style="width: 50%;">{{ message }}</div>    
     {% endif %}
 {% endfor %}
 {% endif %}
@@ -50,7 +48,7 @@
                 {% csrf_token %}
                 <div>
                     <label for="id_name" class="form-label">نام کمپین</label>
-                    <input type="text" name="name" value="{{ campaign.name }}" maxlength="255" required class="form-control" id="id_name" placeholder="کمپین نوروز" aria-describedby="defaultFormControlHelp">
+                    <input type="text" name="name" value="{{ campaign.campaign_name }}" maxlength="255" required class="form-control" id="id_name" placeholder="کمپین نوروز" aria-describedby="defaultFormControlHelp">
                 </div>
 
                 <div id="start-date" style="display: none;">
@@ -65,27 +63,26 @@
 
                 <div>
                     <label for="flatpickr-date" class="form-label">تاریخ شروع</label>
-                    <input type="text" value="{{ jalali_start_date }}" class="form-control" placeholder="YYYY/MM/DD" id="flatpickr-date">
+                    <input type="text" value="{{ start_date }}" class="form-control" placeholder="YYYY/MM/DD" id="flatpickr-date">
                 </div>
 
                 <div>
                     <label for="flatpickr-date-end" class="form-label">تاریخ پایان</label>
-                    <input type="text" value="{{ jalali_end_date }}" class="form-control" placeholder="YYYY/MM/DD" id="flatpickr-date-end">
+                    <input type="text" value="{{ end_date }}" class="form-control" placeholder="YYYY/MM/DD" id="flatpickr-date-end">
                 </div>
 
-                <div>
-                    <label for="id_branch" class="form-label">شعبه:</label>
-                    <select name="branch" required id="id_branch" class="form-select">
-                        <option value="">---------</option>
-                        {% for branch in branches %}
-                        <option value="{{ branch.pk }}" {% if campaign.branch.pk == branch.pk %}selected{% endif %}>{{ branch.name }}</option>
-                        {% endfor %}
-                    </select>
+                <div id="id_branch">
+                    <label class="form-label">شعب</label>
+                    {% for branch in branches %}
+                    <div>
+                        <label class="form-check-label"><input class="form-check-input" type="checkbox" name="branch" value="{{ branch.pk }}" aria-invalid="true" style="margin-left: 10px;" {% if branch.pk in selected_branch_pks %}checked{% endif %}>{{ branch.name }}</label>
+                    </div>
+                    {% endfor %}
                 </div>
 
                 <div>
                     <label for="id_cost" class="form-label">هزینه:</label>
-                    <input type="text" name="cost" value="{{ campaign.cost }}" maxlength="255" id="id_cost" class="form-control" placeholder="(هزینه کمپین به تومان)" aria-describedby="defaultFormControlHelp">
+                    <input type="text" name="cost" value="{{ campaign.campaign_cost|floatformat:0 }}" maxlength="255" id="id_cost" class="form-control" placeholder="(هزینه کمپین به تومان)" aria-describedby="defaultFormControlHelp">
                 </div>
 
                 <div>
@@ -94,16 +91,6 @@
                             <option value="">---------</option>
                             <option value="ویترین" {% if campaign.campaign_type == 'ویترین' %}selected{% endif %}>ویترین</option>
                             <option value="فروش" {% if campaign.campaign_type == 'فروش' %}selected{% endif %}>فروش</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label for="id_special_campaign_id" class="form-label">کد ویژه کمپین:</label>
-                    <select name="special_campaign_id" required id="id_special_campaign_id" class="form-select">
-                        <option value="">---------</option>
-                        {% for special_id in special_ids %}
-                        <option value="{{ special_id.pk }}" {% if campaign.special_campaign_id.pk == special_id.pk %}selected{% endif %}>{{ special_id.special_id }}. {{ special_id.name }}</option>
-                        {% endfor %}
                     </select>
                 </div>
                 
