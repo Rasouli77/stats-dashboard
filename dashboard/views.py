@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse, HttpResponse
 from django.urls import reverse
-from datetime import datetime, date, timedelta
+from datetime import datetime, timedelta
 import uuid
 import openpyxl.styles
 from .models import (
@@ -14,9 +14,8 @@ from .models import (
     Invoice,
 )
 from django.db.models import Sum, F, Q, Min, Max
-from django.contrib.auth.models import User, Permission
+from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
-from django.contrib.contenttypes.models import ContentType
 from .forms import (
     Generate_User,
     UserPermissions,
@@ -27,10 +26,8 @@ from .forms import (
 )
 import jdatetime
 import json
-from django.http import HttpResponseForbidden
 from django.contrib import messages
 from django.db.models import F
-from collections import defaultdict
 from .camera_data import get_custom_date_camera_data, update_or_create_camera_data
 from django.db import connection
 from django.utils import timezone
@@ -113,11 +110,11 @@ def people_counter(request, url_hash):
         except Exception as e:
             print(e)
         queryset = (
-        PeopleCounting.objects.defer("date_created", "last_modified", "cam")
-        .filter(merchant__url_hash=url_hash, date__range=(start_date, end_date))
-        .values("date")
-        .annotate(total_entry=Sum("entry"))
-        .order_by("date")
+            PeopleCounting.objects.defer("date_created", "last_modified", "cam")
+            .filter(merchant__url_hash=url_hash, date__range=(start_date, end_date))
+            .values("date")
+            .annotate(total_entry=Sum("entry"))
+            .order_by("date")
         )
         permissions = (
             PermissionToViewBranch.objects.defer("date_created", "last_modified")
@@ -127,11 +124,13 @@ def people_counter(request, url_hash):
         if len(permissions) == 0 and not request.user.profile.is_manager:
             return render(request, "401.html", status=401)
         if request.user.profile.is_manager:
-            branches = Branch.objects.only("name", "pk").filter(merchant__url_hash=url_hash)
-            campaigns = Campaign.objects.defer("date_created", "last_modified").filter(
-                branch__merchant__url_hash=url_hash
-            ).filter(
-                Q(start_date__lte=end_date) & Q(end_date__gte=start_date)
+            branches = Branch.objects.only("name", "pk").filter(
+                merchant__url_hash=url_hash
+            )
+            campaigns = (
+                Campaign.objects.defer("date_created", "last_modified")
+                .filter(branch__merchant__url_hash=url_hash)
+                .filter(Q(start_date__lte=end_date) & Q(end_date__gte=start_date))
             )
         else:
             permitted_branches = (
@@ -145,8 +144,13 @@ def people_counter(request, url_hash):
             branches = Branch.objects.only("name", "pk").filter(
                 merchant__url_hash=url_hash, pk__in=permitted_branches_list
             )
-            campaigns = Campaign.objects.defer("date_created", "last_modified").select_related("branch").filter(
-                branch__merchant__url_hash=url_hash, branch__pk__in=permitted_branches_list
+            campaigns = (
+                Campaign.objects.defer("date_created", "last_modified")
+                .select_related("branch")
+                .filter(
+                    branch__merchant__url_hash=url_hash,
+                    branch__pk__in=permitted_branches_list,
+                )
             )
             campaign_list = []
             for campaign in campaigns:
@@ -1080,11 +1084,15 @@ def invoice_counter(request, url_hash):
         .select_related("branch", "branch__merchant")
         .filter(branch__pk__in=allowed_branches)
         .values("date")
-        .annotate(sum_total_amount=Sum("total_amount"), sum_total_items=Sum("total_items"))
+        .annotate(
+            sum_total_amount=Sum("total_amount"), sum_total_items=Sum("total_items")
+        )
         .order_by("date")
     )
-    campaigns = Campaign.objects.defer("date_created", "last_modified").select_related("branch", "branch__merchant").filter(
-        branch__merchant__url_hash=url_hash, branch__pk__in=allowed_branches
+    campaigns = (
+        Campaign.objects.defer("date_created", "last_modified")
+        .select_related("branch", "branch__merchant")
+        .filter(branch__merchant__url_hash=url_hash, branch__pk__in=allowed_branches)
     )
     if start_date_str != "None" and end_date_str != "None":
         print(start_date_str, end_date_str)
@@ -1187,8 +1195,10 @@ def analysis(request, url_hash):
     queryset_no_branch_filter = []
     invoices = []
     queryset = []
-    campaigns = Campaign.objects.defer("date_created", "last_modified").select_related("branch").filter(
-        branch__merchant__url_hash=url_hash, branch__pk__in=allowed_branches
+    campaigns = (
+        Campaign.objects.defer("date_created", "last_modified")
+        .select_related("branch")
+        .filter(branch__merchant__url_hash=url_hash, branch__pk__in=allowed_branches)
     )
     if start_date_str and end_date_str:
         try:
@@ -1196,14 +1206,21 @@ def analysis(request, url_hash):
             end_date = datetime.strptime(end_date_str, "%Y-%m-%d")
             invoices = (
                 Invoice.objects.defer("date_created", "last_modified")
-                .filter(branch__pk__in=allowed_branches, date__range=(start_date, end_date))
+                .filter(
+                    branch__pk__in=allowed_branches, date__range=(start_date, end_date)
+                )
                 .values("date")
-                .annotate(sum_total_amount=Sum("total_amount"), sum_total_items=Sum("total_items"))
+                .annotate(
+                    sum_total_amount=Sum("total_amount"),
+                    sum_total_items=Sum("total_items"),
+                )
                 .order_by("date")
             )
             queryset = (
                 PeopleCounting.objects.filter(
-                    merchant__url_hash=url_hash, branch__pk__in=allowed_branches, date__range=(start_date, end_date)
+                    merchant__url_hash=url_hash,
+                    branch__pk__in=allowed_branches,
+                    date__range=(start_date, end_date),
                 )
                 .values("date")
                 .annotate(total_entry=Sum("entry"), total_exit=Sum("exit"))

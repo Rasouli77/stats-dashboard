@@ -204,6 +204,8 @@
         <div class="col-lg-12">
             <div class="demo-inline-spacing mt-3">
             <div class="tab-content px-0 pt-2">
+                <h6 id="instruction" style="display: none;">❗ برای مشاهده مقایسه شعب باید حداقل یک شعبه را انتخاب کنید.</h6>
+                <h6 id="instruction-for-one-to-all-container" style="display: none;">❗ برای مشاهده این قسمت فقط باید یک شعبه انتخاب شود.</h6>
                 <div id="ratio-container" style="width: 100%; height: 400px; margin-top: 45px;"></div>
                 <div id="second-ratio-container" style="width: 100%; height: 400px; margin-top: 45px;"></div>
                 <div id="one-to-all-container" style="width: 100%; height: 400px; margin-top: 45px;"></div>
@@ -702,6 +704,25 @@
         const selectedBranches = $(".real-check:checked").map(function () {
             return $(this).val();
         }).get();
+        if (!startDate) {
+            toastr.options = {
+                    positionClass: 'toast-top-center',
+                }
+            toastr.error("بازه زمانی را انتخاب نمایید");
+        }
+        if (selectedBranches.length === 0 && startDate) {
+            toastr.options = {
+                positionClass: 'toast-top-center',
+            }
+            toastr.warning("هیچ شعبه ای انتخاب نشد");
+            toastr.warning("همه شعب به صورت پیش فرض در نمودار های تجمیعی نمایش داده میشوند");
+        }
+        if (selectedBranches.length === 0 && !startDate) {
+            toastr.options = {
+                positionClass: 'toast-top-center',
+            }
+            toastr.warning("هیچ شعبه ای انتخاب نشد");
+        }
         $.ajax({
             url: "/api/analysis",
             data: {
@@ -807,10 +828,6 @@
             },
             error: function (xhr) {
                 console.error("Error loading data");
-                toastr.options = {
-                    positionClass: 'toast-top-center',
-                }
-                toastr.error("بازه زمانی یا شعب را انتخاب نمایید")
             }
         });
         $.ajax({
@@ -918,10 +935,6 @@
             },
             error: function (xhr) {
                 console.error("Error loading data");
-                toastr.options = {
-                    positionClass: 'toast-top-center',
-                }
-                toastr.error("بازه زمانی یا شعب را انتخاب نمایید")
             }
         });
         $.ajax({
@@ -1047,10 +1060,6 @@
             },
             error: function (xhr) {
                 console.error("Error loading data");
-                toastr.options = {
-                    positionClass: 'toast-top-center',
-                }
-                toastr.error("بازه زمانی یا شعب را انتخاب نمایید")
             }
         });
         $.ajax({
@@ -1090,10 +1099,6 @@
             },
             error: function (xhr) {
                 console.error("Error loading data");
-                toastr.options = {
-                    positionClass: 'toast-top-center',
-                }
-                toastr.error("بازه زمانی یا شعب را انتخاب نمایید")
             }
         });
     });

@@ -1,7 +1,7 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import PeopleCounting, Branch, Invoice, PermissionToViewBranch, Campaign
-from django.db.models import Sum, F, Q, Count, Min, Max
+from django.db.models import Sum, Q, Min, Max
 from .views import jalali_to_gregorian
 from datetime import datetime
 
