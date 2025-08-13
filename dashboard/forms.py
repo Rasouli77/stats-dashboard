@@ -68,10 +68,11 @@ class AssignBranchPermissions(forms.ModelForm):
 
 class CreateCampaign(forms.ModelForm):
     branch = forms.ModelMultipleChoiceField(
-        queryset = Branch.objects.all(),
+        queryset=Branch.objects.all(),
         widget=forms.CheckboxSelectMultiple,
-        label="شعبه ها"
+        label="شعبه ها",
     )
+
     class Meta:
         model = Campaign
         fields = ["name", "start_date", "end_date", "cost", "campaign_type"]

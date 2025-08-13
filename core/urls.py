@@ -40,7 +40,13 @@ from dashboard.views import (
     analysis,
     campaign_detail,
 )
-from dashboard.api_views import MultipleBranches, MultiBranchesInvoice, Analysis, GetCampaignEachPoint
+from dashboard.api_views import (
+    MultipleBranches,
+    MultiBranchesInvoice,
+    Analysis,
+    GetCampaignEachPoint,
+    GroupedCampaigns,
+)
 from django.contrib.auth import views as auth_views
 from django.contrib import admin
 
@@ -67,17 +73,53 @@ urlpatterns = [
         name="edit-branch-permissions",
     ),
     path("dashboard/campaigns/<str:url_hash>", campaign, name="campaign"),
-    path("dashboard/create-campaign/<str:url_hash>", create_campaign, name="create_campaign"),
-    path("dashboard/edit-campaign/<str:url_hash>/<uuid:group_id>", edit_campaign, name="edit_campaign"),
-    path("dashboard/delete-campaign/<str:url_hash>/<uuid:group_id>", delete_campaign, name='delete_campaign'),
-    path("dashboard/campaign-solo-analysis/<int:campaign_id>", campaign_detail, name='campaign_solo_analysis'),
-    path("dashboard/create-invoice-from-excel/<str:url_hash>", upload_excel_file_invoice, name='upload_excel_file_invoice'),
-    path("dashboard/invoices/<str:url_hash>", invoices, name='invoices'),
-    path("dashboard/invoices/invoice-detail/<int:invoice_pk>", invoice_detail, name='invoice_detail'),
-    path("dashboard/invoice-delete/<int:invoice_pk>", invoice_delete, name='invoice_delete'),
-    path("dashboard/excel-template-generator/<str:url_hash>", excel_template_generator, name='excel_template_generator'),
-    path("dashboard/sales-counter/<str:url_hash>", invoice_counter, name='invoice_counter'),
-    path("dashboard/analysis/<str:url_hash>", analysis, name='analysis'),
+    path(
+        "dashboard/create-campaign/<str:url_hash>",
+        create_campaign,
+        name="create_campaign",
+    ),
+    path(
+        "dashboard/edit-campaign/<str:url_hash>/<uuid:group_id>",
+        edit_campaign,
+        name="edit_campaign",
+    ),
+    path(
+        "dashboard/delete-campaign/<str:url_hash>/<uuid:group_id>",
+        delete_campaign,
+        name="delete_campaign",
+    ),
+    path(
+        "dashboard/campaign-solo-analysis/<int:campaign_id>",
+        campaign_detail,
+        name="campaign_solo_analysis",
+    ),
+    path(
+        "dashboard/create-invoice-from-excel/<str:url_hash>",
+        upload_excel_file_invoice,
+        name="upload_excel_file_invoice",
+    ),
+    path("dashboard/invoices/<str:url_hash>", invoices, name="invoices"),
+    path(
+        "dashboard/invoices/invoice-detail/<int:invoice_pk>",
+        invoice_detail,
+        name="invoice_detail",
+    ),
+    path(
+        "dashboard/invoice-delete/<int:invoice_pk>",
+        invoice_delete,
+        name="invoice_delete",
+    ),
+    path(
+        "dashboard/excel-template-generator/<str:url_hash>",
+        excel_template_generator,
+        name="excel_template_generator",
+    ),
+    path(
+        "dashboard/sales-counter/<str:url_hash>",
+        invoice_counter,
+        name="invoice_counter",
+    ),
+    path("dashboard/analysis/<str:url_hash>", analysis, name="analysis"),
     path("dashboard/account/login", custom_login, name="login"),
     path(
         "dashboard/account/logout/",
@@ -87,8 +129,17 @@ urlpatterns = [
     path("dashboard/account/profile/<int:user_id>/", profile, name="profile"),
     path("dashboard/<str:url_hash>", home, name="home"),
     path("api/multi-branch-data", MultipleBranches.as_view(), name="multi_branch_data"),
-    path("api/multi-branch-invoice-data", MultiBranchesInvoice.as_view(), name="multi_branch_invoice_data"),
+    path(
+        "api/multi-branch-invoice-data",
+        MultiBranchesInvoice.as_view(),
+        name="multi_branch_invoice_data",
+    ),
     path("api/analysis", Analysis.as_view(), name="analysis"),
-    path("api/get-campaign-each-point", GetCampaignEachPoint.as_view(), name="get_campaign_each_point"),
+    path(
+        "api/get-campaign-each-point",
+        GetCampaignEachPoint.as_view(),
+        name="get_campaign_each_point",
+    ),
+    path("api/grouped-campaigns", GroupedCampaigns.as_view(), name="grouped_campaigns"),
     path("test/", test, name="test"),
 ]

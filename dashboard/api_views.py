@@ -1,8 +1,7 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import PeopleCounting, Branch, Invoice, PermissionToViewBranch, Campaign
-from django.db.models import Sum
-from django.db.models import F
+from django.db.models import Sum, F, Q, Count, Min, Max
 from .views import jalali_to_gregorian
 from datetime import datetime
 
@@ -153,14 +152,16 @@ class Analysis(APIView):
                     "entry_totals": entry_totals,
                     "entry_overalls": entry_overalls,
                 }
-            print(response)
             return Response(response)
-        
+
+
 def special_jalali_to_gregorian(jalali_str):
     import jdatetime
+
     english = jalali_str.translate(str.maketrans("۰۱۲۳۴۵۶۷۸۹", "0123456789"))
     y, m, d = map(int, english.split("/"))
     return jdatetime.date(y, m, d).togregorian()
+
 
 class GetCampaignEachPoint(APIView):
     def post(self, request):
@@ -168,12 +169,18 @@ class GetCampaignEachPoint(APIView):
         permitted_branches_str = []
         permitted_branches = []
         if not request.user.profile.is_manager:
-            branch_permissions = PermissionToViewBranch.objects.defer("date_created", "date_modified").select_related("branch").filter(user=profile)
+            branch_permissions = (
+                PermissionToViewBranch.objects.defer("date_created", "date_modified")
+                .select_related("branch")
+                .filter(user=profile)
+            )
             for branch_permission in branch_permissions:
                 permitted_branches_str.append(branch_permission.branch.pk)
-            permitted_branches = [ int(i) for i in permitted_branches_str ]
+            permitted_branches = [int(i) for i in permitted_branches_str]
         else:
-            branches = Branch.objects.filter(merchant__url_hash=profile.merchant.url_hash)
+            branches = Branch.objects.filter(
+                merchant__url_hash=profile.merchant.url_hash
+            )
             for branch in branches:
                 permitted_branches.append(branch.pk)
         try:
@@ -182,16 +189,103 @@ class GetCampaignEachPoint(APIView):
         except Exception as e:
             print(e)
         query_date = special_jalali_to_gregorian(q_date)
-        campaigns = Campaign.objects.defer("date_created", "last_modified").filter(branch__pk__in=permitted_branches, start_date__lte=query_date, end_date__gte=query_date)
-        if query_branch not in ["ترافیک", "ورودی", "خروجی", "مبلغ فاکتور", "تعداد فاکتور", "درصد نرخ تبدیل (%)", "نسبت (تومان)", "نسبت (%)"]:
+        campaigns = Campaign.objects.defer("date_created", "last_modified").filter(
+            branch__pk__in=permitted_branches,
+            start_date__lte=query_date,
+            end_date__gte=query_date,
+        )
+        if query_branch not in [
+            "ترافیک",
+            "ورودی",
+            "خروجی",
+            "مبلغ فاکتور",
+            "تعداد فاکتور",
+            "درصد نرخ تبدیل (%)",
+            "نسبت (تومان)",
+            "نسبت (%)",
+        ]:
             campaigns = campaigns.filter(branch__name=query_branch)
         campaigns_list = []
         for campaign in campaigns:
-            campaigns_list.append({
-                "campaign_name": campaign.name,
-                "campaign_type": campaign.campaign_type
-            })
+            campaigns_list.append(
+                {
+                    "campaign_name": campaign.name,
+                    "campaign_type": campaign.campaign_type,
+                }
+            )
+        unique_list = []
+        for d in campaigns_list:
+            if d not in unique_list:
+                unique_list.append(d)
+        campaigns_list = unique_list
         return Response(campaigns_list)
 
 
+class GroupedCampaigns(APIView):
+    def get(self, request):
+        start_date_str = str(jalali_to_gregorian(request.GET.get("start-date")))
+        end_date_str = str(jalali_to_gregorian(request.GET.get("end-date")))
+        start_date = None
+        end_date = None
+        try:
+            start_date = datetime.strptime(start_date_str, "%Y-%m-%d").date()
+            end_date = datetime.strptime(end_date_str, "%Y-%m-%d").date()
+        except:
+            pass
+        if start_date and end_date:
+            campaigns = (
+                Campaign.objects.filter(
+                    branch__merchant__url_hash=request.user.profile.merchant.url_hash
+                )
+                .filter(Q(start_date__lte=end_date) & Q(end_date__gte=start_date))
+                .values("group_id")
+                .annotate(
+                    campaign_name=Min("name"),
+                    campaign_start_date=Min("start_date"),
+                    campaign_end_date=Max("end_date"),
+                    campaign_cost=Sum("cost"),
+                    campaign_type=Min("campaign_type"),
+                    campaign_last_modified=Max("last_modified"),
+                    campaign_group_id=Min("group_id"),
+                )
+                .order_by("-campaign_last_modified")
+            )
+        else:
+            campaigns = (
+                Campaign.objects.filter(
+                    branch__merchant__url_hash=request.user.profile.merchant.url_hash
+                )
+                .values("group_id")
+                .annotate(
+                    campaign_name=Min("name"),
+                    campaign_start_date=Min("start_date"),
+                    campaign_end_date=Max("end_date"),
+                    campaign_cost=Sum("cost"),
+                    campaign_type=Min("campaign_type"),
+                    campaign_last_modified=Max("last_modified"),
+                    campaign_group_id=Min("group_id"),
+                )
+                .order_by("-campaign_last_modified")
+            )
 
+        for campaign in campaigns:
+            branch_names = (
+                Campaign.objects.filter(group_id=campaign["campaign_group_id"])
+                .values_list("branch__name", flat=True)
+                .distinct()
+            )
+            campaign["branch_names"] = ", ".join(branch_names)
+
+        campaign_list = []
+        dictionary = {}
+        for campaign in campaigns:
+            dictionary = {
+                "campaign_name": campaign["campaign_name"],
+                "campaign_start_date": campaign["campaign_start_date"],
+                "campaign_end_date": campaign["campaign_end_date"],
+                "branches": campaign["branch_names"],
+                "campaign_cost": campaign["campaign_cost"],
+                "campaign_type": campaign["campaign_type"],
+            }
+            campaign_list.append(dictionary)
+        return Response(campaign_list)

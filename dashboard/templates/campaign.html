@@ -34,7 +34,7 @@
           <td>
               {{ campaign.branch_names }}
           </td>
-          <td>
+          <td class="price">
             {{ campaign.campaign_cost|floatformat:0 }}
           </td>
           <td>
@@ -63,4 +63,5 @@
 <script src="https://cdn.jsdelivr.net/npm/jalaali-js@1.2.8/dist/jalaali.min.js"></script>
 <!-- Gregorian Jalali Conversion Raw JavaScript -->
 <script src="{% static 'assets/js/campaign-gregorian-to-jalali-date-convert.js' %}"></script>
+<script src="{% static 'assets/js/price-separator.js' %}"></script>
 {% endblock %}

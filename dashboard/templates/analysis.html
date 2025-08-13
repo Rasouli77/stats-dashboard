@@ -215,24 +215,43 @@
         </div>
     </div>
     <div class="row">
-        <div class="card">
-        <h5 class="card-header heading-color">کمپین ها</h5>
-        <div class="table-responsive text-nowrap" style="margin-bottom: 100px;">
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                    <th>نام کمپین</th>
-                    <th>تاریخ شروع</th>
-                    <th>تاریخ پایان</th>
-                    <th>شعبه</th>
-                    <th>نوع کمپین</th>
-                    <th>هزینه</th>
-                    </tr>
-                </thead>
-                <tbody class="table-border-bottom-0">
-                </tbody>
-            </table>
+        <div class="card" id="campaigns">
+            <h5 class="card-header heading-color">کمپین ها</h5>
+            <div class="table-responsive text-nowrap" style="margin-bottom: 100px;">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                        <th>نام کمپین</th>
+                        <th>تاریخ شروع</th>
+                        <th>تاریخ پایان</th>
+                        <th>شعبه</th>
+                        <th>نوع کمپین</th>
+                        <th>هزینه</th>
+                        </tr>
+                    </thead>
+                    <tbody class="table-border-bottom-0">
+                    </tbody>
+                </table>
+            </div>
         </div>
+        <div class="card" id="grouped-campaigns" style="margin-top: 40px;">
+            <h5 class="card-header heading-color">کمپین ها</h5>
+            <div class="table-responsive text-nowrap" style="margin-bottom: 100px;">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                        <th>نام کمپین</th>
+                        <th>تاریخ شروع</th>
+                        <th>تاریخ پایان</th>
+                        <th>شعبه</th>
+                        <th>نوع کمپین</th>
+                        <th>هزینه</th>
+                        </tr>
+                    </thead>
+                    <tbody class="table-border-bottom-0" id="grouped-campaigns-container">
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
     <button class="btn btn-secondary btn-md" id="return" style="margin-top: 25px;">بازگشت</button>
@@ -1032,6 +1051,49 @@
                 toastr.error("بازه زمانی یا شعب را انتخاب نمایید")
             }
         });
+        $.ajax({
+            url: "/api/grouped-campaigns",
+            data: {
+                "start-date": startDate,
+                "end-date": endDate,
+            },
+            traditional: true, 
+            success: function (data) {
+                document.querySelector("#grouped-campaigns-container").innerHTML = "";
+                data.forEach(campaign => {
+                const rowhtml = `
+                    <tr>
+                        <td>
+                            ${campaign.campaign_name} 
+                        </td>
+                        <td class="greg-date">
+                            ${campaign.campaign_start_date}
+                        </td>
+                        <td class="greg-date">
+                            ${campaign.campaign_end_date}
+                        </td>
+                        <td>
+                            ${campaign.branches}
+                        </td>
+                        <td>
+                            ${campaign.campaign_type}
+                        </td>
+                        <td class="campaign-cost">
+                            ${campaign.campaign_cost}
+                        </td>
+                    </tr>
+                    `
+                document.querySelector("#grouped-campaigns-container").insertAdjacentHTML("beforeend", rowhtml);
+                });
+            },
+            error: function (xhr) {
+                console.error("Error loading data");
+                toastr.options = {
+                    positionClass: 'toast-top-center',
+                }
+                toastr.error("بازه زمانی یا شعب را انتخاب نمایید")
+            }
+        });
     });
 </script>
 <!-- Gregorian Jalali Conversion Raw JavaScript -->
@@ -1041,11 +1103,13 @@
 <!-- Display Toggles -->
 <script>
     const returnBtn = document.getElementById("return");
-    const menu = document.getElementById("menu");
+    const menuTwo = document.getElementById("menu");
     const body = document.getElementById("body");
+    const campaigns = document.querySelector("#campaigns");
+    const groupedCampaigns = document.querySelector("#grouped-campaigns")
     // Return Button
     returnBtn.addEventListener("click", () => {
-        menu.style.display = "block";
+        menuTwo.style.display = "block";
         body.style.display = "none";
         returnBtn.style.display = "none";
     });
@@ -1088,7 +1152,7 @@
 
     // First Card
     aggConPercentCard.addEventListener("click", () => {
-        menu.style.display = "none";
+        menuTwo.style.display = "none";
         body.style.display = "block";
         aggConPercentChart.style.display = "block";
         branchConPercentChart.style.display = "none";
@@ -1097,11 +1161,13 @@
         oneToAllEntryChart.style.display = "none";
         allToAllEntryChart.style.display = "none";
         returnBtn.style.display = "block";
+        campaigns.style.display = "none";
+        groupedCampaigns.style.display = "block";
     });
 
     // Second Card
     branchConPercentCard.addEventListener("click", () => {
-        menu.style.display = "none";
+        menuTwo.style.display = "none";
         body.style.display = "block";
         aggConPercentChart.style.display = "none";
         branchConPercentChart.style.display = "block";
@@ -1110,11 +1176,13 @@
         oneToAllEntryChart.style.display = "none";
         allToAllEntryChart.style.display = "none";
         returnBtn.style.display = "block";
+        campaigns.style.display = "block";
+        groupedCampaigns.style.display = "none";
     });
 
     // Third Card
     aggEntryValCard.addEventListener("click", () => {
-        menu.style.display = "none";
+        menuTwo.style.display = "none";
         body.style.display = "block";
         aggConPercentChart.style.display = "none";
         branchConPercentChart.style.display = "none";
@@ -1123,11 +1191,13 @@
         oneToAllEntryChart.style.display = "none";
         allToAllEntryChart.style.display = "none";
         returnBtn.style.display = "block";
+        campaigns.style.display = "none";
+        groupedCampaigns.style.display = "block";
     });
 
     // Forth Card
     branchEntryValCard.addEventListener("click", () => {
-        menu.style.display = "none";
+        menuTwo.style.display = "none";
         body.style.display = "block";
         aggConPercentChart.style.display = "none";
         branchConPercentChart.style.display = "none";
@@ -1136,11 +1206,13 @@
         oneToAllEntryChart.style.display = "none";
         allToAllEntryChart.style.display = "none";
         returnBtn.style.display = "block";
+        campaigns.style.display = "block";
+        groupedCampaigns.style.display = "none";
     });
 
     // Fifth Card
     oneToAllEntryCard.addEventListener("click", () => {
-        menu.style.display = "none";
+        menuTwo.style.display = "none";
         body.style.display = "block";
         aggConPercentChart.style.display = "none";
         branchConPercentChart.style.display = "none";
@@ -1149,11 +1221,13 @@
         oneToAllEntryChart.style.display = "block";
         allToAllEntryChart.style.display = "none";
         returnBtn.style.display = "block";
+        campaigns.style.display = "none";
+        groupedCampaigns.style.display = "block";
     });
 
     // Sixth Card
     allToAllEntryCard.addEventListener("click", () => {
-        menu.style.display = "none";
+        menuTwo.style.display = "none";
         body.style.display = "block";
         aggConPercentChart.style.display = "none";
         branchConPercentChart.style.display = "none";
@@ -1162,6 +1236,8 @@
         oneToAllEntryChart.style.display = "none";
         allToAllEntryChart.style.display = "block";
         returnBtn.style.display = "block";
+        campaigns.style.display = "block";
+        groupedCampaigns.style.display = "none";
     });
 </script>
 {% endblock %}

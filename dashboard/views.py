@@ -13,7 +13,7 @@ from .models import (
     Cam,
     Invoice,
 )
-from django.db.models import Sum, F, Q, Count, Min, Max
+from django.db.models import Sum, F, Q, Min, Max
 from django.contrib.auth.models import User, Permission
 from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
@@ -38,6 +38,7 @@ import subprocess
 import openpyxl
 from io import BytesIO
 import random
+
 
 def perm_to_open(request, url_hash):
     """Checks if the user has the right to open the page."""
@@ -521,12 +522,29 @@ def campaign(request, url_hash):
         return render(request, "401.html", status=401)
     if not request.user.profile.is_manager:
         return render(request, "401.html", status=401)
-    campaigns = Campaign.objects.filter(
-        branch__merchant__url_hash=request.user.profile.merchant.url_hash
-    ).values("group_id").annotate(campaign_name=Min("name"), campaign_start_date=Min("start_date"), campaign_end_date=Max("end_date"), campaign_cost=Sum("cost"), campaign_type=Min("campaign_type"), campaign_last_modified=Max("last_modified"), campaign_group_id=Min("group_id")).order_by("-campaign_last_modified")
+    campaigns = (
+        Campaign.objects.filter(
+            branch__merchant__url_hash=request.user.profile.merchant.url_hash
+        )
+        .values("group_id")
+        .annotate(
+            campaign_name=Min("name"),
+            campaign_start_date=Min("start_date"),
+            campaign_end_date=Max("end_date"),
+            campaign_cost=Sum("cost"),
+            campaign_type=Min("campaign_type"),
+            campaign_last_modified=Max("last_modified"),
+            campaign_group_id=Min("group_id"),
+        )
+        .order_by("-campaign_last_modified")
+    )
 
     for campaign in campaigns:
-        branch_names = Campaign.objects.filter(group_id=campaign["campaign_group_id"]).values_list("branch__name", flat=True).distinct()
+        branch_names = (
+            Campaign.objects.filter(group_id=campaign["campaign_group_id"])
+            .values_list("branch__name", flat=True)
+            .distinct()
+        )
         campaign["branch_names"] = ", ".join(branch_names)
     return render(request, "campaign.html", {"campaigns": campaigns})
 
@@ -567,7 +585,12 @@ def create_campaign(request, url_hash):
                 number_selected = len(items)
                 cost = int(cost) / number_selected
                 for item in items:
-                    Campaign.objects.create(branch=item, cost = str(int(cost)), group_id=group_id, **form.cleaned_data)
+                    Campaign.objects.create(
+                        branch=item,
+                        cost=str(int(cost)),
+                        group_id=group_id,
+                        **form.cleaned_data,
+                    )
                 messages.success(request, "کمپین با موفقیت ساخته شد")
             else:
                 messages.error(request, "مشکلی در اطلاعات وارد شده وجود دارد")
@@ -584,8 +607,26 @@ def edit_campaign(request, url_hash, group_id):
         return render(request, "401.html", status=401)
     if not request.user.profile.is_manager:
         return render(request, "401.html", status=401)
-    campaign = Campaign.objects.filter(group_id=group_id).values("group_id").annotate(campaign_name=Min("name"), campaign_start_date=Min("start_date"), campaign_end_date=Max("end_date"), campaign_cost=Sum("cost"), campaign_type=Min("campaign_type"), campaign_last_modified=Max("last_modified"), campaign_group_id=Min("group_id")).order_by("campaign_last_modified").first()
-    branch_pks = Campaign.objects.filter(group_id=campaign["campaign_group_id"]).values_list("branch__pk", flat=True).distinct()
+    campaign = (
+        Campaign.objects.filter(group_id=group_id)
+        .values("group_id")
+        .annotate(
+            campaign_name=Min("name"),
+            campaign_start_date=Min("start_date"),
+            campaign_end_date=Max("end_date"),
+            campaign_cost=Sum("cost"),
+            campaign_type=Min("campaign_type"),
+            campaign_last_modified=Max("last_modified"),
+            campaign_group_id=Min("group_id"),
+        )
+        .order_by("campaign_last_modified")
+        .first()
+    )
+    branch_pks = (
+        Campaign.objects.filter(group_id=campaign["campaign_group_id"])
+        .values_list("branch__pk", flat=True)
+        .distinct()
+    )
     campaign["branch_pks"] = branch_pks
     selected_branch_pks = [row for row in campaign["branch_pks"]]
     start_date = convert_gregorian_to_jalali(campaign["campaign_start_date"])
@@ -609,13 +650,27 @@ def edit_campaign(request, url_hash, group_id):
                 number_selected = len(items)
                 cost = int(float(cost)) / number_selected
                 for item in items:
-                    Campaign.objects.create(branch=item, cost = str(int(cost)), group_id=new_group_id, **form.cleaned_data)
+                    Campaign.objects.create(
+                        branch=item,
+                        cost=str(int(cost)),
+                        group_id=new_group_id,
+                        **form.cleaned_data,
+                    )
                 Campaign.objects.filter(group_id=group_id).delete()
                 return redirect("campaign", request.user.profile.merchant.url_hash)
             else:
                 messages.error(request, "لطفا همه فیلد ها را پر کنید")
         return render(
-            request, "edit-campaign.html", {"form": form, "branches": branches, "campaign": campaign, "selected_branch_pks": selected_branch_pks, "start_date": start_date, "end_date": end_date}
+            request,
+            "edit-campaign.html",
+            {
+                "form": form,
+                "branches": branches,
+                "campaign": campaign,
+                "selected_branch_pks": selected_branch_pks,
+                "start_date": start_date,
+                "end_date": end_date,
+            },
         )
     return render(request, "401.html", status=401)
 
@@ -627,8 +682,26 @@ def delete_campaign(request, url_hash, group_id):
         return render(request, "401.html", status=401)
     if not request.user.profile.is_manager:
         return render(request, "401.html", status=401)
-    campaign = Campaign.objects.filter(group_id=group_id).values("group_id").annotate(campaign_name=Min("name"), campaign_start_date=Min("start_date"), campaign_end_date=Max("end_date"), campaign_cost=Sum("cost"), campaign_type=Min("campaign_type"), campaign_last_modified=Max("last_modified"), campaign_group_id=Min("group_id")).order_by("campaign_last_modified").first()
-    branch_names = Campaign.objects.filter(group_id=campaign["campaign_group_id"]).values_list("branch__name", flat=True).distinct()
+    campaign = (
+        Campaign.objects.filter(group_id=group_id)
+        .values("group_id")
+        .annotate(
+            campaign_name=Min("name"),
+            campaign_start_date=Min("start_date"),
+            campaign_end_date=Max("end_date"),
+            campaign_cost=Sum("cost"),
+            campaign_type=Min("campaign_type"),
+            campaign_last_modified=Max("last_modified"),
+            campaign_group_id=Min("group_id"),
+        )
+        .order_by("campaign_last_modified")
+        .first()
+    )
+    branch_names = (
+        Campaign.objects.filter(group_id=campaign["campaign_group_id"])
+        .values_list("branch__name", flat=True)
+        .distinct()
+    )
     campaign["branch_names"] = ", ".join(branch_names)
     jalali_start_date = convert_gregorian_to_jalali(campaign["campaign_start_date"])
     jalali_end_date = convert_gregorian_to_jalali(campaign["campaign_end_date"])
@@ -981,7 +1054,7 @@ def invoice_counter(request, url_hash):
         start_date_str = str(jalali_to_gregorian(request.GET.get("start-date")))
         end_date_str = str(jalali_to_gregorian(request.GET.get("end-date")))
         branches_str = request.GET.getlist("branch")
-    
+
     except Exception as e:
         print(e)
     branches = []
@@ -994,8 +1067,8 @@ def invoice_counter(request, url_hash):
         .order_by("date")
     )
     campaigns = Campaign.objects.defer("date_created", "last_modified").filter(
-            branch__merchant__url_hash=url_hash, branch__pk__in=allowed_branches
-        )
+        branch__merchant__url_hash=url_hash, branch__pk__in=allowed_branches
+    )
     if start_date_str and end_date_str:
         try:
             start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
@@ -1051,7 +1124,7 @@ def invoice_counter(request, url_hash):
                     "dates": dates,
                     "total_items": total_items,
                     "total_amount": total_amount,
-                    "campaigns": campaign_list
+                    "campaigns": campaign_list,
                 }
             )
     if not profile.is_manager:
@@ -1071,27 +1144,19 @@ def invoice_counter(request, url_hash):
 
 @login_required
 def analysis(request, url_hash):
-    # Rights
     if not perm_to_open(request, url_hash):
         return render(request, "401.html", status=401)
-    # Permissions
+    if not request.user.profile.is_manager:
+        return render(request, "401.html", status=401)
     allowed_branches = []
     campaign_list = []
     profile = request.user.profile
     all_branches = Branch.objects.defer(
         "country", "province", "city", "district", "date_created", "last_modified"
     ).filter(merchant__url_hash=url_hash)
-    if not profile.is_manager:
-        permissions = (
-            PermissionToViewBranch.objects.defer("date_created", "last_modified")
-            .select_related("branch")
-            .filter(user__pk=profile.pk)
-        )
-        for permission in permissions:
-            allowed_branches.append(permission.branch.pk)
-    else:
-        for item in all_branches:
-            allowed_branches.append(item.pk)
+
+    for item in all_branches:
+        allowed_branches.append(item.pk)
     try:
         start_date_str = str(jalali_to_gregorian(request.GET.get("start-date")))
         end_date_str = str(jalali_to_gregorian(request.GET.get("end-date")))
@@ -1118,8 +1183,8 @@ def analysis(request, url_hash):
         .order_by("date")
     )
     campaigns = Campaign.objects.defer("date_created", "last_modified").filter(
-            branch__merchant__url_hash=url_hash, branch__pk__in=allowed_branches
-        )
+        branch__merchant__url_hash=url_hash, branch__pk__in=allowed_branches
+    )
     if start_date_str and end_date_str:
         try:
             start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
@@ -1187,7 +1252,7 @@ def analysis(request, url_hash):
                     "total_items": total_items,
                     "total_amount": total_amount,
                     "entry_overalls": entry_overalls,
-                    "campaigns": campaign_list
+                    "campaigns": campaign_list,
                 }
             )
     if not profile.is_manager:
@@ -1229,17 +1294,24 @@ def campaign_detail(request, campaign_id):
     campaign = Campaign.objects.get(pk=campaign_id)
     if campaign.branch.pk not in allowed_branches:
         return render(request, "401.html", status=401)
-    people_counting_info = PeopleCounting.objects.filter(branch=campaign.branch, date__range=(campaign.start_date, campaign.end_date))
-    invoice_info = Invoice.objects.filter(branch=campaign.branch, date__range=(campaign.start_date, campaign.end_date))
+    people_counting_info = PeopleCounting.objects.filter(
+        branch=campaign.branch, date__range=(campaign.start_date, campaign.end_date)
+    )
+    invoice_info = Invoice.objects.filter(
+        branch=campaign.branch, date__range=(campaign.start_date, campaign.end_date)
+    )
     people_counting_series = [float(row.entry) for row in people_counting_info]
     invoice_sales_series = [float(row.total_amount) for row in invoice_info]
     invoice_count_series = [float(row.total_items) for row in invoice_info]
     dates = [str(row.date.strftime("%Y-%m-%d")) for row in people_counting_info]
-    return render(request, "campaign-solo-analysis.html", {
-        "campaign": campaign,
-        "dates": json.dumps(dates),
-        "entry_totals": json.dumps(people_counting_series),
-        "total_amount": json.dumps(invoice_sales_series),
-        "total_items": json.dumps(invoice_count_series)
-    })
-    
+    return render(
+        request,
+        "campaign-solo-analysis.html",
+        {
+            "campaign": campaign,
+            "dates": json.dumps(dates),
+            "entry_totals": json.dumps(people_counting_series),
+            "total_amount": json.dumps(invoice_sales_series),
+            "total_items": json.dumps(invoice_count_series),
+        },
+    )

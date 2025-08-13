@@ -3,7 +3,6 @@ from django.contrib.auth.models import User
 from datetime import datetime
 
 
-
 class Merchant(models.Model):
     name = models.CharField(max_length=255, verbose_name="نام")
     rep_first_name = models.CharField(max_length=255, verbose_name="نام نماینده")
