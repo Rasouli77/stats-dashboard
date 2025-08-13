@@ -171,7 +171,7 @@ class Cam(models.Model):
         verbose_name_plural = "دوربین"
 
 
-class PeopleCounting(models.Model):  # former name: Stats
+class PeopleCounting(models.Model):  
     date = models.DateField(verbose_name="تاریخ", db_index=True)
     entry = models.IntegerField(default=0, verbose_name="ورودی")
     exit = models.IntegerField(default=0, verbose_name="خروجی")
@@ -208,14 +208,17 @@ class PeopleCounting(models.Model):  # former name: Stats
     class Meta:
         verbose_name = "شمارشگر"
         verbose_name_plural = "شمارشگر"
+        indexes = [
+            models.Index(fields=["merchant", "date"])
+        ]
 
 
 class Campaign(models.Model):
     campaign_types = [("ویترین", "ویترین"), ("فروش", "فروش")]
-    group_id = models.CharField(max_length=36, null=True, blank=True)
+    group_id = models.CharField(max_length=36, null=True, blank=True, db_index=True)
     name = models.CharField(max_length=255, verbose_name="نام کمپین")
-    start_date = models.DateField(verbose_name="تاریخ")
-    end_date = models.DateField(verbose_name="تاریخ پایان", null=True, blank=True)
+    start_date = models.DateField(verbose_name="تاریخ", db_index=True)
+    end_date = models.DateField(verbose_name="تاریخ پایان", null=True, blank=True, db_index=True)
     campaign_type = models.CharField(
         choices=campaign_types,
         null=True,
@@ -223,7 +226,7 @@ class Campaign(models.Model):
         max_length=10,
         verbose_name="نوع کمپین",
     )
-    branch = models.ForeignKey(Branch, on_delete=models.CASCADE, verbose_name="شعبه")
+    branch = models.ForeignKey(Branch, on_delete=models.CASCADE, verbose_name="شعبه", db_index=True)
     cost = models.CharField(max_length=255, verbose_name="هزینه", null=True, blank=True)
     date_created = models.DateTimeField(
         null=True, default=datetime.now, verbose_name="تاریخ ساخت"
@@ -238,6 +241,9 @@ class Campaign(models.Model):
     class Meta:
         verbose_name = "کمپین"
         verbose_name_plural = "کمپین"
+        indexes = [
+            models.Index(fields=["branch", "start_date", "end_date"])
+        ]
 
 
 class UserProfile(models.Model):
@@ -299,10 +305,10 @@ class PermissionToViewBranch(models.Model):
 
 
 class Invoice(models.Model):
-    date = models.DateField(verbose_name="تاریخ")
-    branch = models.ForeignKey(Branch, on_delete=models.CASCADE)
-    total_amount = models.CharField(max_length=255, verbose_name="مبلغ کل")
-    total_items = models.CharField(max_length=255, verbose_name="تعداد آیتم")
+    date = models.DateField(verbose_name="تاریخ", db_index=True)
+    branch = models.ForeignKey(Branch, on_delete=models.CASCADE, db_index=True)
+    total_amount = models.BigIntegerField(verbose_name="مبلغ کل")
+    total_items = models.BigIntegerField(verbose_name="تعداد آیتم")
     date_created = models.DateTimeField(
         null=True, default=datetime.now, verbose_name="تاریخ ساخت"
     )
@@ -313,6 +319,9 @@ class Invoice(models.Model):
     class Meta:
         verbose_name = "فاکتور"
         verbose_name_plural = "فاکتور"
+        indexes = [
+            models.Index(fields=["branch", "date"])
+        ]
 
     def __str__(self):
         return f"{self.pk}"

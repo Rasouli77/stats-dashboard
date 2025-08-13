@@ -81,25 +81,9 @@ def people_counter(request, url_hash):
     # Rights
     if not perm_to_open(request, url_hash):
         return render(request, "401.html", status=401)
-    queryset = (
-        PeopleCounting.objects.filter(merchant__url_hash=url_hash)
-        .values("date")
-        .annotate(total_entry=Sum("entry"))
-        .annotate(total_exit=Sum("exit"))
-        .order_by("date")
-    )
-    permissions = (
-        PermissionToViewBranch.objects.defer("date_created", "last_modified")
-        .select_related("branch")
-        .filter(user__pk=request.user.profile.pk)
-    )
-    if len(permissions) == 0 and not request.user.profile.is_manager:
-        return render(request, "401.html", status=401)
+    queryset = []
     if request.user.profile.is_manager:
         branches = Branch.objects.only("name", "pk").filter(merchant__url_hash=url_hash)
-        campaigns = Campaign.objects.defer("date_created", "last_modified").filter(
-            branch__merchant__url_hash=url_hash
-        )
     else:
         permitted_branches = (
             PermissionToViewBranch.objects.defer("date_created", "last_modified")
@@ -112,10 +96,6 @@ def people_counter(request, url_hash):
         branches = Branch.objects.only("name", "pk").filter(
             merchant__url_hash=url_hash, pk__in=permitted_branches_list
         )
-        campaigns = Campaign.objects.defer("date_created", "last_modified").filter(
-            branch__merchant__url_hash=url_hash, branch__pk__in=permitted_branches_list
-        )
-        queryset = queryset.filter(branch__pk__in=permitted_branches_list)
     selected_branches_str = request.GET.getlist("branch")
     start_date_str = str(jalali_to_gregorian(request.GET.get("start-date")))
     end_date_str = str(jalali_to_gregorian(request.GET.get("end-date")))
@@ -126,13 +106,47 @@ def people_counter(request, url_hash):
     campaign_list = []
     selected_branches = []
     branches_stats = {}
-    if start_date_str and end_date_str:
+    if start_date_str != "None" and end_date_str != "None":
         try:
             start_date = datetime.strptime(start_date_str, "%Y-%m-%d").date()
             end_date = datetime.strptime(end_date_str, "%Y-%m-%d").date()
-            queryset = queryset.filter(date__range=(start_date, end_date))
-            campaigns = campaigns.filter(
+        except Exception as e:
+            print(e)
+        queryset = (
+        PeopleCounting.objects.defer("date_created", "last_modified", "cam")
+        .filter(merchant__url_hash=url_hash, date__range=(start_date, end_date))
+        .values("date")
+        .annotate(total_entry=Sum("entry"))
+        .order_by("date")
+        )
+        permissions = (
+            PermissionToViewBranch.objects.defer("date_created", "last_modified")
+            .select_related("branch")
+            .filter(user__pk=request.user.profile.pk)
+        )
+        if len(permissions) == 0 and not request.user.profile.is_manager:
+            return render(request, "401.html", status=401)
+        if request.user.profile.is_manager:
+            branches = Branch.objects.only("name", "pk").filter(merchant__url_hash=url_hash)
+            campaigns = Campaign.objects.defer("date_created", "last_modified").filter(
+                branch__merchant__url_hash=url_hash
+            ).filter(
                 Q(start_date__lte=end_date) & Q(end_date__gte=start_date)
+            )
+        else:
+            permitted_branches = (
+                PermissionToViewBranch.objects.defer("date_created", "last_modified")
+                .select_related("branch")
+                .filter(user__pk=request.user.profile.pk)
+            )
+            permitted_branches_list = []
+            for permitted_branch in permitted_branches:
+                permitted_branches_list.append(permitted_branch.branch.pk)
+            branches = Branch.objects.only("name", "pk").filter(
+                merchant__url_hash=url_hash, pk__in=permitted_branches_list
+            )
+            campaigns = Campaign.objects.defer("date_created", "last_modified").select_related("branch").filter(
+                branch__merchant__url_hash=url_hash, branch__pk__in=permitted_branches_list
             )
             campaign_list = []
             for campaign in campaigns:
@@ -145,15 +159,14 @@ def people_counter(request, url_hash):
                     "campaign_cost": campaign.cost,
                 }
                 campaign_list.append(dictionary)
-        except Exception as e:
-            print(e)
+            queryset = queryset.filter(branch__pk__in=permitted_branches_list)
     if selected_branches_str:
         selected_branches = [int(pk) for pk in selected_branches_str]
         try:
             queryset = queryset.filter(branch__pk__in=selected_branches)
             campaigns = campaigns.filter(branch__pk__in=selected_branches)
             entry_totals = [float(row["total_entry"]) for row in queryset]
-            exit_totals = [float(row["total_exit"]) for row in queryset]
+            exit_totals = []
             campaign_list = []
             for campaign in campaigns:
                 dictionary = {
@@ -169,10 +182,11 @@ def people_counter(request, url_hash):
             print(e)
 
     entry_totals = [float(row["total_entry"]) for row in queryset]
-    exit_totals = [float(row["total_exit"]) for row in queryset]
+    exit_totals = []
     dates = [str(row["date"].strftime("%Y-%m-%d")) for row in queryset]
 
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        print(connection.queries, len(connection.queries))
         return JsonResponse(
             {
                 "dates": dates,
@@ -181,6 +195,7 @@ def people_counter(request, url_hash):
                 "campaigns": campaign_list,
             }
         )
+    print(connection.queries, len(connection.queries))
     return render(
         request,
         "people-counter.html",
@@ -1054,22 +1069,25 @@ def invoice_counter(request, url_hash):
         start_date_str = str(jalali_to_gregorian(request.GET.get("start-date")))
         end_date_str = str(jalali_to_gregorian(request.GET.get("end-date")))
         branches_str = request.GET.getlist("branch")
-
     except Exception as e:
         print(e)
     branches = []
+    dates = []
+    total_amount = []
+    total_items = []
     invoices = (
         Invoice.objects.defer("date_created", "last_modified")
-        .values("date")
-        .annotate(sum_total_amount=Sum("total_amount"))
-        .annotate(sum_total_items=Sum("total_items"))
+        .select_related("branch", "branch__merchant")
         .filter(branch__pk__in=allowed_branches)
+        .values("date")
+        .annotate(sum_total_amount=Sum("total_amount"), sum_total_items=Sum("total_items"))
         .order_by("date")
     )
-    campaigns = Campaign.objects.defer("date_created", "last_modified").filter(
+    campaigns = Campaign.objects.defer("date_created", "last_modified").select_related("branch", "branch__merchant").filter(
         branch__merchant__url_hash=url_hash, branch__pk__in=allowed_branches
     )
-    if start_date_str and end_date_str:
+    if start_date_str != "None" and end_date_str != "None":
+        print(start_date_str, end_date_str)
         try:
             start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
             end_date = datetime.strptime(end_date_str, "%Y-%m-%d")
@@ -1119,6 +1137,7 @@ def invoice_counter(request, url_hash):
             campaign_list.append(dictionary)
 
         if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            print(connection.queries, len(connection.queries))
             return JsonResponse(
                 {
                     "dates": dates,
@@ -1129,6 +1148,7 @@ def invoice_counter(request, url_hash):
             )
     if not profile.is_manager:
         all_branches = all_branches.filter(pk__in=allowed_branches)
+    print(connection.queries, len(connection.queries))
     return render(
         request,
         "invoice-counter.html",
@@ -1150,13 +1170,13 @@ def analysis(request, url_hash):
         return render(request, "401.html", status=401)
     allowed_branches = []
     campaign_list = []
-    profile = request.user.profile
     all_branches = Branch.objects.defer(
         "country", "province", "city", "district", "date_created", "last_modified"
     ).filter(merchant__url_hash=url_hash)
 
     for item in all_branches:
         allowed_branches.append(item.pk)
+    print(allowed_branches)
     try:
         start_date_str = str(jalali_to_gregorian(request.GET.get("start-date")))
         end_date_str = str(jalali_to_gregorian(request.GET.get("end-date")))
@@ -1165,32 +1185,30 @@ def analysis(request, url_hash):
         print(e)
     branches = []
     queryset_no_branch_filter = []
-    queryset = (
-        PeopleCounting.objects.filter(
-            merchant__url_hash=url_hash, branch__pk__in=allowed_branches
-        )
-        .values("date")
-        .annotate(total_entry=Sum("entry"))
-        .annotate(total_exit=Sum("exit"))
-        .order_by("date")
-    )
-    invoices = (
-        Invoice.objects.defer("date_created", "last_modified")
-        .values("date")
-        .annotate(sum_total_amount=Sum("total_amount"))
-        .annotate(sum_total_items=Sum("total_items"))
-        .filter(branch__pk__in=allowed_branches)
-        .order_by("date")
-    )
-    campaigns = Campaign.objects.defer("date_created", "last_modified").filter(
+    invoices = []
+    queryset = []
+    campaigns = Campaign.objects.defer("date_created", "last_modified").select_related("branch").filter(
         branch__merchant__url_hash=url_hash, branch__pk__in=allowed_branches
     )
     if start_date_str and end_date_str:
         try:
             start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
             end_date = datetime.strptime(end_date_str, "%Y-%m-%d")
-            invoices = invoices.filter(date__range=(start_date, end_date))
-            queryset = queryset.filter(date__range=(start_date, end_date))
+            invoices = (
+                Invoice.objects.defer("date_created", "last_modified")
+                .filter(branch__pk__in=allowed_branches, date__range=(start_date, end_date))
+                .values("date")
+                .annotate(sum_total_amount=Sum("total_amount"), sum_total_items=Sum("total_items"))
+                .order_by("date")
+            )
+            queryset = (
+                PeopleCounting.objects.filter(
+                    merchant__url_hash=url_hash, branch__pk__in=allowed_branches, date__range=(start_date, end_date)
+                )
+                .values("date")
+                .annotate(total_entry=Sum("entry"), total_exit=Sum("exit"))
+                .order_by("date")
+            )
             queryset_no_branch_filter = queryset.filter(
                 date__range=(start_date, end_date)
             )
@@ -1244,6 +1262,7 @@ def analysis(request, url_hash):
             }
             campaign_list.append(dictionary)
         if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            print(connection.queries, len(connection.queries))
             return JsonResponse(
                 {
                     "dates_queryset": dates_queryset,
@@ -1255,8 +1274,7 @@ def analysis(request, url_hash):
                     "campaigns": campaign_list,
                 }
             )
-    if not profile.is_manager:
-        all_branches = all_branches.filter(pk__in=allowed_branches)
+    print(connection.queries, len(connection.queries))
     return render(
         request,
         "analysis.html",

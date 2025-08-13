@@ -7,68 +7,68 @@
 	  ساخت تمپلیت
 {% endblock %}
 {% block extra_css %}
-    <!-- Style for Calendar, FlatPicker and Toastr -->
-    <link rel="stylesheet" href="{% static 'assets/vendor/libs/fullcalendar/fullcalendar.css' %}">
-    <link rel="stylesheet" href="{% static 'assets/vendor/libs/flatpickr/flatpickr.css' %}">
-    <link rel="stylesheet" href="{% static 'assets/vendor/css/pages/app-calendar.css' %}">
-    <link rel="stylesheet" href="{% static 'assets/vendor/libs/toastr/toastr.css' %}" />
-    <!-- Custom Style for FlatPicker Calendar -->
-    <style>
-        .light-style .flatpickr-calendar {
-        box-shadow: none !important;
-        }
-    </style>
-    <!-- Custom Style for the Loading Overlay -->
-    <style>
-        .loading-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-        .loader {
-            border: 8px solid #f3f3f3;
-            border-top: 8px solid #3498db;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+<!-- Style for Calendar, FlatPicker and Toastr -->
+<link rel="stylesheet" href="{% static 'assets/vendor/libs/fullcalendar/fullcalendar.css' %}">
+<link rel="stylesheet" href="{% static 'assets/vendor/libs/flatpickr/flatpickr.css' %}">
+<link rel="stylesheet" href="{% static 'assets/vendor/css/pages/app-calendar.css' %}">
+<link rel="stylesheet" href="{% static 'assets/vendor/libs/toastr/toastr.css' %}" />
+<!-- Custom Style for FlatPicker Calendar -->
+<style>
+    .light-style .flatpickr-calendar {
+    box-shadow: none !important;
+    }
+</style>
+<!-- Custom Style for the Loading Overlay -->
+<style>
+    .loading-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+    }
+    .loader {
+        border: 8px solid #f3f3f3;
+        border-top: 8px solid #3498db;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
 
-        .highcharts-credits {
-          display: none;
-        }
+    .highcharts-credits {
+        display: none;
+    }
 
+    .branches-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 10px;
+    }
+
+    /* Tablets */
+    @media (max-width: 992px) {
         .branches-grid {
-          display: grid;
-          grid-template-columns: repeat(7, 1fr);
-          gap: 10px;
+        grid-template-columns: repeat(4, 1fr);
         }
+    }
 
-        /* Tablets */
-        @media (max-width: 992px) {
-          .branches-grid {
-            grid-template-columns: repeat(4, 1fr);
-          }
+    /* Phones */
+    @media (max-width: 576px) {
+        .branches-grid {
+        grid-template-columns: repeat(2, 1fr);
         }
-
-        /* Phones */
-        @media (max-width: 576px) {
-          .branches-grid {
-            grid-template-columns: repeat(2, 1fr);
-          }
-        }
-    </style>
+    }
+</style>
 {% endblock %}
 {% block content %}
 <div class="alert alert-success" role="alert">تمپلیت مورد نظر ساخته شد.</div>
@@ -155,9 +155,7 @@
 <script src="{% static 'assets/vendor/libs/flatpickr/l10n/fa-jdate.js' %}"></script>
 <script src="{% static 'assets/js/app-calendar-events.js' %}"></script>
 <script src="{% static 'assets/js/app-calendar.js' %}"></script>
-<script>
-  
-</script>
+<!-- Flat Picker Configuration / Branch Checks Configuration -->
 <script>
     flatpickr("#date-range", {
         inline: true,
@@ -209,28 +207,27 @@
       })
   })
 </script>
+<!-- Alert Display Erase Configuration -->
 <script>
-document.querySelector(".alert-success").style.display = "none";
-</script>
-<script>
-document.querySelector("#filter-form").addEventListener("submit", () => {
-    function eraseQuery() {
-        window.addEventListener("DOMContentLoaded", function () {
-        if (window.location.search) {
-            const cleanUrl = window.location.origin + window.location.pathname;
-            window.history.replaceState({}, document.title, cleanUrl);
+    document.querySelector(".alert-success").style.display = "none";
+    document.querySelector("#filter-form").addEventListener("submit", () => {
+        function eraseQuery() {
+            window.addEventListener("DOMContentLoaded", function () {
+            if (window.location.search) {
+                const cleanUrl = window.location.origin + window.location.pathname;
+                window.history.replaceState({}, document.title, cleanUrl);
+            }
+            });
         }
-        });
-    }
-    function alertDisappear() {
-        document.querySelectorAll(".alert").forEach((e) => {
-            e.style.display = "none";
-        })
-    }
-    setTimeout(eraseQuery, 500)
-    document.querySelector(".alert-success").style.display = "block";
-    setTimeout(alertDisappear, 5000)
-});
+        function alertDisappear() {
+            document.querySelectorAll(".alert").forEach((e) => {
+                e.style.display = "none";
+            })
+        }
+        setTimeout(eraseQuery, 500)
+        document.querySelector(".alert-success").style.display = "block";
+        setTimeout(alertDisappear, 5000)
+    });
 </script>
 {% endblock %}
 

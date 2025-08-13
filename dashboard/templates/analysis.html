@@ -7,48 +7,48 @@
 	   آنالیز اطلاعات
 {% endblock %}
 {% block extra_css %}
-    <!-- Style for Calendar, FlatPicker and Toastr -->
-    <link rel="stylesheet" href="{% static 'assets/vendor/libs/fullcalendar/fullcalendar.css' %}">
-    <link rel="stylesheet" href="{% static 'assets/vendor/libs/flatpickr/flatpickr.css' %}">
-    <link rel="stylesheet" href="{% static 'assets/vendor/css/pages/app-calendar.css' %}">
-    <link rel="stylesheet" href="{% static 'assets/vendor/libs/toastr/toastr.css' %}" />
-    <!-- Custom Style for FlatPicker Calendar -->
-    <style>
-        .light-style .flatpickr-calendar {
-        box-shadow: none !important;
-        }
-    </style>
-    <!-- Custom Style for the Loading Overlay -->
-    <style>
-        .loading-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-        .loader {
-            border: 8px solid #f3f3f3;
-            border-top: 8px solid #3498db;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+<!-- Style for Calendar, FlatPicker and Toastr -->
+<link rel="stylesheet" href="{% static 'assets/vendor/libs/fullcalendar/fullcalendar.css' %}">
+<link rel="stylesheet" href="{% static 'assets/vendor/libs/flatpickr/flatpickr.css' %}">
+<link rel="stylesheet" href="{% static 'assets/vendor/css/pages/app-calendar.css' %}">
+<link rel="stylesheet" href="{% static 'assets/vendor/libs/toastr/toastr.css' %}" />
+<!-- Custom Style for FlatPicker Calendar -->
+<style>
+    .light-style .flatpickr-calendar {
+    box-shadow: none !important;
+    }
+</style>
+<!-- Custom Style for the Loading Overlay -->
+<style>
+    .loading-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+    }
+    .loader {
+        border: 8px solid #f3f3f3;
+        border-top: 8px solid #3498db;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
 
-        .highcharts-credits {
-          display: none;
-        }
-    </style>
+    .highcharts-credits {
+        display: none;
+    }
+</style>
 {% endblock %}
 {% block content %}
 <div class="loading-overlay" id="loading-overlay">
@@ -215,6 +215,7 @@
         </div>
     </div>
     <div class="row">
+        <!-- Campaigns Separated By Branch -->
         <div class="card" id="campaigns">
             <h5 class="card-header heading-color">کمپین ها</h5>
             <div class="table-responsive text-nowrap" style="margin-bottom: 100px;">
@@ -234,6 +235,7 @@
                 </table>
             </div>
         </div>
+        <!-- Grouped Campaign Card -->
         <div class="card" id="grouped-campaigns" style="margin-top: 40px;">
             <h5 class="card-header heading-color">کمپین ها</h5>
             <div class="table-responsive text-nowrap" style="margin-bottom: 100px;">
@@ -277,7 +279,7 @@
 <script src="{% static 'assets/js/app-calendar.js' %}"></script>
 <!-- FlatPicker (JS Calendar) Persian Configuration / Form Checks -->
 <script src="{% static 'assets/js/persian-flatpicker-and-form-checks.js' %}"></script>
-<!-- HighChart Chart Paint (Analytic Aggregation) Raw JavaScript -->
+<!-- HighChart Chart Paint (Analytic Aggregation) Raw JavaScript / Campaigns Separated By Branch Paint -->
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         let ratioChart = Highcharts.chart('ratio-container', {
@@ -654,7 +656,7 @@
         })
     })
 </script>
-<!-- HighChart Chart Paint (Analytic Separation) JQuery -->
+<!-- HighChart Chart Paint (Analytic Separation) JQuery / Grouped Campaigns Paint -->
 <script>
     function formatData(invoice_dates, people_counting_dates, invoice_data, people_counting_data) {
         const commonDates = people_counting_dates.filter(date => invoice_dates.includes(date));
@@ -1101,145 +1103,9 @@
 <!-- Sweet Alert CDN -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <!-- Display Toggles -->
-<script>
-    const returnBtn = document.getElementById("return");
-    const menuTwo = document.getElementById("menu");
-    const body = document.getElementById("body");
-    const campaigns = document.querySelector("#campaigns");
-    const groupedCampaigns = document.querySelector("#grouped-campaigns")
-    // Return Button
-    returnBtn.addEventListener("click", () => {
-        menuTwo.style.display = "block";
-        body.style.display = "none";
-        returnBtn.style.display = "none";
-    });
-
-    // TCR
-    // Card
-    const aggConPercentCard = document.getElementById("agg-con-percent");
-    // Chart
-    const aggConPercentChart = document.getElementById("ratio-container");
-
-    // BTCR
-    // Card
-    const branchConPercentCard = document.getElementById("branch-con-percent");
-    // Chart
-    const branchConPercentChart = document.getElementById("ratio-container-multi-branch");
-
-    // EV
-    // Card
-    const aggEntryValCard = document.getElementById("agg-entry-val");
-    // Chart
-    const aggEntryValChart = document.getElementById("second-ratio-container");
-
-    // BEV
-    // Card
-    const branchEntryValCard = document.getElementById("branch-entry-val");
-    // Chart
-    const branchEntryValChart = document.getElementById("second-ratio-container-multi-branch");
-
-    // BTS
-    // Card
-    const oneToAllEntryCard = document.getElementById("one-to-all-entry");
-    // Chart
-    const oneToAllEntryChart =  document.getElementById("one-to-all-container");
-
-    // TBTS
-    // Card
-    const allToAllEntryCard = document.getElementById("all-to-all-entry");
-    // Chart
-    const allToAllEntryChart = document.getElementById("second-one-to-all-container");
-
-    // First Card
-    aggConPercentCard.addEventListener("click", () => {
-        menuTwo.style.display = "none";
-        body.style.display = "block";
-        aggConPercentChart.style.display = "block";
-        branchConPercentChart.style.display = "none";
-        aggEntryValChart.style.display = "none";
-        branchEntryValChart.style.display = "none";
-        oneToAllEntryChart.style.display = "none";
-        allToAllEntryChart.style.display = "none";
-        returnBtn.style.display = "block";
-        campaigns.style.display = "none";
-        groupedCampaigns.style.display = "block";
-    });
-
-    // Second Card
-    branchConPercentCard.addEventListener("click", () => {
-        menuTwo.style.display = "none";
-        body.style.display = "block";
-        aggConPercentChart.style.display = "none";
-        branchConPercentChart.style.display = "block";
-        aggEntryValChart.style.display = "none";
-        branchEntryValChart.style.display = "none";
-        oneToAllEntryChart.style.display = "none";
-        allToAllEntryChart.style.display = "none";
-        returnBtn.style.display = "block";
-        campaigns.style.display = "block";
-        groupedCampaigns.style.display = "none";
-    });
-
-    // Third Card
-    aggEntryValCard.addEventListener("click", () => {
-        menuTwo.style.display = "none";
-        body.style.display = "block";
-        aggConPercentChart.style.display = "none";
-        branchConPercentChart.style.display = "none";
-        aggEntryValChart.style.display = "block";
-        branchEntryValChart.style.display = "none";
-        oneToAllEntryChart.style.display = "none";
-        allToAllEntryChart.style.display = "none";
-        returnBtn.style.display = "block";
-        campaigns.style.display = "none";
-        groupedCampaigns.style.display = "block";
-    });
-
-    // Forth Card
-    branchEntryValCard.addEventListener("click", () => {
-        menuTwo.style.display = "none";
-        body.style.display = "block";
-        aggConPercentChart.style.display = "none";
-        branchConPercentChart.style.display = "none";
-        aggEntryValChart.style.display = "none";
-        branchEntryValChart.style.display = "block";
-        oneToAllEntryChart.style.display = "none";
-        allToAllEntryChart.style.display = "none";
-        returnBtn.style.display = "block";
-        campaigns.style.display = "block";
-        groupedCampaigns.style.display = "none";
-    });
-
-    // Fifth Card
-    oneToAllEntryCard.addEventListener("click", () => {
-        menuTwo.style.display = "none";
-        body.style.display = "block";
-        aggConPercentChart.style.display = "none";
-        branchConPercentChart.style.display = "none";
-        aggEntryValChart.style.display = "none";
-        branchEntryValChart.style.display = "none";
-        oneToAllEntryChart.style.display = "block";
-        allToAllEntryChart.style.display = "none";
-        returnBtn.style.display = "block";
-        campaigns.style.display = "none";
-        groupedCampaigns.style.display = "block";
-    });
-
-    // Sixth Card
-    allToAllEntryCard.addEventListener("click", () => {
-        menuTwo.style.display = "none";
-        body.style.display = "block";
-        aggConPercentChart.style.display = "none";
-        branchConPercentChart.style.display = "none";
-        aggEntryValChart.style.display = "none";
-        branchEntryValChart.style.display = "none";
-        oneToAllEntryChart.style.display = "none";
-        allToAllEntryChart.style.display = "block";
-        returnBtn.style.display = "block";
-        campaigns.style.display = "block";
-        groupedCampaigns.style.display = "none";
-    });
-</script>
+<script src="{% static 'assets/js/analysis-campaign-list-display-toggle.js' %}"></script>
+<!-- Button Collapse -->
+<script src="{% static 'assets/js/accordion-collapse-toggle.js' %}"></script>
 {% endblock %}
 
 

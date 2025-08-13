@@ -7,17 +7,17 @@
 	ویرایش کمپین
 {% endblock %}
 {% block extra_css %}
-    <!-- Style for Calendar, FlatPicker and Toastr -->
-    <link rel="stylesheet" href="{% static 'assets/vendor/libs/fullcalendar/fullcalendar.css' %}">
-    <link rel="stylesheet" href="{% static 'assets/vendor/libs/flatpickr/flatpickr.css' %}">
-    <link rel="stylesheet" href="{% static 'assets/vendor/css/pages/app-calendar.css' %}">
-    <link rel="stylesheet" href="{% static 'assets/vendor/libs/toastr/toastr.css' %}" />
-    <!-- Custom Style for FlatPicker Calendar -->
-    <style>
-        .light-style .flatpickr-calendar {
-        box-shadow: none !important;
-        }
-    </style>
+<!-- Style for Calendar, FlatPicker and Toastr -->
+<link rel="stylesheet" href="{% static 'assets/vendor/libs/fullcalendar/fullcalendar.css' %}">
+<link rel="stylesheet" href="{% static 'assets/vendor/libs/flatpickr/flatpickr.css' %}">
+<link rel="stylesheet" href="{% static 'assets/vendor/css/pages/app-calendar.css' %}">
+<link rel="stylesheet" href="{% static 'assets/vendor/libs/toastr/toastr.css' %}" />
+<!-- Custom Style for FlatPicker Calendar -->
+<style>
+    .light-style .flatpickr-calendar {
+    box-shadow: none !important;
+    }
+</style>
 {% endblock %}
 {% block content %}
 {% if not request.user.profile.is_manager %}
@@ -117,6 +117,7 @@
 <script src="{% static 'assets/vendor/libs/pickr/pickr.js' %}"></script>
 <!-- Page JS -->
 <script src="{% static 'assets/js/forms-pickers.js' %}"></script>
+<!-- Flat Picker Configuration -->
 <script>
     flatpickr("#flatpickr-date-end", {
       monthSelectorType: 'static',
@@ -126,32 +127,33 @@
       disableMobile: true
     });
 </script>
+<!-- Flat Picker Jalali Date Configuration -->
 <script>
-  function convertJalaliToGregorian(jalaliDate) {
+    function convertJalaliToGregorian(jalaliDate) {
     const [jy, jm, jd] = jalaliDate.split("-").map(Number);
     const { gy, gm, gd } = jalaali.toGregorian(jy, jm, jd);
     return `${gy}-${String(gm).padStart(2, '0')}-${String(gd).padStart(2, '0')}`;
-  }
+    }
 
-  function convertGregorianToJalali(gregorianDateStr) {
+    function convertGregorianToJalali(gregorianDateStr) {
     const [gy, gm, gd] = gregorianDateStr.split("-").map(Number);
     const { jy, jm, jd } = jalaali.toJalaali(gy, gm, gd);
     return `${jy}-${String(jm).padStart(2, '0')}-${String(jd).padStart(2, '0')}`;
-  }
-  
-  const formCreateCampaign = document.querySelector("#form-create-campaign")
-  const flatpickrDate = document.querySelector("#flatpickr-date")
-  const flatpickrDateEnd = document.querySelector("#flatpickr-date-end")
-  const idStartDate = document.querySelector("#id_start_date")
-  const idEndDate = document.querySelector("#id_end_date")
-  const submitBtn = document.querySelector("#submit-btn")
+    }
 
-  submitBtn.addEventListener("click", (e) => {
+    const formCreateCampaign = document.querySelector("#form-create-campaign")
+    const flatpickrDate = document.querySelector("#flatpickr-date")
+    const flatpickrDateEnd = document.querySelector("#flatpickr-date-end")
+    const idStartDate = document.querySelector("#id_start_date")
+    const idEndDate = document.querySelector("#id_end_date")
+    const submitBtn = document.querySelector("#submit-btn")
+
+    submitBtn.addEventListener("click", (e) => {
     e.preventDefault();
     idStartDate.value = convertJalaliToGregorian(flatpickrDate.value)  
     idEndDate.value = convertJalaliToGregorian(flatpickrDateEnd.value)  
     console.log(idStartDate.value, idEndDate.value)
     formCreateCampaign.submit()
-  })
+    })
 </script>
 {% endblock %}

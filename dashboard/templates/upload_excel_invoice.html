@@ -38,22 +38,21 @@
 {% endif %}
 {% if error %}
 <!-- Error -->
-    <div class="container-xxl container-p-y">
-      <div class="misc-wrapper">
-        <h1 class="mb-2 mx-2 secondary-font"> مشکلی در پردازش فایل پیش آمده :(</h1>
-        <p class="mb-4 mx-2">{{ error }}</p>
-        {% if branches %}
-          {% for branch in branches %}
-            <p>{{ branch.pk }} - {{ branch.name }}</p>
-          {% endfor %}
-        {% endif %}
-        <a href="{% url 'upload_excel_file_invoice' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="btn btn-primary">بازگشت</a>
-      </div>
+<div class="container-xxl container-p-y">
+    <div class="misc-wrapper">
+    <h1 class="mb-2 mx-2 secondary-font"> مشکلی در پردازش فایل پیش آمده :(</h1>
+    <p class="mb-4 mx-2">{{ error }}</p>
+    {% if branches %}
+        {% for branch in branches %}
+        <p>{{ branch.pk }} - {{ branch.name }}</p>
+        {% endfor %}
+    {% endif %}
+    <a href="{% url 'upload_excel_file_invoice' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="btn btn-primary">بازگشت</a>
     </div>
-    <!-- /Error -->
+</div>
+<!-- /Error -->
 {% else %}
 <div class="row">
-<!-- Basic  -->
 <div class="col-12">
     <div class="card mb-4">
         <h5 class="card-header heading-color">آپلود اطلاعات فروش</h5>
@@ -71,7 +70,6 @@
         </div> 
     </div>
 </div>
-<!-- /Basic  -->
 </div>
 {% endif %}
 {% endblock %}

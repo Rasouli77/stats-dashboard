@@ -7,191 +7,169 @@
 	شمارشگر
 {% endblock %}
 {% block extra_css %}
-    <!-- Style for Calendar, FlatPicker and Toastr -->
-    <link rel="stylesheet" href="{% static 'assets/vendor/libs/fullcalendar/fullcalendar.css' %}">
-    <link rel="stylesheet" href="{% static 'assets/vendor/libs/flatpickr/flatpickr.css' %}">
-    <link rel="stylesheet" href="{% static 'assets/vendor/css/pages/app-calendar.css' %}">
-    <link rel="stylesheet" href="{% static 'assets/vendor/libs/toastr/toastr.css' %}" />
-    <!-- Custom Style for FlatPicker Calendar -->
-    <style>
-        .light-style .flatpickr-calendar {
-        box-shadow: none !important;
-        }
-    </style>
-    <!-- Custom Style for the Loading Overlay -->
-    <style>
-        .loading-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-        .loader {
-            border: 8px solid #f3f3f3;
-            border-top: 8px solid #3498db;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+<!-- Style for Calendar, FlatPicker and Toastr -->
+<link rel="stylesheet" href="{% static 'assets/vendor/libs/fullcalendar/fullcalendar.css' %}">
+<link rel="stylesheet" href="{% static 'assets/vendor/libs/flatpickr/flatpickr.css' %}">
+<link rel="stylesheet" href="{% static 'assets/vendor/css/pages/app-calendar.css' %}">
+<link rel="stylesheet" href="{% static 'assets/vendor/libs/toastr/toastr.css' %}" />
+<!-- Custom Style for FlatPicker Calendar -->
+<style>
+    .light-style .flatpickr-calendar {
+    box-shadow: none !important;
+    }
+</style>
+<!-- Custom Style for the Loading Overlay -->
+<style>
+    .loading-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+    }
+    .loader {
+        border: 8px solid #f3f3f3;
+        border-top: 8px solid #3498db;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
 
-        .highcharts-credits {
-          display: none;
-        }
-    </style>
+    .highcharts-credits {
+        display: none;
+    }
+</style>
 {% endblock %}
 {% block content %}
-    <h6>شمارشگر</h6>
-    <div class="loading-overlay" id="loading-overlay">
-        <div class="loader"></div>
-    </div>
-    <div class="calendar-container">
-        <div class="container">
-            <div class="row" style="margin-bottom: 20px;">
-                <!-- Date Accordion -->
-                <div class="col-xl-4 col-lg-4 col-md-12 col-sm-12" style="margin-bottom: 10px;">
-                <h6>تاریخ</h6>
-                <div class="accordion mt-3 accordion-header-primary" id="accordionDate">
-                    <div class="card accordion-item">
-                    <h2 class="accordion-header d-flex align-items-center">
-                        <button type="button" class="accordion-button" data-bs-toggle="collapse" data-bs-target="#collapseDate" aria-expanded="true">
-                        <i class="menu-icon tf-icons bx bx-calendar"></i>
-                        انتخاب تاریخ
-                        </button>
-                    </h2>
+<h6>شمارشگر</h6>
+<div class="loading-overlay" id="loading-overlay">
+    <div class="loader"></div>
+</div>
+<div class="calendar-container">
+    <div class="container">
+        <div class="row" style="margin-bottom: 20px;">
+            <!-- Date Accordion -->
+            <div class="col-xl-4 col-lg-4 col-md-12 col-sm-12" style="margin-bottom: 10px;">
+            <h6>تاریخ</h6>
+            <div class="accordion mt-3 accordion-header-primary" id="accordionDate">
+                <div class="card accordion-item">
+                <h2 class="accordion-header d-flex align-items-center">
+                    <button type="button" class="accordion-button" data-bs-toggle="collapse" data-bs-target="#collapseDate" aria-expanded="true">
+                    <i class="menu-icon tf-icons bx bx-calendar"></i>
+                    انتخاب تاریخ
+                    </button>
+                </h2>
 
-                    <div id="collapseDate" class="accordion-collapse collapse" data-bs-parent="#accordionDate">
-                        <div class="accordion-body" style="display: flex; justify-content: center; align-items: center; position: absolute; z-index: 1001; width: 100%; background-color: white; box-shadow: 0 0.25rem 1rem rgba(147, 158, 170, 0.45);">
-                        <div id="date-range"></div>
-                        </div>
+                <div id="collapseDate" class="accordion-collapse collapse" data-bs-parent="#accordionDate">
+                    <div class="accordion-body" style="display: flex; justify-content: center; align-items: center; position: absolute; z-index: 1001; width: 100%; background-color: white; box-shadow: 0 0.25rem 1rem rgba(147, 158, 170, 0.45);">
+                    <div id="date-range"></div>
                     </div>
-                    </div>
-                </div>              
                 </div>
-                <!-- Branch Accordion -->
-                <div class="col-xl-3 col-lg-3 col-md-12 col-sm-12" style="margin-bottom: 10px;">
-                <h6>شعب</h6>
-                <div class="accordion mt-3 accordion-header-primary" id="accordionBranch">
-                    <div class="card accordion-item">
-                    <h2 class="accordion-header d-flex align-items-center">
-                        <button type="button" class="accordion-button" data-bs-toggle="collapse" data-bs-target="#collapseBranch" aria-expanded="true">
-                        <i class="menu-icon tf-icons bx bx-map-alt"></i>
-                        انتخاب شعب
-                        </button>
-                    </h2>
+                </div>
+            </div>              
+            </div>
+            <!-- Branch Accordion -->
+            <div class="col-xl-3 col-lg-3 col-md-12 col-sm-12" style="margin-bottom: 10px;">
+            <h6>شعب</h6>
+            <div class="accordion mt-3 accordion-header-primary" id="accordionBranch">
+                <div class="card accordion-item">
+                <h2 class="accordion-header d-flex align-items-center">
+                    <button type="button" class="accordion-button" data-bs-toggle="collapse" data-bs-target="#collapseBranch" aria-expanded="true">
+                    <i class="menu-icon tf-icons bx bx-map-alt"></i>
+                    انتخاب شعب
+                    </button>
+                </h2>
 
-                    <div id="collapseBranch" class="accordion-collapse collapse" data-bs-parent="#accordionBranch">
-                        <div class="accordion-body" style="position: absolute; z-index: 999; width: 100%; background-color: white; box-shadow: 0 0.25rem 1rem rgba(147, 158, 170, 0.45);">
-                        <div class="branches-grid mt-3">
-                            <div class="form-check mt-3">
-                                <input class="form-check-input" type="checkbox" id="select-all">
-                                <label class="form-check-label" for="defaultCheck1">انتخاب همه</label>
-                            </div>
-                            {% for branch in branches %}
-                            <div class="form-check mt-3">
-                                <input class="form-check-input fake-check" type="checkbox" value="{{ branch.pk }}">
-                                <label class="form-check-label" for="defaultCheck1">{{ branch.name }}</label>
-                            </div>
-                            {% endfor %}
+                <div id="collapseBranch" class="accordion-collapse collapse" data-bs-parent="#accordionBranch">
+                    <div class="accordion-body" style="position: absolute; z-index: 999; width: 100%; background-color: white; box-shadow: 0 0.25rem 1rem rgba(147, 158, 170, 0.45);">
+                    <div class="branches-grid mt-3">
+                        <div class="form-check mt-3">
+                            <input class="form-check-input" type="checkbox" id="select-all">
+                            <label class="form-check-label" for="defaultCheck1">انتخاب همه</label>
                         </div>
+                        {% for branch in branches %}
+                        <div class="form-check mt-3">
+                            <input class="form-check-input fake-check" type="checkbox" value="{{ branch.pk }}">
+                            <label class="form-check-label" for="defaultCheck1">{{ branch.name }}</label>
                         </div>
+                        {% endfor %}
                     </div>
                     </div>
-                </div>   
                 </div>
-                <!-- Dropdown Display -->
-                <div class="col-xl-3 col-lg-3 col-md-12 col-sm-12" style="margin-bottom: 10px;">
-                    <h6>نمایش</h6>
-                    <select class="form-control" id="select-view">
-                        <option value="1">تجمیعی</option>
-                        <option value="2">مقایسه ای</option>
-                    </select>
                 </div>
-                <div class="col-xl-2 col-lg-2 col-md-12 col-sm-12" style="margin-top: 20px; display: flex; justify-content: center; align-items: center;">
-                    <form action="" method="get" id="filter-form">
-                            <label style="display: none;" for="start-date">از تاریخ</label>
-                            <input type="text" name="start-date" id="start-date" style="display: none;">
-                            <label style="display: none;" for="end-date">تا</label>
-                            <input type="text" name="end-date" id="end-date" style="display: none;">
-                            {% for branch in branches %}
-                            <div class="form-check mt-3" style="display: none;">
-                                <input class="form-check-input real-check" type="checkbox" value="{{ branch.pk }}" name="branch">
-                                <label class="form-check-label" for="defaultCheck1">{{ branch.name }}</label>
-                            </div>
-                            {% endfor %}
-                            <button class="btn btn-primary btn-md" type="submit" id="filter-proxy-button">فیلتر</button>
-                    </form>
-                </div>
+            </div>   
             </div>
-            <div class="row">
-                <div class="col-lg-12">
-                    <div class="demo-inline-spacing mt-3">
-                    <div class="tab-content px-0 pt-2">
-                        <!-- total traffic aggregation -->
-                        <div id="container" style="width: 100%; height: 400px; margin-top: 45px;"></div>
-                        <!-- total traffic aggregation by branches -->
-                        <h6 id="instruction" style="display: none;">برای مشاهده مقایسه ای شعب باید یک یا چند شعبه انتخاب شوند.</h6>
-                        <div id="second-container" style="width: 100%; height: 400px; margin-top: 45px; display: none;"></div>
-                    </div>
-                    </div>
-                </div>
+            <!-- Dropdown Display -->
+            <div class="col-xl-3 col-lg-3 col-md-12 col-sm-12" style="margin-bottom: 10px;">
+                <h6>نمایش</h6>
+                <select class="form-control" id="select-view">
+                    <option value="1">تجمیعی</option>
+                    <option value="2">مقایسه ای</option>
+                </select>
             </div>
-            <div class="row">
-                <div class="card">
-                <h5 class="card-header heading-color">کمپین ها</h5>
-                <div class="table-responsive text-nowrap" style="margin-bottom: 100px;">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                            <th>نام کمپین</th>
-                            <th>تاریخ شروع</th>
-                            <th>تاریخ پایان</th>
-                            <th>شعبه</th>
-                            <th>نوع کمپین</th>
-                            <th>هزینه</th>
-                            </tr>
-                        </thead>
-                        <tbody class="table-border-bottom-0">
-                        </tbody>
-                    </table>
+            <div class="col-xl-2 col-lg-2 col-md-12 col-sm-12" style="margin-top: 20px; display: flex; justify-content: center; align-items: center;">
+                <form action="" method="get" id="filter-form">
+                        <label style="display: none;" for="start-date">از تاریخ</label>
+                        <input type="text" name="start-date" id="start-date" style="display: none;">
+                        <label style="display: none;" for="end-date">تا</label>
+                        <input type="text" name="end-date" id="end-date" style="display: none;">
+                        {% for branch in branches %}
+                        <div class="form-check mt-3" style="display: none;">
+                            <input class="form-check-input real-check" type="checkbox" value="{{ branch.pk }}" name="branch">
+                            <label class="form-check-label" for="defaultCheck1">{{ branch.name }}</label>
+                        </div>
+                        {% endfor %}
+                        <button class="btn btn-primary btn-md" type="submit" id="filter-proxy-button">فیلتر</button>
+                </form>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="demo-inline-spacing mt-3">
+                <div class="tab-content px-0 pt-2">
+                    <!-- total traffic aggregation -->
+                    <div id="container" style="width: 100%; height: 400px; margin-top: 45px;"></div>
+                    <!-- total traffic aggregation by branches -->
+                    <h6 id="instruction" style="display: none;">برای مشاهده مقایسه ای شعب باید یک یا چند شعبه انتخاب شوند.</h6>
+                    <div id="second-container" style="width: 100%; height: 400px; margin-top: 45px; display: none;"></div>
                 </div>
                 </div>
             </div>
         </div>
-    </div><br>
-    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" style="display: none;">
-    <!-- Modal -->
-    <div class="modal fade" id="info-modal" tabindex="-1" aria-hidden="true" role="" aria-modal="">
-        <div class="modal-dialog modal-lg modal-simple modal-edit-user">
-            <div class="modal-content p-3 p-md-5">
-                <div class="modal-body">
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    <div class="text-center mb-4 mt-0 mt-md-n2">
-                    <h3 class="secondary-font">اطلاعات تکمیلی</h3>
-                    <p id="stat_name"></p>
-                    <p id="stat_date"></p>
-                    <div id="modal-campaign"></div>
-                    </div>
-                    <div class="col-12 text-center mt-4">
-                        <button type="reset" class="btn btn-label-secondary" data-bs-dismiss="modal" aria-label="Close">
-                        انصراف
-                        </button>
-                    </div>
-                </div>
+        <div class="row">
+            <div class="card">
+            <h5 class="card-header heading-color">کمپین ها</h5>
+            <div class="table-responsive text-nowrap" style="margin-bottom: 100px;">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                        <th>نام کمپین</th>
+                        <th>تاریخ شروع</th>
+                        <th>تاریخ پایان</th>
+                        <th>شعبه</th>
+                        <th>نوع کمپین</th>
+                        <th>هزینه</th>
+                        </tr>
+                    </thead>
+                    <tbody class="table-border-bottom-0">
+                    </tbody>
+                </table>
+            </div>
             </div>
         </div>
     </div>
-<!--/ Modal -->
+</div><br>
+<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" style="display: none;">
 {% endblock %}
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/jalaali-js/dist/jalaali.min.js"></script>
