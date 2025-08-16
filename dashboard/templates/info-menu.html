@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}
+    منو مدیریت اطلاعات
+{% endblock %}
+{% block meta_description %}
+	منو مدیریت اطلاعات
+{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="row">
+        <!-- کارت ۱: گزارش فاکتورها و فروش روزانه -->
+        <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12">
+            <a href="{% url 'invoices' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" style="text-decoration: none; color: inherit;">
+                <div class="card" style="background-color: #f8f2dbcc;">
+                    <div class="card-body">
+                        <h4 class="card-title">گزارش فاکتورها و فروش روزانه</h4>
+                        <p class="card-text">
+                            این بخش امکان مشاهده تعداد فاکتورهای ثبت‌شده و مجموع رقم فاکتورها در هر روز را فراهم می‌کند. 
+                            همچنین می‌توان نتایج را بر اساس بازه زمانی و شعب مختلف فیلتر کرد. 
+                            <br>❓<strong>پاسخ به سؤال:</strong> در هر روز چه تعداد فاکتور و چه میزان فروش ثبت شده است؟
+                        </p>
+                        <p style="text-decoration: underline;">مشاهده</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- کارت ۲: ساخت تمپلیت اکسل -->
+        <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12">
+            <a href="{% url 'excel_template_generator' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" style="text-decoration: none; color: inherit;">
+                <div class="card" style="background-color: #ddf0ffcc;">
+                    <div class="card-body">
+                        <h4 class="card-title">ساخت تمپلیت اکسل</h4>
+                        <p class="card-text">
+                            در این بخش می‌توانید با مشخص کردن تاریخ و شعب مورد نظر، فایل تمپلیت اکسل بسازید. 
+                            سپس داده‌های فروش در آن وارد شده و برای بارگذاری در سیستم آماده می‌شود. 
+                            <br>❓<strong>پاسخ به سؤال:</strong> چگونه یک فایل استاندارد اکسل برای ورود اطلاعات فروش ایجاد کنیم؟
+                        </p>
+                        <p style="text-decoration: underline;">مشاهده</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- کارت ۳: آپلود اطلاعات فروش -->
+        <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12">
+            <a href="{% url 'upload_excel_file_invoice' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" style="text-decoration: none; color: inherit;">
+                <div class="card" style="background-color: #ffecfdcc;">
+                    <div class="card-body">
+                        <h4 class="card-title">آپلود اطلاعات فروش</h4>
+                        <p class="card-text">
+                            این بخش برای بارگذاری فایل اکسل اطلاعات فروش استفاده می‌شود. 
+                            پس از آپلود، تعداد فاکتورها و مجموع ارقام فروش به‌صورت روزانه در سیستم ذخیره و نمایش داده خواهد شد. 
+                            <br>❓<strong>پاسخ به سؤال:</strong> چگونه اطلاعات فروش روزانه را از طریق اکسل در سیستم ثبت کنیم؟
+                        </p>
+                        <p style="text-decoration: underline;">مشاهده</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

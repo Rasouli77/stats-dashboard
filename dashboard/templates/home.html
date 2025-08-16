@@ -125,6 +125,7 @@
         </div>
         <div class="card-body">
             <ul class="p-0 m-0">
+            {% if branch_30_day_ranks %}
             {% for rank in branch_30_day_ranks %}
             <li class="mb-3 d-flex justify-content-between">
                 <div class="d-flex align-items-center me-3">
@@ -136,6 +137,7 @@
                 </div>
             </li>
             {% endfor %}
+            {% endif %}
             </ul>
         </div>
         </div>

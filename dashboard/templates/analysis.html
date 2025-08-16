@@ -56,7 +56,7 @@
 </div>
 <div class="container" id="menu">
     <div class="row">
-        <div class="col-xl-3 col-lg-3 col-md-4 col-sm-12" style="margin: 20px 0px; color: rgb(0, 0, 0); cursor: pointer;" id="agg-con-percent">
+        <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12" style="margin: 20px 0px; color: rgb(0, 0, 0); cursor: pointer;" id="agg-con-percent">
             <div class="card" style="background-color: #f8f2dbcc;">
                 <div class="card-body">
                     <h4 class="card-title">نرخ تبدیل ترافیک (TCR)</h4>
@@ -69,7 +69,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-xl-3 col-lg-3 col-md-4 col-sm-12" style="margin: 20px 0px; color: rgb(0, 0, 0); cursor: pointer;" id="branch-con-percent">
+        <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12" style="margin: 20px 0px; color: rgb(0, 0, 0); cursor: pointer;" id="branch-con-percent">
             <div class="card">
                 <div class="card-body" style="background-color: #daedfacd;">
                     <h4 class="card-title">نرخ تبدیل به تفکیک شعب (BTCR)</h4>
@@ -81,7 +81,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-xl-3 col-lg-3 col-md-4 col-sm-12" style="margin: 20px 0px; color: rgb(0, 0, 0); cursor: pointer;" id="agg-entry-val">
+        <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12" style="margin: 20px 0px; color: rgb(0, 0, 0); cursor: pointer;" id="agg-entry-val">
             <div class="card">
                 <div class="card-body" style="background-color: #fddcdcbc;">
                     <h4 class="card-title">ارزش ورودی (EV)</h4>
@@ -94,7 +94,9 @@
                 </div>
             </div>
         </div>
-        <div class="col-xl-3 col-lg-3 col-md-4 col-sm-12" style="margin: 20px 0px; color: rgb(0, 0, 0); cursor: pointer;" id="branch-entry-val">
+    </div>
+    <div class="row">
+        <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12" style="margin: 20px 0px; color: rgb(0, 0, 0); cursor: pointer;" id="branch-entry-val">
             <div class="card" style="background-color: #f2fcdcdc;">
                 <div class="card-body">
                     <h4 class="card-title">ارزش ورودی به تفکیک شعب (BEV)</h4>
@@ -106,9 +108,7 @@
                 </div>
             </div>
         </div>
-    </div>
-    <div class="row">
-        <div class="col-xl-3 col-lg-3 col-md-4 col-sm-12" style="margin: 20px 0px; color: rgb(0, 0, 0); cursor: pointer;" id="one-to-all-entry">
+        <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12" style="margin: 20px 0px; color: rgb(0, 0, 0); cursor: pointer;" id="one-to-all-entry">
             <div class="card" style="background-color: #eadafdcc;">
                 <div class="card-body">
                     <h4 class="card-title">سهم ترافیک شعبه (BTS)</h4>
@@ -120,7 +120,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-xl-3 col-lg-3 col-md-4 col-sm-12" style="margin: 20px 0px; color: rgb(0, 0, 0); cursor: pointer;" id="all-to-all-entry">
+        <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12" style="margin: 20px 0px; color: rgb(0, 0, 0); cursor: pointer;" id="all-to-all-entry">
             <div class="card">
                 <div class="card-body" style="background-color: #e7e7e7cd;">
                     <h4 class="card-title">سهم ترافیک همه شعب (TBTS)</h4>
@@ -204,7 +204,7 @@
         <div class="col-lg-12">
             <div class="demo-inline-spacing mt-3">
             <div class="tab-content px-0 pt-2">
-                <h6 id="instruction" style="display: none;">❗ برای مشاهده مقایسه شعب باید حداقل یک شعبه را انتخاب کنید.</h6>
+                <h6 id="instruction" style="display: none;">❗ برای مشاهده این قسمت باید حداقل یک شعبه را انتخاب کنید.</h6>
                 <h6 id="instruction-for-one-to-all-container" style="display: none;">❗ برای مشاهده این قسمت فقط باید یک شعبه انتخاب شود.</h6>
                 <div id="ratio-container" style="width: 100%; height: 400px; margin-top: 45px;"></div>
                 <div id="second-ratio-container" style="width: 100%; height: 400px; margin-top: 45px;"></div>
@@ -294,7 +294,7 @@
                 }
             },
             title: {
-                text: "درصد تبدیل ورودی به فاکتور",
+                text: "(TCR) نرخ تبدیل ترافیک",
                 style: {
                     fontSize: '25px',
                     color: '#333'
@@ -383,7 +383,7 @@
                 }
             },
             title: {
-                text: "نسبت ورودی به گردش مالی",
+                text: "(EV) ارزش ورودی",
                 style: {
                     fontSize: '25px',
                     color: '#333'
@@ -471,7 +471,7 @@
                 }
             },
             title: {
-                text: "نسبت ورودی یک فروشگاه به کل",
+                text: "(BTS) سهم ترافیک شعبه",
                 style: {
                     fontSize: '25px',
                     color: '#333'
@@ -704,24 +704,77 @@
         const selectedBranches = $(".real-check:checked").map(function () {
             return $(this).val();
         }).get();
-        if (!startDate) {
-            toastr.options = {
-                    positionClass: 'toast-top-center',
-                }
-            toastr.error("بازه زمانی را انتخاب نمایید");
+        const form = document.querySelector("#filter-form");
+        const formData = new FormData(form);
+        const startDateUrl = formData.get("start-date");
+        const branchUrl = formData.getAll("branch");
+        if (!startDateUrl || startDateUrl.trim() === "") {
+            Swal.fire({
+            icon: "error",
+            title: "خطا",
+            text: "بازه زمانی مورد نظر را وارد کنید",
+            confirmButtonColor: '#5a8dee',
+            confirmButtonText: 'بستن' 
+            });
+            return;
         }
-        if (selectedBranches.length === 0 && startDate) {
+        if (document.getElementById("second-one-to-all-container").style.display === "none" && selectedBranches.length === 0 && startDate && document.getElementById("ratio-container").style.display === "block") {
             toastr.options = {
                 positionClass: 'toast-top-center',
             }
             toastr.warning("هیچ شعبه ای انتخاب نشد");
-            toastr.warning("همه شعب به صورت پیش فرض در نمودار های تجمیعی نمایش داده میشوند");
+            toastr.warning("همه شعب به صورت پیش فرض در نمودار نمایش داده میشوند");
+            document.querySelector("#select-all").checked = true;
+            document.querySelectorAll(".fake-check").forEach((el) => {
+                el.checked = true; 
+            });
         }
-        if (selectedBranches.length === 0 && !startDate) {
+        if (document.getElementById("second-one-to-all-container").style.display === "none" && selectedBranches.length === 0 && startDate && document.getElementById("second-ratio-container").style.display === "block") {
             toastr.options = {
                 positionClass: 'toast-top-center',
             }
             toastr.warning("هیچ شعبه ای انتخاب نشد");
+            toastr.warning("همه شعب به صورت پیش فرض در نمودار نمایش داده میشوند");
+            document.querySelector("#select-all").checked = true;
+            document.querySelectorAll(".fake-check").forEach((el) => {
+                el.checked = true; 
+            });
+        }
+        if (document.getElementById("one-to-all-container").style.display === "block" && branchUrl.length !== 1) {
+            Swal.fire({
+            icon: "error",
+            title: "خطا",
+            text: "برای نمایش این قسمت باید فقط یک فروشگاه انتخاب شود (کمپین ها بر اساس تاریخ نمایش داده میشوند)",
+            confirmButtonColor: '#5a8dee',
+            confirmButtonText: 'بستن' 
+            });
+        }
+        if (document.getElementById("ratio-container-multi-branch").style.display === "block" && branchUrl.length === 0) {
+            Swal.fire({
+            icon: "error",
+            title: "خطا",
+            text: "برای نمایش این قسمت باید حداقل یک فروشگاه انتخاب شود (کمپین ها بر اساس تاریخ نمایش داده میشوند)",
+            confirmButtonColor: '#5a8dee',
+            confirmButtonText: 'بستن' 
+            });
+        }
+        if (document.getElementById("second-ratio-container-multi-branch").style.display === "block" && branchUrl.length === 0) {
+            Swal.fire({
+            icon: "error",
+            title: "خطا",
+            text: "برای نمایش این قسمت باید حداقل یک فروشگاه انتخاب شود (کمپین ها بر اساس تاریخ نمایش داده میشوند)",
+            confirmButtonColor: '#5a8dee',
+            confirmButtonText: 'بستن' 
+            });
+        }
+        if (document.getElementById("second-one-to-all-container").style.display === "block" && startDate && branchUrl.length === 0) {
+            Swal.fire({
+            icon: "error",
+            title: "خطا",
+            text: "برای نمایش این قسمت باید حداقل یک فروشگاه انتخاب شود (کمپین ها بر اساس تاریخ نمایش داده میشوند)",
+            confirmButtonColor: '#5a8dee',
+            confirmButtonText: 'بستن' 
+            });
         }
         $.ajax({
             url: "/api/analysis",
@@ -755,7 +808,7 @@
                             fontSize: '20px'
                         }
                         },
-                    title: { text: "مقایسه درصد تبدیل ورودی به فاکتور",
+                    title: { text: "(BTCR) نرخ تبدیل به تفکیک شعب",
                         style: {
                             fontSize: '25px',
                             color: '#333'
@@ -862,7 +915,7 @@
                             fontSize: '20px'
                         }
                         },
-                    title: { text: "مقایسه نسبت ورودی به گردش مالی",
+                    title: { text: "(BEV) ارزش ورودی به تفکیک شعب",
                         style: {
                             fontSize: '25px',
                             color: '#333'
@@ -971,7 +1024,7 @@
                     }
                 },
                 title: {
-                    text: "مقایسه نسبت ورودی فروشگاه ها به کل",
+                    text: "(TBTS) سهم ترافیک همه شعب",
                     style: {
                         fontSize: '25px',
                         color: '#333'
@@ -1111,6 +1164,8 @@
 <script src="{% static 'assets/js/analysis-campaign-list-display-toggle.js' %}"></script>
 <!-- Button Collapse -->
 <script src="{% static 'assets/js/accordion-collapse-toggle.js' %}"></script>
+<!-- Button Color and Background -->
+ <script src="{% static 'assets/js/accordion-color-and-background.js' %}"></script>
 {% endblock %}
 
 

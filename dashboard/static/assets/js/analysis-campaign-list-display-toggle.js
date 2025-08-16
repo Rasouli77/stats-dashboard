@@ -12,7 +12,13 @@ returnBtn.addEventListener("click", () => {
     body.style.display = "none";
     returnBtn.style.display = "none";
 });
-
+// Selected Branches
+let selectedBranchesChecks = 0;
+document.querySelectorAll(".form-check-input").forEach((el) => {
+    if (el.checked === true) {
+        selectedBranchesChecks += 1;
+    }
+});
 // TCR
 // Card
 const aggConPercentCard = document.getElementById("agg-con-percent");
@@ -77,11 +83,8 @@ branchConPercentCard.addEventListener("click", () => {
     oneToAllEntryChart.style.display = "none";
     allToAllEntryChart.style.display = "none";
     returnBtn.style.display = "block";
-    if (branchConPercentChart.childNodes.length === 0) {
-        campaigns.style.display = "none";
-    } else {
-        campaigns.style.display = "block";
-    }
+    campaigns.style.display = "none";
+    campaigns.style.display = "block";
     groupedCampaigns.style.display = "none";
     instruction.style.display = "block";
     instructionForOneToAllContainer.style.display = "none";

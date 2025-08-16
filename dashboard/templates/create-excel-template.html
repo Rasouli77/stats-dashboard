@@ -71,74 +71,73 @@
 </style>
 {% endblock %}
 {% block content %}
-<div class="alert alert-success" role="alert">تمپلیت مورد نظر ساخته شد.</div>
 <div class="loading-overlay" id="loading-overlay"></div>
 <div class="container">
   <div class="row">
     <!-- Date Accordion -->
     <div class="col-xl-4 col-lg-4 col-md-12 col-sm-12" style="margin-bottom: 10px;">
-      <h6>تاریخ</h6>
-      <div class="accordion mt-3 accordion-header-primary" id="accordionDate">
-          <div class="card accordion-item">
-          <h2 class="accordion-header d-flex align-items-center">
-              <button type="button" class="accordion-button" data-bs-toggle="collapse" data-bs-target="#collapseDate" aria-expanded="true">
-              <i class="menu-icon tf-icons bx bx-calendar"></i>
-              انتخاب تاریخ
-              </button>
-          </h2>
+        <h6>تاریخ</h6>
+        <div class="accordion mt-3 accordion-header-primary" id="accordionDate">
+            <div class="card accordion-item">
+            <h2 class="accordion-header d-flex align-items-center">
+                <button type="button" class="accordion-button" data-bs-toggle="collapse" data-bs-target="#collapseDate" aria-expanded="true">
+                <i class="menu-icon tf-icons bx bx-calendar"></i>
+                انتخاب تاریخ
+                </button>
+            </h2>
 
-          <div id="collapseDate" class="accordion-collapse collapse" data-bs-parent="#accordionDate">
-              <div class="accordion-body" style="display: flex; justify-content: center; align-items: center;">
-              <div id="date-range"></div>
-              </div>
-          </div>
-          </div>
-      </div>              
+            <div id="collapseDate" class="accordion-collapse collapse" data-bs-parent="#accordionDate">
+                <div class="accordion-body" style="display: flex; justify-content: center; align-items: center; position: absolute; z-index: 1001; width: 100%; background-color: white; box-shadow: 0 0.25rem 1rem rgba(147, 158, 170, 0.45);">
+                <div id="date-range"></div>
+                </div>
+            </div>
+            </div>
+        </div>              
     </div>
     <!-- Branch Accordion -->
-    <div class="col-xl-8 col-lg-8 col-md-12 col-sm-12" style="margin-bottom: 10px;">
+    <div class="col-xl-3 col-lg-3 col-md-12 col-sm-12" style="margin-bottom: 10px;">
     <h6>شعب</h6>
-      <div class="accordion mt-3 accordion-header-primary" id="accordionBranch">
-          <div class="card accordion-item">
-          <h2 class="accordion-header d-flex align-items-center">
-              <button type="button" class="accordion-button" data-bs-toggle="collapse" data-bs-target="#collapseBranch" aria-expanded="true">
-              <i class="menu-icon tf-icons bx bx-map-alt"></i>
-              انتخاب شعب
-              </button>
-          </h2>
-
-          <div id="collapseBranch" class="accordion-collapse collapse" data-bs-parent="#accordionBranch">
-              <div class="accordion-body">
-              <div class="branches-grid mt-3">
-                  <div class="form-check mt-3">
-                      <input class="form-check-input" type="checkbox" id="select-all">
-                      <label class="form-check-label" for="defaultCheck1">انتخاب همه</label>
-                  </div>
-                  {% for branch in branches %}
-                  <div class="form-check mt-3">
-                      <input class="form-check-input fake-check" type="checkbox" value="{{ branch.pk }}">
-                      <label class="form-check-label" for="defaultCheck1">{{ branch.name }}</label>
-                  </div>
-                  {% endfor %}
-              </div>
-              </div>
-          </div>
-          </div>
-      </div>   
+        <div class="accordion mt-3 accordion-header-primary" id="accordionBranch">
+            <div class="card accordion-item">
+            <h2 class="accordion-header d-flex align-items-center">
+                <button type="button" class="accordion-button" data-bs-toggle="collapse" data-bs-target="#collapseBranch" aria-expanded="true">
+                <i class="menu-icon tf-icons bx bx-map-alt"></i>
+                انتخاب شعب
+                </button>
+            </h2>
+            <div id="collapseBranch" class="accordion-collapse collapse" data-bs-parent="#accordionBranch">
+                <div class="accordion-body" style="position: absolute; z-index: 999; width: 100%; background-color: white; box-shadow: 0 0.25rem 1rem rgba(147, 158, 170, 0.45);">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="select-all">
+                        <label class="form-check-label" for="defaultCheck1">انتخاب همه</label>
+                    </div>
+                    {% for branch in branches %}
+                    <div class="form-check">
+                        <input class="form-check-input fake-check" type="checkbox" value="{{ branch.pk }}">
+                        <label class="form-check-label" for="defaultCheck1">{{ branch.name }}</label>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            </div>
+        </div>   
     </div>
-    <form action="" method="get" id="filter-form" style="margin-bottom: 20px;">
-      <label style="display: none;" for="start-date">از تاریخ</label>
-      <input type="text" name="start-date" id="start-date" style="display: none;">
-      <label style="display: none;" for="end-date">تا</label>
-      <input type="text" name="end-date" id="end-date" style="display: none;">
-      {% for branch in branches %}
-      <div class="form-check mt-3" style="display: none;">
-          <input class="form-check-input real-check" type="checkbox" value="{{ branch.pk }}" name="branch">
-          <label class="form-check-label" for="defaultCheck1">{{ branch.name }}</label>
-      </div>
-      {% endfor %}
-      <button class="btn btn-primary btn-lg" type="submit" id="filter-proxy-button" data-bs-toggle="collapse" data-bs-target="#collapseDate">ساخت تمپلیت</button>
-    </form>
+
+    <div class="col-xl-2 col-lg-2 col-md-12 col-sm-12" style="margin-top: 20px; display: flex; justify-content: center; align-items: center;">
+        <form action="" method="get" id="filter-form" style="margin-bottom: 20px;">
+        <label style="display: none;" for="start-date">از تاریخ</label>
+        <input type="text" name="start-date" id="start-date" style="display: none;">
+        <label style="display: none;" for="end-date">تا</label>
+        <input type="text" name="end-date" id="end-date" style="display: none;">
+        {% for branch in branches %}
+        <div class="form-check mt-3" style="display: none;">
+            <input class="form-check-input real-check" type="checkbox" value="{{ branch.pk }}" name="branch">
+            <label class="form-check-label" for="defaultCheck1">{{ branch.name }}</label>
+        </div>
+        {% endfor %}
+        <button class="btn btn-primary btn-md" type="submit" id="filter-proxy-button">ساخت تمپلیت</button>
+        </form>
+    </div>
   </div>
 </div>
 {% endblock %}
@@ -155,6 +154,8 @@
 <script src="{% static 'assets/vendor/libs/flatpickr/l10n/fa-jdate.js' %}"></script>
 <script src="{% static 'assets/js/app-calendar-events.js' %}"></script>
 <script src="{% static 'assets/js/app-calendar.js' %}"></script>
+<!-- Sweet Alert CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <!-- Flat Picker Configuration / Branch Checks Configuration -->
 <script>
     flatpickr("#date-range", {
@@ -209,8 +210,34 @@
 </script>
 <!-- Alert Display Erase Configuration -->
 <script>
-    document.querySelector(".alert-success").style.display = "none";
-    document.querySelector("#filter-form").addEventListener("submit", () => {
+    document.querySelector("#filter-form").addEventListener("submit", (e) => {
+        const form = document.querySelector("#filter-form");
+        const formData = new FormData(form);
+        const startDate = formData.get("start-date");
+        const branch = formData.getAll("branch");
+        if (!startDate || startDate.trim() === "") {
+            e.preventDefault();
+            Swal.fire({
+            icon: "error",
+            title: "خطا",
+            text: "بازه زمانی مورد نظر را وارد کنید",
+            confirmButtonColor: '#5a8dee',
+            confirmButtonText: 'بستن' 
+            });
+            return;
+        }
+        if (branch.length === 0 || branch.every(b => b.trim() === "")) {
+            e.preventDefault();
+            console.log("error with branch")
+            Swal.fire({
+            icon: "error",
+            title: "خطا",
+            text: "حداقل باید یک شعبه انتخاب شود",
+            confirmButtonColor: '#5a8dee',
+            confirmButtonText: 'بستن' 
+            });
+            return;
+        }
         function eraseQuery() {
             window.addEventListener("DOMContentLoaded", function () {
             if (window.location.search) {
@@ -224,11 +251,18 @@
                 e.style.display = "none";
             })
         }
-        setTimeout(eraseQuery, 500)
-        document.querySelector(".alert-success").style.display = "block";
-        setTimeout(alertDisappear, 5000)
+        setTimeout(eraseQuery, 500);
+        Swal.fire({
+        title: "تمپلیت اکسل در حال دانلود...",
+        icon: "success",
+        confirmButtonColor: '#5a8dee',
+        confirmButtonText: 'بستن' 
+        });
+        setTimeout(alertDisappear, 5000);
     });
 </script>
+<!-- Button Collapse -->
+<script src="{% static 'assets/js/accordion-collapse-toggle.js' %}"></script>
 {% endblock %}
 
 

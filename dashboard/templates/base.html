@@ -82,7 +82,6 @@
           <div class="menu-inner-shadow"></div>
 
           <ul class="menu-inner py-1">
-            {% if permissions_to_view_branch_length > 0 or request.user.profile.is_manager %}
             <!-- Page -->
              <li class="menu-item">
               <a href="{% url 'home' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
@@ -91,25 +90,41 @@
               </a>
             </li>
             <li class="menu-item">
+              <a href="{% url 'stats_menu' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-spreadsheet"></i>
+                <div data-i18n="Page 1">آمار</div>
+              </a>
+            </li>
+            <!-- <li class="menu-item">
               <a href="{% url 'people_counter' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-chart"></i>
                 <div data-i18n="Page 1">شمارنده مشتریان</div>
               </a>
-            </li>
-            {% endif %}
+            </li> -->
             <li class="menu-item">
+              <a href="{% url 'analysis' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-chart"></i>
+                <div data-i18n="Page 2">آنالیز</div>
+              </a>
+            </li>
+            <li class="menu-item">
+              <a href="{% url 'info_menu' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-file"></i>
+                <div data-i18n="Page 1">اطلاعات</div>
+              </a>
+            </li>
+            <!-- <li class="menu-item">
               <a href="{% url 'campaign' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-calendar"></i>
                 <div data-i18n="Page 2">کمپین ها</div>
               </a>
-            </li>
+            </li> -->
             <li class="menu-item">
-              <a href="{% url 'analysis' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-layout"></i>
-                <div data-i18n="Page 2">آنالیز</div>
+              <a href="{% url 'campaign_menu' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-calendar"></i>
+                <div data-i18n="Page 2">کمپین ها</div>
               </a>
             </li>
-            {% if request.user.profile.is_manager %}
             <li class="menu-item">
                 <a href="javascript:void(0);" class="menu-link menu-toggle">
                   <i class="menu-icon tf-icons bx bx-user"></i>
@@ -128,9 +143,7 @@
                   </li>
                 </ul>
               </li>
-            {% endif %}
-            {% if perms.dashboard.add_invoice %}
-            <li class="menu-item">
+            <!-- <li class="menu-item">
                 <a href="javascript:void(0);" class="menu-link menu-toggle">
                   <i class="menu-icon tf-icons bx bx-detail"></i>
                   <div data-i18n="Invoice">اطلاعات فروش</div>
@@ -157,8 +170,7 @@
                     </a>
                   </li>
                 </ul>
-              </li>
-            {% endif %}
+              </li> -->
           </ul>
         </aside>
         <!-- / Menu -->

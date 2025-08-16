@@ -1,7 +1,7 @@
 const accordionButton = document.querySelector(".accordion-button");
-const collapseDate = document.getElementById("collapseDate")
+const collapseDate = document.getElementById("collapseDate");
 const accordionCollapse = document.querySelector(".accordion-collapse");
-const collapseBranch = document.getElementById("collapseBranch")
+const collapseBranch = document.getElementById("collapseBranch");
 document.getElementById('filter-form').addEventListener("click", () => {
     accordionButton.classList.add("collapsed");
     accordionButton.ariaExpanded = false;

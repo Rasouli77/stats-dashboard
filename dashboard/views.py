@@ -422,15 +422,18 @@ def home(request, url_hash):
     )
 
     # branch rank
-    branch_30_day_ranks = (
-        queryset.filter(date__range=(last_30_days_start, last_30_days_end))
-        .values("branch__id", "branch__name")
-        .annotate(total_entry=Sum("entry"))
-        .annotate(
-            percent_thirty=(Sum("entry") / last_30_days_entry["total_entry"]) * 100
+    try:
+        branch_30_day_ranks = (
+            queryset.filter(date__range=(last_30_days_start, last_30_days_end))
+            .values("branch__id", "branch__name")
+            .annotate(total_entry=Sum("entry"))
+            .annotate(
+                percent_thirty=(Sum("entry") / last_30_days_entry["total_entry"]) * 100
+            )
+            .order_by("-total_entry")
         )
-        .order_by("-total_entry")
-    )
+    except:
+        branch_30_day_ranks = []
     return render(
         request,
         "home.html",
@@ -1350,3 +1353,16 @@ def campaign_detail(request, campaign_id):
             "total_items": json.dumps(invoice_count_series),
         },
     )
+
+
+@login_required
+def stats_menu(request, url_hash):
+    return render(request, "stats-menu.html")
+
+
+@login_required
+def info_menu(request, url_hash):
+    return render(request, "info-menu.html")
+
+def campaign_menu(request, url_hash):
+    return render(request, "campaign-menu.html")
