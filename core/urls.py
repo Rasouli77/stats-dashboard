@@ -41,7 +41,8 @@ from dashboard.views import (
     campaign_detail,
     stats_menu,
     info_menu,
-    campaign_menu
+    campaign_menu,
+    campaign_comparison
 )
 from dashboard.api_views import (
     MultipleBranches,
@@ -76,6 +77,7 @@ urlpatterns = [
         name="edit-branch-permissions",
     ),
     path("dashboard/campaigns/<str:url_hash>", campaign, name="campaign"),
+    path("dashboard/campaign-comparison/<str:url_hash>", campaign_comparison, name="campaign_comparison"),
     path(
         "dashboard/create-campaign/<str:url_hash>",
         create_campaign,

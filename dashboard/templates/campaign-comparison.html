@@ -1,0 +1,396 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}
+    مقایسه و تحلیل کمپین ها
+{% endblock %}
+{% block meta_description %}
+    مقایسه و تحلیل کمپین ها
+{% endblock %}
+{% block extra_css %}
+<!-- Style for Calendar, FlatPicker and Toastr -->
+<link rel="stylesheet" href="{% static 'assets/vendor/libs/fullcalendar/fullcalendar.css' %}">
+<link rel="stylesheet" href="{% static 'assets/vendor/libs/flatpickr/flatpickr.css' %}">
+<link rel="stylesheet" href="{% static 'assets/vendor/css/pages/app-calendar.css' %}">
+<link rel="stylesheet" href="{% static 'assets/vendor/libs/toastr/toastr.css' %}" />
+<!-- Custom Style for FlatPicker Calendar -->
+<style>
+    .light-style .flatpickr-calendar {
+    box-shadow: none !important;
+    }
+</style>
+<!-- Custom Style for the Loading Overlay -->
+<style>
+    .loading-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+    }
+    .loader {
+        border: 8px solid #f3f3f3;
+        border-top: 8px solid #3498db;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .highcharts-credits {
+        display: none;
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="loading-overlay" id="loading-overlay">
+    <div class="loader"></div>
+</div>
+<div class="container">
+    <div class="row" style="margin-bottom: 20px;">
+        <!-- Date Accordion -->
+        <div class="col-xl-4 col-lg-4 col-md-12 col-sm-12" style="margin-bottom: 10px;">
+        <h6>تاریخ</h6>
+        <div class="accordion mt-3 accordion-header-primary" id="accordionDate">
+            <div class="card accordion-item">
+            <h2 class="accordion-header d-flex align-items-center">
+                <button type="button" class="accordion-button" data-bs-toggle="collapse" data-bs-target="#collapseDate" aria-expanded="true">
+                <i class="menu-icon tf-icons bx bx-calendar"></i>
+                انتخاب تاریخ
+                </button>
+            </h2>
+
+            <div id="collapseDate" class="accordion-collapse collapse" data-bs-parent="#accordionDate">
+                <div class="accordion-body" style="display: flex; justify-content: center; align-items: center; position: absolute; z-index: 1001; width: 100%; background-color: white; box-shadow: 0 0.25rem 1rem rgba(147, 158, 170, 0.45);">
+                <div id="date-range"></div>
+                </div>
+            </div>
+            </div>
+        </div>              
+        </div>
+        <!-- Branch Accordion -->
+        <div class="col-xl-3 col-lg-3 col-md-12 col-sm-12" style="margin-bottom: 10px;">
+        <h6>شعب</h6>
+        <div class="accordion mt-3 accordion-header-primary" id="accordionBranch">
+            <div class="card accordion-item">
+            <h2 class="accordion-header d-flex align-items-center">
+                <button type="button" class="accordion-button" data-bs-toggle="collapse" data-bs-target="#collapseBranch" aria-expanded="true">
+                <i class="menu-icon tf-icons bx bx-map-alt"></i>
+                انتخاب شعب
+                </button>
+            </h2>
+
+            <div id="collapseBranch" class="accordion-collapse collapse" data-bs-parent="#accordionBranch">
+                <div class="accordion-body" style="position: absolute; z-index: 999; width: 100%; background-color: white; box-shadow: 0 0.25rem 1rem rgba(147, 158, 170, 0.45);">
+                <div class="branches-grid mt-3">
+                    <div class="form-check mt-3">
+                        <input class="form-check-input" type="checkbox" id="select-all">
+                        <label class="form-check-label" for="defaultCheck1">انتخاب همه</label>
+                    </div>
+                    {% for branch in branches %}
+                    <div class="form-check mt-3">
+                        <input class="form-check-input fake-check" type="checkbox" value="{{ branch.pk }}">
+                        <label class="form-check-label" for="defaultCheck1">{{ branch.name }}</label>
+                    </div>
+                    {% endfor %}
+                </div>
+                </div>
+            </div>
+            </div>
+        </div>   
+        </div>
+        <!-- Dropdown Display -->
+        <div class="col-xl-2 col-lg-2 col-md-12 col-sm-12" style="margin-top: 20px; display: flex; justify-content: center; align-items: center;">
+            <form action="" method="get" id="filter-form">
+                    <label style="display: none;" for="start-date">از تاریخ</label>
+                    <input type="text" name="start-date" id="start-date" style="display: none;">
+                    <label style="display: none;" for="end-date">تا</label>
+                    <input type="text" name="end-date" id="end-date" style="display: none;">
+                    {% for branch in branches %}
+                    <div class="form-check mt-3" style="display: none;">
+                        <input class="form-check-input real-check" type="checkbox" value="{{ branch.pk }}" name="branch">
+                        <label class="form-check-label" for="defaultCheck1">{{ branch.name }}</label>
+                    </div>
+                    {% endfor %}
+                    <button class="btn btn-primary btn-md" type="submit" id="filter-proxy-button">فیلتر</button>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="card" style="padding-bottom: 130px; padding-left: 15px; padding-right: 15px;">
+    <h5 class="card-header heading-color">کمپین ها</h5>
+    <small style="margin-right: 20px;">نمایش</small>
+    <select class="form-select" id="table-display" style="margin-bottom: 40px; margin-right: 20px; width: 200px;">
+        <option value="1" selected>تجمیعی</option>
+        <option value="2">تفکیکی</option>
+    </select>
+    <button class="btn btn-primary" type="button" id="compare" style="width: 100px; margin-bottom: 40px; margin-right: 20px;">مقایسه</button>
+    <div class="table-responsive text-nowrap">
+    <form id="grouped-campaign-form" method="get">
+        <table class="table table-hover" id="grouped-campaign">
+            <thead>
+            <tr>
+                <th></th>
+                <th>نام کمپین</th>
+                <th>تاریخ شروع</th>
+                <th>تاریخ پایان</th>
+                <th>شعبه</th>
+                <th>هزینه</th>
+                <th>نوع کمپین</th>
+            </tr>
+            </thead>
+            <tbody class="table-border-bottom-0">
+                {% for campaign in grouped_campaigns %}
+                <tr>
+                    <td><input type="checkbox" name="grouped-campaign" class="grouped-campaign-check-box" value="{{ campaign.group_id }}"></td>
+                    <td><i class="align-middle fab fa-angular fa-lg text-danger me-3"></i><strong>{{ campaign.campaign_name }}</strong></td>
+                    <td class="date">{{ campaign.campaign_start_date|date:"Y-m-d" }}</td>
+                    <td class="date">
+                        {{ campaign.campaign_end_date|date:"Y-m-d"}}
+                    </td>
+                    <td>
+                        {{ campaign.branch_names }}
+                    </td>
+                    <td class="price">
+                    {{ campaign.campaign_cost|floatformat:0 }}
+                    </td>
+                    <td>
+                    {{ campaign.campaign_type }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </form>
+    <form id="campaign-form" method="get">
+        <table class="table table-hover" id="campaign" style="display: none;">
+            <thead>
+                <tr>
+                <th></th>
+                <th>نام کمپین</th>
+                <th>تاریخ شروع</th>
+                <th>تاریخ پایان</th>
+                <th>شعبه</th>
+                <th>هزینه</th>
+                <th>نوع کمپین</th>
+                </tr>
+            </thead>
+            <tbody class="table-border-bottom-0">
+                {% for campaign in campaigns %}
+                <tr>
+                <td><input type="checkbox" name="campaign" class="campaign-check-box" value="{{ campaign.pk }}"></td>
+                <td><i class="align-middle fab fa-angular fa-lg text-danger me-3"></i><strong>{{ campaign.name }}</strong></td>
+                <td class="date">{{ campaign.start_date|date:"Y-m-d" }}</td>
+                <td class="date">
+                    {{ campaign.end_date|date:"Y-m-d"}}
+                </td>
+                <td>
+                    {{ campaign.branch.name }}
+                </td>
+                <td class="price">
+                    {{ campaign.cost|floatformat:0 }}
+                </td>
+                <td>
+                    {{ campaign.campaign_type }}
+                </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </form>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/jalaali-js@1.2.8/dist/jalaali.min.js"></script>
+<!-- Gregorian Jalali Conversion Raw JavaScript -->
+<script src="{% static 'assets/js/campaign-gregorian-to-jalali-date-convert.js' %}"></script>
+<script src="{% static 'assets/js/price-separator.js' %}"></script>
+<!-- Display Toggle -->
+<script>
+    const tableDisplay = document.getElementById("table-display");
+    const groupedCampaign = document.getElementById("grouped-campaign");
+    const campaign = document.getElementById("campaign");
+    tableDisplay.addEventListener("change", () => {
+        let value = tableDisplay.value;
+        if (value == 1) {
+        campaign.style.display = "none";
+        groupedCampaign.style.display = "";
+        } else {
+            campaign.style.display = "";
+            groupedCampaign.style.display = "none";
+        }
+    });
+</script>
+<!-- Comparison Button -->
+<script>
+    const compare = document.getElementById("compare");
+    const groupedCampaignForm = document.getElementById("grouped-campaign-form");
+    const campaignForm = document.getElementById("campaign-form");
+    compare.addEventListener("click", () => {
+        if (document.getElementById("grouped-campaign").style.display !== "none") {
+            groupedCampaignForm.submit();
+        }
+        if (document.getElementById("campaign").style.display !== "none") {
+            campaignForm.submit();
+        }
+    });
+</script>
+<script src="https://cdn.jsdelivr.net/npm/jalaali-js/dist/jalaali.min.js"></script>
+<!-- JQuery and Toastr Scripts -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="{% static 'assets/vendor/libs/toastr/toastr.js' %}"></script>
+<script src="{% static 'assets/js/ui-toasts.js' %}"></script>
+<!-- FlatPicker JS (Calendar) -->
+<script src="{% static 'assets/vendor/libs/jdate/jdate.js' %}"></script>
+<script src="{% static 'assets/vendor/libs/flatpickr/flatpickr-jdate.js' %}"></script>
+<script src="{% static 'assets/vendor/libs/moment/moment.js' %}"></script>
+<script src="{% static 'assets/vendor/libs/flatpickr/l10n/fa-jdate.js' %}"></script>
+<script src="{% static 'assets/js/app-calendar-events.js' %}"></script>
+<script src="{% static 'assets/js/app-calendar.js' %}"></script>
+<!-- FlatPicker (JS Calendar) Persian Configuration / Form Checks -->
+<script src="{% static 'assets/js/persian-flatpicker-and-form-checks.js' %}"></script>
+<!-- Sweet Alert CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- Button Collapse -->
+<script src="{% static 'assets/js/accordion-collapse-toggle.js' %}"></script>
+<!-- Button Color and Background -->
+<script src="{% static 'assets/js/accordion-color-and-background.js' %}"></script>
+<script>
+    document.getElementById("filter-form").addEventListener("submit", (event) => {
+      event.preventDefault();
+      const form = document.getElementById("filter-form");
+      const formData = new FormData(form);
+      const queryString = new URLSearchParams(formData).toString();
+      const loadingOverlay = document.getElementById("loading-overlay");
+      loadingOverlay.style.display = "flex";
+      const startDateUrl = formData.get("start-date");
+      const branchUrl = formData.getAll("branch");
+      const selectedBranches = $(".real-check:checked").map(function () {
+            return $(this).val();
+        }).get();
+      if (!startDateUrl || startDateUrl.trim() === "") {
+          Swal.fire({
+          icon: "error",
+          title: "خطا",
+          text: "بازه زمانی مورد نظر را وارد کنید",
+          confirmButtonColor: '#5a8dee',
+          confirmButtonText: 'بستن' 
+          });
+          loadingOverlay.style.display = "none";
+          return;
+      }
+      if (selectedBranches.length === 0 && startDateUrl) {
+          toastr.options = {
+              positionClass: 'toast-top-center',
+          }
+          toastr.warning("هیچ شعبه ای انتخاب نشد");
+          toastr.warning("همه شعب به صورت پیش فرض نمایش داده میشوند");
+          document.querySelector("#select-all").checked = true;
+          document.querySelectorAll(".fake-check").forEach((el) => {
+              el.checked = true; 
+          });
+          loadingOverlay.style.display = "none";
+      }
+      fetch(`{% url 'campaign_comparison' url_hash=request.user.profile.merchant.url_hash %}?${queryString}`, {
+        method: "GET",
+        headers: {"X-Requested-With": "XMLHttpRequest"}
+      })
+      .then(response => {
+          if (!response.ok) throw new Error('Network response was not ok');
+          console.log("data is recieved")
+          loadingOverlay.style.display = "none";
+          return response.json()
+      })
+      .then( data => {
+        console.log(data)
+        // Grouped Campaign
+        document.querySelectorAll(".table-border-bottom-0")[0].innerHTML = "";
+        data.grouped_campaigns.forEach(campaign => {
+        const rowhtml = `
+                <tr>
+                    <td><input type="checkbox" name="grouped-campaign" class="grouped-campaign-check-box" value="${ campaign.group_id }"></td>
+                    <td><i class="align-middle fab fa-angular fa-lg text-danger me-3"></i><strong>${ campaign.campaign_name }</strong></td>
+                    <td class="greg-date">${ campaign.campaign_start_date }</td>
+                    <td class="greg-date">
+                        ${ campaign.campaign_end_date }
+                    </td>
+                    <td>
+                        ${ campaign.branch_names }
+                    </td>
+                    <td class="price">
+                        ${ campaign.campaign_cost }
+                    </td>
+                    <td>
+                        ${ campaign.campaign_type }
+                    </td>
+                </tr>
+                `
+        document.querySelectorAll(".table-border-bottom-0")[0].insertAdjacentHTML("beforeend", rowhtml);
+        });
+        // Campaign
+        document.querySelectorAll(".table-border-bottom-0")[1].innerHTML = "";
+        data.campaigns.forEach(campaign => {
+        const rowhtml = `
+                <tr>
+                    <td><input type="checkbox" name="campaign" class="grouped-campaign-check-box" value="${ campaign.id }"></td>
+                    <td><i class="align-middle fab fa-angular fa-lg text-danger me-3"></i><strong>${ campaign.name }</strong></td>
+                    <td class="greg-date">${ campaign.start_date }</td>
+                    <td class="greg-date">
+                        ${ campaign.end_date }
+                    </td>
+                    <td>
+                       ${ campaign.branch_name }
+                    </td>
+                    <td class="price">
+                        ${ campaign.cost }
+                    </td>
+                    <td>
+                        ${ campaign.campaign_type }
+                    </td>
+                </tr>
+                `
+        document.querySelectorAll(".table-border-bottom-0")[1].insertAdjacentHTML("beforeend", rowhtml);
+        });
+        },
+      )      
+      .catch((error) => {
+        console.log("Error:", error);
+        loadingOverlay.style.display = "none";
+      }
+      );
+      function jalaliDateConvertor() {
+        document.querySelectorAll(".greg-date").forEach(el => {
+        const gregorian = el.innerHTML.split("-");
+        const gYear = parseInt(gregorian[0]);
+        const gMonth = parseInt(gregorian[1]);
+        const gDay = parseInt(gregorian[2]);
+        const jdate = jalaali.toJalaali(gYear, gMonth, gDay);
+        el.innerText = `${jdate.jy}/${String(jdate.jm).padStart(2, '0')}/${String(jdate.jd).padStart(2, '0')}`;
+        });
+      }
+      function priceSeparator() {
+        document.querySelectorAll(".price").forEach(el => {
+            const rowPrice = Number(el.innerText.trim());
+            el.innerText = rowPrice.toLocaleString("fa-IR");
+        })
+      }
+      setTimeout(jalaliDateConvertor, 500)
+      setTimeout(priceSeparator, 500)
+    });
+    document.getElementById("select-all").addEventListener("change", () => {
+        const isChecked = document.getElementById("select-all").checked;
+        document.querySelectorAll(".fake-check").forEach((item) => {
+            item.checked = isChecked
+        })
+    })
+</script>
+{% endblock %}

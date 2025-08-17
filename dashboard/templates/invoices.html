@@ -268,7 +268,7 @@
                     <td>
                         ${invoice.total_items}
                     </td>
-                    <td>
+                    <td class="price">
                         ${invoice.total_amount}
                     </td>
                     <td>
@@ -295,8 +295,21 @@
         el.innerText = `${jdate.jy}/${String(jdate.jm).padStart(2, '0')}/${String(jdate.jd).padStart(2, '0')}`;
         });
       }
-      setTimeout(jalaliDateConvertor, 500)
+      function priceSeparator() {
+        document.querySelectorAll(".price").forEach(el => {
+            const rowPrice = Number(el.innerText.trim());
+            el.innerText = rowPrice.toLocaleString("fa-IR");
+        })
+      }
+      setTimeout(jalaliDateConvertor, 500);
+      setTimeout(priceSeparator, 500);
     });
+    document.getElementById("select-all").addEventListener("change", () => {
+        const isChecked = document.getElementById("select-all").checked;
+        document.querySelectorAll(".fake-check").forEach((item) => {
+            item.checked = isChecked
+        })
+    })
 </script>
 <!-- Sweet Alert CDN -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
