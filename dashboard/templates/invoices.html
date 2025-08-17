@@ -136,7 +136,7 @@
           <label class="form-check-label" for="defaultCheck1">{{ branch.name }}</label>
       </div>
       {% endfor %}
-      <button class="btn btn-primary btn-lg" type="submit" id="filter-proxy-button" data-bs-toggle="collapse" data-bs-target="#collapseDate">اعمال فیلتر</button>
+      <button class="btn btn-primary btn-md" type="submit" id="filter-proxy-button" data-bs-toggle="collapse" data-bs-target="#collapseDate">اعمال فیلتر</button>
     </form>
   </div>
 </div>
@@ -210,6 +210,34 @@
       const queryString = new URLSearchParams(formData).toString();
       const loadingOverlay = document.getElementById("loading-overlay");
       loadingOverlay.style.display = "flex";
+      const startDateUrl = formData.get("start-date");
+      const branchUrl = formData.getAll("branch");
+      const selectedBranches = $(".real-check:checked").map(function () {
+            return $(this).val();
+        }).get();
+      if (!startDateUrl || startDateUrl.trim() === "") {
+          Swal.fire({
+          icon: "error",
+          title: "خطا",
+          text: "بازه زمانی مورد نظر را وارد کنید",
+          confirmButtonColor: '#5a8dee',
+          confirmButtonText: 'بستن' 
+          });
+          loadingOverlay.style.display = "none";
+          return;
+      }
+      if (selectedBranches.length === 0 && startDateUrl) {
+          toastr.options = {
+              positionClass: 'toast-top-center',
+          }
+          toastr.warning("هیچ شعبه ای انتخاب نشد");
+          toastr.warning("همه شعب به صورت پیش فرض نمایش داده میشوند");
+          document.querySelector("#select-all").checked = true;
+          document.querySelectorAll(".fake-check").forEach((el) => {
+              el.checked = true; 
+          });
+          loadingOverlay.style.display = "none";
+      }
       fetch(`{% url 'invoices' url_hash=request.user.profile.merchant.url_hash %}?${queryString}`, {
         method: "GET",
         headers: {"X-Requested-With": "XMLHttpRequest"}
@@ -270,6 +298,10 @@
       setTimeout(jalaliDateConvertor, 500)
     });
 </script>
+<!-- Sweet Alert CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- Button Color and Background -->
+<script src="{% static 'assets/js/accordion-color-and-background.js' %}"></script>
 {% endblock %}
 
 

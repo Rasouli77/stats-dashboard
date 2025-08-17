@@ -110,13 +110,6 @@
             </div>   
             </div>
             <!-- Dropdown Display -->
-            <div class="col-xl-3 col-lg-3 col-md-12 col-sm-12" style="margin-bottom: 10px;">
-                <h6>نمایش</h6>
-                <select class="form-control" id="select-view">
-                    <option value="1">تجمیعی</option>
-                    <option value="2">مقایسه ای</option>
-                </select>
-            </div>
             <div class="col-xl-2 col-lg-2 col-md-12 col-sm-12" style="margin-top: 20px; display: flex; justify-content: center; align-items: center;">
                 <form action="" method="get" id="filter-form">
                         <label style="display: none;" for="start-date">از تاریخ</label>
@@ -167,6 +160,7 @@
             </div>
             </div>
         </div>
+        <a href="{% url 'stats_menu' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="btn btn-secondary btn-md"  id="return" style="margin-top: 25px;">بازگشت</a>
     </div>
 </div><br>
 <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" style="display: none;">
@@ -367,14 +361,54 @@
         })
     })
 </script>
-<!-- HighChart Chart Paint (Branch Separation) JQuery -->
+<!-- HighChart Chart Paint (Branch Separation) JQuery / Error Handling -->
 <script>
     $("#filter-form").on("submit", function (e) {
         const startDate = $("#start-date").val();
         const endDate = $("#end-date").val();
         const selectedBranches = $(".real-check:checked").map(function () {
             return $(this).val();
-        }).get(); 
+        }).get();
+        const form = document.querySelector("#filter-form");
+        const formData = new FormData(form);
+        const startDateUrl = formData.get("start-date");
+        const branchUrl = formData.getAll("branch");
+        if (!startDateUrl || startDateUrl.trim() === "") {
+            Swal.fire({
+            icon: "error",
+            title: "خطا",
+            text: "بازه زمانی مورد نظر را وارد کنید",
+            confirmButtonColor: '#5a8dee',
+            confirmButtonText: 'بستن' 
+            });
+            return;
+        }
+        let noCampaign;
+        if (document.getElementById("container").style.display !== "none" && selectedBranches.length === 0 && startDate) {
+            toastr.options = {
+                positionClass: 'toast-top-center',
+            }
+            toastr.warning("هیچ شعبه ای انتخاب نشد");
+            toastr.warning("همه شعب به صورت پیش فرض در نمودار نمایش داده میشوند");
+            noCampaign =  setTimeout(() => {
+                toastr.warning("برای مشاهده کمپین ها دوباره روی فیلتر کلیک کنید");
+            }, 7000);
+            document.querySelector("#select-all").checked = true;
+            document.querySelectorAll(".fake-check").forEach((el) => {
+                el.checked = true; 
+            });
+        } else {
+            clearTimeout(noCampaign)
+        }
+        if (document.getElementById("second-container").style.display !== "none" && branchUrl.length === 0) {
+            Swal.fire({
+            icon: "error",
+            title: "خطا",
+            text: "برای نمایش این قسمت باید حداقل یک فروشگاه انتخاب شود (کمپین ها بر اساس تاریخ و شعب نمایش داده میشوند)",
+            confirmButtonColor: '#5a8dee',
+            confirmButtonText: 'بستن' 
+            });
+        }
         $.ajax({
             url: "/api/multi-branch-data",
             data: {
@@ -487,23 +521,22 @@
 </script>
 <!-- Display Toggles -->
 <script>
+    const queryString = window.location.search; 
+    const urlParams = new URLSearchParams(queryString);
+    const type = urlParams.get("type")
     document.addEventListener("DOMContentLoaded", () => {
-    const selectView = document.querySelector("#select-view");
-    const secondContainer = document.querySelector("#second-container");
-    const intruction = document.querySelector("#instruction");
-    selectView.addEventListener("change", (event) => {
-     const value = event.target.value;
-     if (value === "1") {
-        container.style.display = "block";
-        secondContainer.style.display = "none";
-        intruction.style.display = "none";
-     }
-     else {
-        container.style.display = "none";
-        secondContainer.style.display = "block";
-        intruction.style.display = "block";
-     }
-    });
+        const secondContainer = document.querySelector("#second-container");
+        const intruction = document.querySelector("#instruction");
+        if (type === "1") {
+            container.style.display = "block";
+            secondContainer.style.display = "none";
+            intruction.style.display = "none";
+        }
+        else {
+            container.style.display = "none";
+            secondContainer.style.display = "block";
+            intruction.style.display = "block";
+        }
     });
 </script>
 <!-- HighChart JS -->
@@ -526,6 +559,8 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <!-- Button Collapse -->
 <script src="{% static 'assets/js/accordion-collapse-toggle.js' %}"></script>
+<!-- Button Color and Background -->
+ <script src="{% static 'assets/js/accordion-color-and-background.js' %}"></script>
 {% endblock %}
 
 

@@ -79,38 +79,30 @@
         <!-- Branch Accordion -->
         <div class="col-xl-3 col-lg-3 col-md-12 col-sm-12" style="margin-bottom: 10px;">
         <h6>شعب</h6>
-        <div class="accordion mt-3 accordion-header-primary" id="accordionBranch">
-            <div class="card accordion-item">
-            <h2 class="accordion-header d-flex align-items-center">
-                <button type="button" class="accordion-button" data-bs-toggle="collapse" data-bs-target="#collapseBranch" aria-expanded="true">
-                <i class="menu-icon tf-icons bx bx-map-alt"></i>
-                انتخاب شعب
-                </button>
-            </h2>
-            <div id="collapseBranch" class="accordion-collapse collapse" data-bs-parent="#accordionBranch">
-                <div class="accordion-body" style="position: absolute; z-index: 999; width: 100%; background-color: white; box-shadow: 0 0.25rem 1rem rgba(147, 158, 170, 0.45);">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="select-all">
-                        <label class="form-check-label" for="defaultCheck1">انتخاب همه</label>
+            <div class="accordion mt-3 accordion-header-primary" id="accordionBranch">
+                <div class="card accordion-item">
+                <h2 class="accordion-header d-flex align-items-center">
+                    <button type="button" class="accordion-button" data-bs-toggle="collapse" data-bs-target="#collapseBranch" aria-expanded="true">
+                    <i class="menu-icon tf-icons bx bx-map-alt"></i>
+                    انتخاب شعب
+                    </button>
+                </h2>
+                <div id="collapseBranch" class="accordion-collapse collapse" data-bs-parent="#accordionBranch">
+                    <div class="accordion-body" style="position: absolute; z-index: 999; width: 100%; background-color: white; box-shadow: 0 0.25rem 1rem rgba(147, 158, 170, 0.45);">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="select-all">
+                            <label class="form-check-label" for="defaultCheck1">انتخاب همه</label>
+                        </div>
+                        {% for branch in branches %}
+                        <div class="form-check">
+                            <input class="form-check-input fake-check" type="checkbox" value="{{ branch.pk }}">
+                            <label class="form-check-label" for="defaultCheck1">{{ branch.name }}</label>
+                        </div>
+                        {% endfor %}
                     </div>
-                    {% for branch in branches %}
-                    <div class="form-check">
-                        <input class="form-check-input fake-check" type="checkbox" value="{{ branch.pk }}">
-                        <label class="form-check-label" for="defaultCheck1">{{ branch.name }}</label>
-                    </div>
-                    {% endfor %}
                 </div>
-            </div>
-            </div>
-        </div>   
-        </div>
-        <!-- Dropdown Display -->
-        <div class="col-xl-3 col-lg-3 col-md-12 col-sm-12" style="margin-bottom: 10px;">
-        <h6>نمایش</h6>
-            <select class="form-control" id="select-view">
-                <option value="1">تجمیعی</option>
-                <option value="2">مقایسه ای</option>
-            </select>
+                </div>
+            </div>   
         </div>
         <div class="col-xl-2 col-lg-2 col-md-12 col-sm-12" style="margin-top: 20px; display: flex; justify-content: center; align-items: center;">
             <form action="" method="get" id="filter-form">
@@ -166,6 +158,7 @@
         </div>
         </div>
     </div>
+    <a href="{% url 'stats_menu' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="btn btn-secondary btn-md"  id="return" style="margin-top: 25px;">بازگشت</a>
 </div>
 {% endblock %}
 {% block extra_js %}
@@ -470,7 +463,6 @@
             .catch(error => {
                 console.error('Error:', error);
                 loadingOverlay.style.display = 'none';
-                alert('خطا در بارگذاری داده‌ها. لطفاً دوباره تلاش کنید.');
             });
         });
     });
@@ -489,7 +481,41 @@
         const endDate = $("#end-date").val();
         const selectedBranches = $(".real-check:checked").map(function () {
             return $(this).val();
-        }).get();  
+        }).get();
+        const form = document.querySelector("#filter-form");
+        const formData = new FormData(form);
+        const startDateUrl = formData.get("start-date");
+        const branchUrl = formData.getAll("branch");
+        if (!startDateUrl || startDateUrl.trim() === "") {
+            Swal.fire({
+            icon: "error",
+            title: "خطا",
+            text: "بازه زمانی مورد نظر را وارد کنید",
+            confirmButtonColor: '#5a8dee',
+            confirmButtonText: 'بستن' 
+            });
+            return;
+        }
+        if (document.getElementById("container").style.display !== "none" && document.getElementById("third-container").style.display !== "none" && selectedBranches.length === 0 && startDate) {
+            toastr.options = {
+                positionClass: 'toast-top-center',
+            }
+            toastr.warning("هیچ شعبه ای انتخاب نشد");
+            toastr.warning("همه شعب به صورت پیش فرض در نمودار نمایش داده میشوند");
+            document.querySelector("#select-all").checked = true;
+            document.querySelectorAll(".fake-check").forEach((el) => {
+                el.checked = true; 
+            });
+        }
+        if (document.getElementById("second-container").style.display !== "none" && document.getElementById("forth-container").style.display !== "none" && branchUrl.length === 0) {
+            Swal.fire({
+            icon: "error",
+            title: "خطا",
+            text: "برای نمایش این قسمت باید حداقل یک فروشگاه انتخاب شود (کمپین ها بر اساس تاریخ و شعب نمایش داده میشوند)",
+            confirmButtonColor: '#5a8dee',
+            confirmButtonText: 'بستن' 
+            });
+        }
         $.ajax({
             url: "/api/multi-branch-invoice-data",
             data: {
@@ -592,10 +618,6 @@
             },
             error: function (xhr) {
                 console.error("Error loading data");
-                toastr.options = {
-                    positionClass: 'toast-top-center',
-                }
-                toastr.error("بازه زمانی یا شعب را انتخاب نمایید")
             }
         });
         $.ajax({
@@ -700,39 +722,34 @@
             },
             error: function (xhr) {
                 console.error("Error loading data");
-                toastr.options = {
-                    positionClass: 'toast-top-center',
-                }
-                toastr.error("بازه زمانی یا شعب را انتخاب نمایید")
             }
         });
     });
 </script>
 <!-- Display Toggles -->
 <script>
+    const queryString = window.location.search; 
+    const urlParams = new URLSearchParams(queryString);
+    const type = urlParams.get("type")
     document.addEventListener("DOMContentLoaded", () => {
-    const selectView = document.querySelector("#select-view");
-    const secondContainer = document.querySelector("#second-container");
-    const thirdContainer = document.querySelector("#third-container");
-    const forthContainer = document.querySelector("#forth-container");
-    const intruction = document.querySelector("#instruction");
-    selectView.addEventListener("change", (event) => {
-     const value = event.target.value;
-     if (value === "1") {
-        container.style.display = "block";
-        thirdContainer.style.display = "block";
-        secondContainer.style.display = "none";
-        forthContainer.style.display = "none";
-        intruction.style.display = "none";
-     }
-     else {
-        container.style.display = "none";
-        thirdContainer.style.display = "none";
-        secondContainer.style.display = "block";
-        forthContainer.style.display = "block";
-        intruction.style.display = "block";
-     }
-    });
+        const secondContainer = document.querySelector("#second-container");
+        const thirdContainer = document.querySelector("#third-container");
+        const forthContainer = document.querySelector("#forth-container");
+        const intruction = document.querySelector("#instruction");
+        if (type === "1") {
+            container.style.display = "block";
+            thirdContainer.style.display = "block";
+            secondContainer.style.display = "none";
+            forthContainer.style.display = "none";
+            intruction.style.display = "none";
+        }
+        else {
+            container.style.display = "none";
+            thirdContainer.style.display = "none";
+            secondContainer.style.display = "block";
+            forthContainer.style.display = "block";
+            intruction.style.display = "block";
+        }
     });
 </script>
 <!-- Gregorian Jalali Conversion Raw JavaScript -->
@@ -741,6 +758,8 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <!-- Button Collapse -->
 <script src="{% static 'assets/js/accordion-collapse-toggle.js' %}"></script>
+<!-- Button Color and Background -->
+ <script src="{% static 'assets/js/accordion-color-and-background.js' %}"></script>
 {% endblock %}
 
 
