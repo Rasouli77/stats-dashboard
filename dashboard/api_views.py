@@ -1,7 +1,7 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import PeopleCounting, Branch, Invoice, PermissionToViewBranch, Campaign
-from django.db.models import Sum, Q, Min, Max
+from django.db.models import Sum, Q, Min, Max, Avg, F
 from .views import jalali_to_gregorian
 from datetime import datetime
 
@@ -289,3 +289,76 @@ class GroupedCampaigns(APIView):
             }
             campaign_list.append(dictionary)
         return Response(campaign_list)
+
+
+class GroupedCampaignComparison(APIView):
+    def get(self, request):
+        selected_grouped_campaigns = request.GET.getlist("grouped-campaign")
+        if len(selected_grouped_campaigns) > 1:
+            selected_grouped_campaigns = [int(item) for item in selected_grouped_campaigns]
+            grouped_campaigns = Campaign.objects.defer("last_modified", "date_created").filter(
+                branch__merchant__url_hash=request.user.profile.merchant.url_hash, group_id__in=selected_grouped_campaigns
+            ).values("group_id").annotate(
+                campaign_name=Min("name"),
+                campaign_start_date=Min("start_date"),
+                campaign_end_date=Max("end_date"),
+                campaign_cost=Sum("cost"),
+                campaign_type=Min("campaign_type"),
+                campaign_last_modified=Max("last_modified"),
+                campaign_group_id=Min("group_id"),
+            ).order_by("-campaign_last_modified")
+            for campaign in grouped_campaigns:
+                branch = (
+                    Campaign.objects.filter(group_id=campaign["campaign_group_id"])
+                    .values_list("branch__pk, branch__name")
+                    .distinct()
+                )
+                branch_pks, branch_names = zip(*branch) if branch else ([], [])
+                people_counting_avg = PeopleCounting.objects.filter(merchant__url_hash=request.user.profile.merchant.url_hash, date__range=(campaign["campaign_start_date"], campaign["campaign_end_date"]), branch__pk__in=list(branch_pks)).aggregate(entry_avg=Avg("entry"))
+                people_counting_avg = people_counting_avg["entry_avg"] or 0
+                invoice = Invoice.objects.filter(branch__pk__in=list(branch_pks), branch__merchant__url_hash=request.user.profile.merchant.url_hash, date__range=(campaign["campaign_start_date"], campaign["campaign_end_date"])).aggregate(invoice_number_avg=Avg("total_items"), invoice_amount_avg=Avg("total_amount"))
+                invoice_number_avg = invoice["invoice_number_avg"] or 0
+                invoice_amount_avg = invoice["invoice_amount_avg"] or 0
+                try:
+                    conversion_rate = (invoice_number_avg / people_counting_avg)*100
+                    value_per_visitor = invoice_amount_avg / people_counting_avg
+                except ZeroDivisionError as e:
+                    print(e)
+                    conversion_rate = 0
+                    value_per_visitor = 0
+                campaign["branch_names"] = ", ".join(branch_names)
+                campaign["people_counting_avg"] = people_counting_avg
+                campaign["invoice_number_avg"] = invoice_number_avg
+                campaign["invoice_amount_avg"] = invoice_amount_avg
+                campaign["conversion_rate"] = conversion_rate
+                campaign["value_per_visitor"] = value_per_visitor
+            return Response(list(grouped_campaigns))
+                
+
+class CampaignComparison(APIView):
+    def get(self, request):
+        selected_grouped_campaigns = request.GET.getlist("campaign")
+        if len(selected_grouped_campaigns) > 1:
+            selected_grouped_campaigns = [int(item) for item in selected_grouped_campaigns]
+            campaigns = Campaign.objects.defer("last_modified", "date_created").values("pk", "name", "start_date", "end_date").filter(
+                branch__merchant__url_hash=request.user.profile.merchant.url_hash, pk__in=selected_grouped_campaigns
+            ).annotate(branch_name=F("branch__name"), branch_pk=F("branch__pk"))
+            for campaign in campaigns:
+                people_counting_avg = PeopleCounting.objects.filter(merchant__url_hash=request.user.profile.merchant.url_hash, date__range=(campaign["start_date"], campaign["end_date"]), branch__pk=campaign["branch_pk"]).aggregate(entry_avg=Avg("entry"))
+                people_counting_avg = people_counting_avg["entry_avg"] or 0
+                invoice = Invoice.objects.filter(branch__pk=campaign["branch_pk"], branch__merchant__url_hash=request.user.profile.merchant.url_hash, date__range=(campaign["start_date"], campaign["end_date"])).aggregate(invoice_number_avg=Avg("total_items"), invoice_amount_avg=Avg("total_amount"))
+                invoice_number_avg = invoice["invoice_number_avg"] or 0
+                invoice_amount_avg = invoice["invoice_amount_avg"] or 0
+                try:
+                    conversion_rate = (invoice_number_avg / people_counting_avg)*100
+                    value_per_visitor = invoice_amount_avg / people_counting_avg
+                except ZeroDivisionError as e:
+                    print(e)
+                    conversion_rate = 0
+                    value_per_visitor = 0
+                campaign["people_counting_avg"] = people_counting_avg
+                campaign["invoice_number_avg"] = invoice_number_avg
+                campaign["invoice_amount_avg"] = invoice_amount_avg
+                campaign["conversion_rate"] = conversion_rate
+                campaign["value_per_visitor"] = value_per_visitor
+            return Response(list(campaigns))

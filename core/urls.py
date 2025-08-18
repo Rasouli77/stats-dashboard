@@ -50,6 +50,8 @@ from dashboard.api_views import (
     Analysis,
     GetCampaignEachPoint,
     GroupedCampaigns,
+    GroupedCampaignComparison,
+    CampaignComparison
 )
 from django.contrib.auth import views as auth_views
 from django.contrib import admin
@@ -146,6 +148,8 @@ urlpatterns = [
         name="get_campaign_each_point",
     ),
     path("api/grouped-campaigns", GroupedCampaigns.as_view(), name="grouped_campaigns"),
+    path("api/grouped-campaigns-comparison", GroupedCampaignComparison.as_view(), name="grouped_campaigns_comparison"),
+    path("api/single-campaigns-comparison", CampaignComparison.as_view(), name="campaigns_comparison"),
     path("dashboard/stats-menu/<str:url_hash>", stats_menu, name="stats_menu"),
     path("dashboard/info-menu/<str:url_hash>", info_menu, name="info_menu"),
     path("dashboard/campaign-menu/<str:url_hash>", campaign_menu, name="campaign_menu"),

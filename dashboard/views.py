@@ -1393,7 +1393,7 @@ def campaign_comparison(request, url_hash):
                 start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
                 end_date = datetime.strptime(end_date_str, "%Y-%m-%d")
                 grouped_campaigns = (
-                    Campaign.objects.filter(
+                    Campaign.objects.defer("last_modified", "date_created").filter(
                         branch__merchant__url_hash=request.user.profile.merchant.url_hash,
                     )
                     .filter(Q(start_date__lte=end_date) & Q(end_date__gte=start_date))
@@ -1409,7 +1409,7 @@ def campaign_comparison(request, url_hash):
                     )
                     .order_by("-campaign_last_modified")
                 )
-                campaigns = Campaign.objects.filter(branch__merchant__url_hash=request.user.profile.merchant.url_hash).filter(Q(start_date__lte=end_date) & Q(end_date__gte=start_date)).annotate(branch_name=F("branch__name"))
+                campaigns = Campaign.objects.defer("last_modified", "date_created").filter(branch__merchant__url_hash=request.user.profile.merchant.url_hash).filter(Q(start_date__lte=end_date) & Q(end_date__gte=start_date)).annotate(branch_name=F("branch__name"))
                 if selected_branch_str:
                     grouped_campaigns = grouped_campaigns.filter(branch__pk__in=selected_branch)
                     campaigns = campaigns.filter(branch__pk__in=selected_branch)
