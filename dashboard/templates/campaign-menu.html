@@ -45,7 +45,7 @@
 
         <!-- کارت ۳: تجزیه و تحلیل کمپین -->
         <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12">
-            <a href="#" style="text-decoration: none; color: inherit;">
+            <a href="{% url 'campaign_comparison' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" style="text-decoration: none; color: inherit;">
                 <div class="card" style="background-color: #d8faf5cc;">
                     <div class="card-body">
                         <h4 class="card-title">تجزیه و تحلیل کمپین</h4>

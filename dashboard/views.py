@@ -1384,7 +1384,7 @@ def campaign_comparison(request, url_hash):
         start_date_str = str(jalali_to_gregorian(request.GET.get("start-date")))
         end_date_str = str(jalali_to_gregorian(request.GET.get("end-date")))
         selected_branch_str = request.GET.getlist("branch")
-        selected_branch = [int(item) for item in selected_branch_str]   
+        selected_branch = [int(item) for item in selected_branch_str]
     except Exception as e:
         print(e)
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
@@ -1393,7 +1393,8 @@ def campaign_comparison(request, url_hash):
                 start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
                 end_date = datetime.strptime(end_date_str, "%Y-%m-%d")
                 grouped_campaigns = (
-                    Campaign.objects.defer("last_modified", "date_created").filter(
+                    Campaign.objects.defer("last_modified", "date_created")
+                    .filter(
                         branch__merchant__url_hash=request.user.profile.merchant.url_hash,
                     )
                     .filter(Q(start_date__lte=end_date) & Q(end_date__gte=start_date))
@@ -1409,19 +1410,43 @@ def campaign_comparison(request, url_hash):
                     )
                     .order_by("-campaign_last_modified")
                 )
-                campaigns = Campaign.objects.defer("last_modified", "date_created").filter(branch__merchant__url_hash=request.user.profile.merchant.url_hash).filter(Q(start_date__lte=end_date) & Q(end_date__gte=start_date)).annotate(branch_name=F("branch__name"))
+                campaigns = (
+                    Campaign.objects.defer("last_modified", "date_created")
+                    .filter(
+                        branch__merchant__url_hash=request.user.profile.merchant.url_hash
+                    )
+                    .filter(Q(start_date__lte=end_date) & Q(end_date__gte=start_date))
+                    .annotate(branch_name=F("branch__name"))
+                )
                 if selected_branch_str:
-                    grouped_campaigns = grouped_campaigns.filter(branch__pk__in=selected_branch)
+                    grouped_campaigns = grouped_campaigns.filter(
+                        branch__pk__in=selected_branch
+                    )
                     campaigns = campaigns.filter(branch__pk__in=selected_branch)
                 if grouped_campaigns:
                     for campaign in grouped_campaigns:
                         branch_names = (
-                            Campaign.objects.filter(group_id=campaign["campaign_group_id"])
+                            Campaign.objects.filter(
+                                group_id=campaign["campaign_group_id"]
+                            )
                             .values_list("branch__name", flat=True)
                             .distinct()
                         )
                         campaign["branch_names"] = ", ".join(branch_names)
             except Exception as e:
                 print(e)
-            return JsonResponse({"grouped_campaigns": list(grouped_campaigns), "campaigns": list(campaigns.values())})
-    return render(request, "campaign-comparison.html", {"grouped_campaigns": grouped_campaigns, "campaigns": campaigns, "branches": branches})
+            return JsonResponse(
+                {
+                    "grouped_campaigns": list(grouped_campaigns),
+                    "campaigns": list(campaigns.values()),
+                }
+            )
+    return render(
+        request,
+        "campaign-comparison.html",
+        {
+            "grouped_campaigns": grouped_campaigns,
+            "campaigns": campaigns,
+            "branches": branches,
+        },
+    )
