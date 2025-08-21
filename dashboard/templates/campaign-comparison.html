@@ -60,6 +60,19 @@
         animation: blink-border 0.5s linear infinite;
     }
 
+    #search {
+        display: flex;
+        justify-content: end;
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    #add-input-field {
+        width: 15px;
+    }
+    #input-container input {
+        margin-bottom: 20px;
+    }
 </style>
 {% endblock %}
 {% block content %}
@@ -67,9 +80,9 @@
     <div class="loader"></div>
 </div>
 <div class="container">
-    <div class="row" style="margin-bottom: 20px;">
+    <div class="row" id="search-filters" style="margin-bottom: 20px; display: none;">
         <!-- Date Accordion -->
-        <div class="col-xl-4 col-lg-4 col-md-12 col-sm-12" style="margin-bottom: 10px;">
+        <div class="col-xl-4 col-lg-4 col-md-12 col-sm-12" id="search-by-date" style="margin-bottom: 10px;">
         <h6>تاریخ</h6>
         <div class="accordion mt-3 accordion-header-primary" id="accordionDate">
             <div class="card accordion-item">
@@ -89,7 +102,7 @@
         </div>              
         </div>
         <!-- Branch Accordion -->
-        <div class="col-xl-3 col-lg-3 col-md-12 col-sm-12" style="margin-bottom: 10px;">
+        <div class="col-xl-3 col-lg-3 col-md-12 col-sm-12" id="search-by-branch" style="margin-bottom: 10px;">
         <h6>شعب</h6>
         <div class="accordion mt-3 accordion-header-primary" id="accordionBranch">
             <div class="card accordion-item">
@@ -99,7 +112,6 @@
                 انتخاب شعب
                 </button>
             </h2>
-
             <div id="collapseBranch" class="accordion-collapse collapse" data-bs-parent="#accordionBranch">
                 <div class="accordion-body" style="position: absolute; z-index: 999; width: 100%; background-color: white; box-shadow: 0 0.25rem 1rem rgba(147, 158, 170, 0.45);">
                 <div class="branches-grid mt-3">
@@ -119,8 +131,19 @@
             </div>
         </div>   
         </div>
-        <!-- Dropdown Display -->
-        <div class="col-xl-2 col-lg-2 col-md-12 col-sm-12" style="margin-top: 20px; display: flex; justify-content: center; align-items: center;">
+        <!-- Name Search -->
+        <div class="col-xl-3 col-lg-3 col-md-12 col-sm-12" id="search-by-name" style="margin-bottom: 10px;">
+            <h6>نام کمپین ها</h6>
+            <div id="search">
+                <div id="input-container">
+                    <input name="name" type="text" class="form-control" placeholder="نام کمپین">
+                    <input name="name" type="text" class="form-control" placeholder="نام کمپین">
+                </div>
+                <button id="add-input-field" class="btn btn-success">+</button>
+            </div>
+        </div>
+        <!-- Filter Button -->
+        <div class="col-xl-2 col-lg-2 col-md-12 col-sm-12" style="margin-top: 20px; display: flex; align-items: center; flex-direction: column;">
             <form action="" method="get" id="filter-form">
                     <label style="display: none;" for="start-date">از تاریخ</label>
                     <input type="text" name="start-date" id="start-date" style="display: none;">
@@ -132,9 +155,36 @@
                         <label class="form-check-label" for="defaultCheck1">{{ branch.name }}</label>
                     </div>
                     {% endfor %}
-                    <button class="btn btn-primary btn-md" type="submit" id="filter-proxy-button">فیلتر</button>
+                    <button class="btn btn-primary btn-md" type="submit" id="filter-proxy-button">جست و جو</button>
             </form>
+            <button id="return-to-search-menu" type="button" class="btn btn-secondary">بازگشت به منو</button>
         </div>
+    </div>
+    <div class="row" id="search-menu" style="margin-bottom: 40px;">
+        <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12">
+            <div class="card">
+                <div class="card-header primary-font">تاریخ و شعب</div>
+                <div class="card-body">
+                    <h5 class="card-title">جست و جو کمپین بر اساس تاریخ و شعب</h5>
+                    <p class="card-text">
+                    در این بخش می توانید کمپین های خود را بر اساس تاریخ برگزاری آنها و انتخاب یک بازه زمانی جست و جو کنید. (در صورت عدم انتخاب شعب همه شعب موجود در کمپین های نمایش داده شده در منوی تفکیکی نمایش داده می شوند)
+                    </p>
+                    <button id="search-by-date-btn" type="button" class="btn btn-primary">نمایش</button>
+                </div>
+            </div>
+        </div>  
+        <div id="search-by-time" class="col-xl-6 col-lg-6 col-md-12 col-sm-12">
+            <div class="card">
+                <div class="card-header primary-font">نام کمپین</div>
+                <div class="card-body">
+                    <h5 class="card-title">جست و جو بر اساس نام کمپین</h5>
+                    <p class="card-text">
+                    در این بخش میتوانید کمپین های خود را بر اساس نام انتخاب کرده و همه شعب حاضر در کمپین های نمایش داده شده را در منوی تفکیکی مشاهده کنید. اگر نام کمپین مورد نظر را فراموش کرده اید اما بازه اجرای آنرا بخاطر دارید از جست و جو بر اساس تاریخ و شعب کمک بگیرید. 
+                    </p>
+                    <button id="search-by-name-btn" type="button" class="btn btn-primary">نمایش</button>
+                </div>
+            </div>
+        </div>  
     </div>
 </div>
 <div class="card" style="padding-bottom: 130px; padding-left: 15px; padding-right: 15px;">
@@ -243,6 +293,41 @@
 <!-- Gregorian Jalali Conversion Raw JavaScript -->
 <script src="{% static 'assets/js/campaign-gregorian-to-jalali-date-convert.js' %}"></script>
 <script src="{% static 'assets/js/price-separator.js' %}"></script>
+<!-- Search Type Display -->
+<script>
+    document.getElementById("search-by-date-btn").addEventListener("click", () => {
+        document.getElementById("search-filters").style.display = "";
+        document.getElementById("search-menu").style.display = "none";
+        document.getElementById("search-by-name").style.display = "none";
+        document.getElementById("search-by-date").style.display = "";
+        document.getElementById("search-by-branch").style.display = "";
+        document.getElementById("return-to-search-menu").style.marginTop = "40px";
+    });
+    document.getElementById("search-by-name-btn").addEventListener("click", () => {
+        document.getElementById("search-filters").style.display = "";
+        document.getElementById("search-menu").style.display = "none";
+        document.getElementById("search-by-date").style.display = "none";
+        document.getElementById("search-by-branch").style.display = "none";
+        document.getElementById("search-by-name").style.display = "";
+        document.getElementById("return-to-search-menu").style.marginTop = "40px";
+    });
+    document.getElementById("return-to-search-menu").addEventListener("click", () => {
+        document.getElementById("search-filters").style.display = "none";
+        document.getElementById("search-menu").style.display = "";
+    });
+</script>
+<!-- Add Text Input / Search Form -->
+<script>
+    document.getElementById("add-input-field").addEventListener("click", () => {
+        const newInput = document.createElement("input");
+        newInput.name = "name";
+        newInput.type = "text";
+        newInput.classList.add("form-control");
+        newInput.placeholder = "نام کمپین"
+        const inputContainer = document.getElementById("input-container");
+        inputContainer.appendChild(newInput);
+    });
+</script>
 <!-- Display Toggle -->
 <script>
     const tableDisplay = document.getElementById("table-display");
@@ -293,21 +378,51 @@
 <script src="{% static 'assets/js/accordion-collapse-toggle.js' %}"></script>
 <!-- Button Color and Background -->
 <script src="{% static 'assets/js/accordion-color-and-background.js' %}"></script>
-<!-- Campaign Display Filter -->
+<!-- Campaign Display Filter / Error Handling-->
 <script>
     document.getElementById("filter-form").addEventListener("submit", (event) => {
         event.preventDefault();
         const form = document.getElementById("filter-form");
         const formData = new FormData(form);
-        const queryString = new URLSearchParams(formData).toString();
+        document.querySelector("#search").querySelectorAll("input").forEach((input) => {
+            if (input.value.trim() !== "") {
+                formData.append(input.name, input.value.trim());
+            }
+        });
         const loadingOverlay = document.getElementById("loading-overlay");
         loadingOverlay.style.display = "flex";
         const startDateUrl = formData.get("start-date");
+        const endDateUrl = formData.get("end-date");
         const branchUrl = formData.getAll("branch");
+        const names = formData.getAll("name");
+        if (document.getElementById("search-by-date").style.display !== "none") {
+            if (names.length !== 0) {
+                formData.delete("name");
+            }
+        }
+        if (document.getElementById("search-by-name").style.display !== "none") {
+            if (startDateUrl && endDateUrl) {
+                formData.delete("start-date");
+                formData.delete("end-date");
+                formData.delete("branch");
+            }
+        }
+        const queryString = new URLSearchParams(formData).toString();
         const selectedBranches = $(".real-check:checked").map(function () {
             return $(this).val();
         }).get();
-        if (!startDateUrl || startDateUrl.trim() === "") {
+        if (names.length === 0 && document.getElementById("search-by-name").style.display !== "none") {
+            Swal.fire({
+            icon: "error",
+            title: "خطا",
+            text: "نام کمپین نمی تواند خالی باشد.",
+            confirmButtonColor: '#5a8dee',
+            confirmButtonText: 'بستن' 
+            });
+            loadingOverlay.style.display = "none";
+            return; 
+        }
+        if ((!startDateUrl || startDateUrl.trim() === "") && document.getElementById("search-by-date").style.display !== "none") {
             Swal.fire({
             icon: "error",
             title: "خطا",
@@ -318,7 +433,7 @@
             loadingOverlay.style.display = "none";
             return;
         }
-        if (selectedBranches.length === 0 && startDateUrl) {
+        if (selectedBranches.length === 0 && startDateUrl && document.getElementById("search-by-date").style.display !== "none") {
             toastr.options = {
                 positionClass: 'toast-top-center',
             }
@@ -341,9 +456,20 @@
         })
         .then(data => {
         // Grouped Campaign
+        console.log(data)
+        let campaignCount = data.grouped_campaigns.length;
+        if (campaignCount === 0) {
+            Swal.fire({
+            icon: "error",
+            title: "خطا",
+            text: "کمپین یافت نشد",
+            confirmButtonColor: '#5a8dee',
+            confirmButtonText: 'بستن' 
+            });
+        }
         document.querySelectorAll(".table-border-bottom-0")[0].innerHTML = "";
         data.grouped_campaigns.forEach(campaign => {
-        const rowhtml = `
+            const rowhtml = `
                 <tr>
                     <td><input type="checkbox" name="grouped-campaign" class="grouped-campaign-check-box" value="${ campaign.group_id }"></td>
                     <td><i class="align-middle fab fa-angular fa-lg text-danger me-3"></i><strong>${ campaign.campaign_name }</strong></td>
@@ -362,12 +488,12 @@
                     </td>
                 </tr>
                 `
-        document.querySelectorAll(".table-border-bottom-0")[0].insertAdjacentHTML("beforeend", rowhtml);
-        });
-        // Campaign
-        document.querySelectorAll(".table-border-bottom-0")[1].innerHTML = "";
-        data.campaigns.forEach(campaign => {
-        const rowhtml = `
+                document.querySelectorAll(".table-border-bottom-0")[0].insertAdjacentHTML("beforeend", rowhtml);
+            });
+            // Campaign
+            document.querySelectorAll(".table-border-bottom-0")[1].innerHTML = "";
+            data.campaigns.forEach(campaign => {
+            const rowhtml = `
                 <tr>
                     <td><input type="checkbox" name="campaign" class="grouped-campaign-check-box" value="${ campaign.id }"></td>
                     <td><i class="align-middle fab fa-angular fa-lg text-danger me-3"></i><strong>${ campaign.name }</strong></td>
@@ -386,13 +512,16 @@
                     </td>
                 </tr>
                 `
-        document.querySelectorAll(".table-border-bottom-0")[1].insertAdjacentHTML("beforeend", rowhtml);
+            document.querySelectorAll(".table-border-bottom-0")[1].insertAdjacentHTML("beforeend", rowhtml);
         });
         },
         )      
         .catch((error) => {
-        console.log("Error:", error);
+        console.log("Error:", error.error);
         loadingOverlay.style.display = "none";
+            loadingOverlay.style.display = "none";
+            console.log("hi")
+            return; 
         }
         );
         function jalaliDateConvertor() {
@@ -459,7 +588,7 @@
                         <td>
                             ${campaign.branch_name}
                         </td>
-                        <td class="price">
+                        <td class="cprice">
                             ${campaign.cost}
                         </td>
                         <td>
@@ -468,7 +597,7 @@
                         <td>
                             ${campaign.people_counting_avg}
                         </td>
-                        <td class="price">
+                        <td class="cprice">
                             ${campaign.invoice_amount_avg}
                         </td>
                         <td>
@@ -477,7 +606,7 @@
                         <td>
                             ${campaign.conversion_rate}
                         </td>
-                        <td class="price">
+                        <td class="cprice">
                             ${campaign.value_per_visitor}
                         </td>
                     </tr>
@@ -497,7 +626,7 @@
             }
         });
         function priceSeparator() {
-            document.querySelectorAll(".price").forEach(el => {
+            document.querySelectorAll(".cprice").forEach(el => {
                 const rowPrice = Number(el.innerHTML.trim());
                 el.innerHTML = rowPrice.toLocaleString("fa-IR");
             });
@@ -542,7 +671,7 @@
                         <td>
                             ${campaign.branch_names}
                         </td>
-                        <td class="price">
+                        <td class="cprice">
                             ${campaign.campaign_cost}
                         </td>
                         <td>
@@ -551,7 +680,7 @@
                         <td>
                             ${campaign.people_counting_avg}
                         </td>
-                        <td class="price">
+                        <td class="cprice">
                             ${campaign.invoice_amount_avg}
                         </td>
                         <td>
@@ -560,7 +689,7 @@
                         <td>
                             ${campaign.conversion_rate}
                         </td>
-                        <td class="price">
+                        <td class="cprice">
                             ${campaign.value_per_visitor}
                         </td>
                     </tr>
@@ -580,7 +709,7 @@
             }
         });
         function priceSeparator() {
-            document.querySelectorAll(".price").forEach(el => {
+            document.querySelectorAll(".cprice").forEach(el => {
                 const rowPrice = Number(el.innerHTML.trim());
                 el.innerHTML = rowPrice.toLocaleString("fa-IR");
             });
@@ -590,4 +719,5 @@
         setTimeout(() => {document.querySelectorAll("thead")[2].classList.remove("blink-border")}, 2000);
     });
 </script>
+<!-- Campaign Existence -->
 {% endblock %}
