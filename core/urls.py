@@ -24,7 +24,6 @@ from dashboard.views import (
     generate_user,
     user_permissions,
     home,
-    test,
     profile,
     branch_permissions,
     campaign,
@@ -56,9 +55,9 @@ from dashboard.api_views import (
 from django.contrib.auth import views as auth_views
 from django.contrib import admin
 
-admin.site.site_header = "پنل مدیریت فروشگاه"
-admin.site.site_title = "وب‌پوش | مدیریت"
-admin.site.index_title = "خوش آمدید به بخش مدیریت"
+admin.site.site_header = "پنل مدیریت اسپات لاین"
+admin.site.site_title = "پنل مدیریت اسپات لاین"
+admin.site.index_title = "پنل مدیریت اسپات لاین"
 
 
 urlpatterns = [
@@ -153,5 +152,4 @@ urlpatterns = [
     path("dashboard/stats-menu/<str:url_hash>", stats_menu, name="stats_menu"),
     path("dashboard/info-menu/<str:url_hash>", info_menu, name="info_menu"),
     path("dashboard/campaign-menu/<str:url_hash>", campaign_menu, name="campaign_menu"),
-    path("test/", test, name="test"),
 ]

@@ -492,50 +492,6 @@ def profile(request, user_id):
     return render(request, "401.html", status=401)
 
 
-def ping_ip(ip, timeout=15):
-    try:
-        result = subprocess.run(
-            ["ping", "-c", "1", "-W", str(timeout), ip],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            timeout=timeout + 2,  # Overall timeout to avoid hanging
-        )
-        return result.returncode == 0
-    except subprocess.TimeoutExpired:
-        return False
-    except Exception as e:
-        return False
-
-
-def test(request):
-    today = timezone.now().date()
-    raw_yesterday = today - timedelta(days=1)
-    yesterday = raw_yesterday.strftime("%Y-%m-%d")
-    cams = Cam.objects.select_related("merchant", "branch").all()
-    ips = []
-    for cam in cams:
-        ips.append(
-            {
-                "ip": cam.ip,
-                "cam_id": cam.pk,
-                "merchant_id": cam.merchant.pk,
-                "branch_id": cam.branch.pk,
-            }
-        )
-    for ip in ips:
-        if ping_ip(ip["ip"]):
-            try:
-                data = get_custom_date_camera_data(ip["ip"], yesterday, yesterday)
-                update_or_create_camera_data(
-                    data, ip["cam_id"], ip["merchant_id"], ip["branch_id"]
-                )
-            except Exception as e:
-                print(e)
-        else:
-            print(f"This ip has a problem: {ip['ip']}")
-    return render(request, "landing.html")
-
-
 @login_required
 def campaign(request, url_hash):
     """A full list of campaigns if allowed"""
@@ -1392,31 +1348,31 @@ def campaign_comparison(request, url_hash):
         if names:
             try:
                 grouped_campaigns = (
-                        Campaign.objects.defer("last_modified", "date_created")
-                        .filter(
-                            branch__merchant__url_hash=request.user.profile.merchant.url_hash,
-                        )
-                        .filter(name__in=names)
-                        .values("group_id")
-                        .annotate(
-                            campaign_name=Min("name"),
-                            campaign_start_date=Min("start_date"),
-                            campaign_end_date=Max("end_date"),
-                            campaign_cost=Sum("cost"),
-                            campaign_type=Min("campaign_type"),
-                            campaign_last_modified=Max("last_modified"),
-                            campaign_group_id=Min("group_id"),
-                        )
-                        .order_by("-campaign_last_modified")
+                    Campaign.objects.defer("last_modified", "date_created")
+                    .filter(
+                        branch__merchant__url_hash=request.user.profile.merchant.url_hash,
                     )
+                    .filter(name__in=names)
+                    .values("group_id")
+                    .annotate(
+                        campaign_name=Min("name"),
+                        campaign_start_date=Min("start_date"),
+                        campaign_end_date=Max("end_date"),
+                        campaign_cost=Sum("cost"),
+                        campaign_type=Min("campaign_type"),
+                        campaign_last_modified=Max("last_modified"),
+                        campaign_group_id=Min("group_id"),
+                    )
+                    .order_by("-campaign_last_modified")
+                )
                 campaigns = (
-                        Campaign.objects.defer("last_modified", "date_created")
-                        .filter(
-                            branch__merchant__url_hash=request.user.profile.merchant.url_hash
-                        )
-                        .filter(name__in=names)
-                        .annotate(branch_name=F("branch__name"))
+                    Campaign.objects.defer("last_modified", "date_created")
+                    .filter(
+                        branch__merchant__url_hash=request.user.profile.merchant.url_hash
                     )
+                    .filter(name__in=names)
+                    .annotate(branch_name=F("branch__name"))
+                )
                 if grouped_campaigns:
                     for campaign in grouped_campaigns:
                         branch_names = (
@@ -1481,7 +1437,7 @@ def campaign_comparison(request, url_hash):
                         )
                         campaign["branch_names"] = ", ".join(branch_names)
             except Exception as e:
-                    print(e)
+                print(e)
             return JsonResponse(
                 {
                     "grouped_campaigns": list(grouped_campaigns),

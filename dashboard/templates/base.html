@@ -95,12 +95,6 @@
                 <div data-i18n="Page 1">آمار</div>
               </a>
             </li>
-            <!-- <li class="menu-item">
-              <a href="{% url 'people_counter' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-chart"></i>
-                <div data-i18n="Page 1">شمارنده مشتریان</div>
-              </a>
-            </li> -->
             <li class="menu-item">
               <a href="{% url 'analysis' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-chart"></i>
@@ -113,12 +107,6 @@
                 <div data-i18n="Page 1">اطلاعات</div>
               </a>
             </li>
-            <!-- <li class="menu-item">
-              <a href="{% url 'campaign' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-calendar"></i>
-                <div data-i18n="Page 2">کمپین ها</div>
-              </a>
-            </li> -->
             <li class="menu-item">
               <a href="{% url 'campaign_menu' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-calendar"></i>
@@ -143,34 +131,6 @@
                   </li>
                 </ul>
               </li>
-            <!-- <li class="menu-item">
-                <a href="javascript:void(0);" class="menu-link menu-toggle">
-                  <i class="menu-icon tf-icons bx bx-detail"></i>
-                  <div data-i18n="Invoice">اطلاعات فروش</div>
-                </a>
-                <ul class="menu-sub">
-                  <li class="menu-item">
-                    <a href="{% url 'invoices' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
-                      <div data-i18n="List">مشاهده</div>
-                    </a>
-                  </li>
-                  <li class="menu-item">
-                    <a href="{% url 'invoice_counter' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
-                      <div data-i18n="List">شمارنده</div>
-                    </a>
-                  </li>
-                  <li class="menu-item">
-                    <a href="{% url 'upload_excel_file_invoice' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
-                      <div data-i18n="List">آپلود</div>
-                    </a>
-                  </li>
-                  <li class="menu-item">
-                    <a href="{% url 'excel_template_generator' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
-                      <div data-i18n="List">تمپلیت</div>
-                    </a>
-                  </li>
-                </ul>
-              </li> -->
           </ul>
         </aside>
         <!-- / Menu -->
