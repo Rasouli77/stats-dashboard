@@ -11,7 +11,9 @@ from .models import (
     Campaign,
     UserProfile,
     PermissionToViewBranch,
-    Invoice
+    Invoice,
+    HolidayDate,
+    HolidayDescription
 )
 from rangefilter.filters import DateRangeFilter
 
@@ -143,6 +145,14 @@ class InvoiceAdmin(admin.ModelAdmin):
     exclude = ["date_created"]
     list_per_page = 75
 
+class HolidayDescriptionAdminInline(admin.TabularInline):
+    model = HolidayDescription
+    readonly_fields = ["description"]
+    extra = 0
+
+class HolidayDateAdmin(admin.ModelAdmin):
+    inlines = [HolidayDescriptionAdminInline]
+    readonly_fields = ["date"]
 
 admin.site.register(PeopleCounting, PeopleCountingAdmin)
 admin.site.register(Cam, CamAdmin)
@@ -156,4 +166,6 @@ admin.site.register(Merchant, MerchantAdmin)
 admin.site.register(UserProfile, UserProfileAdmin)
 admin.site.register(PermissionToViewBranch, PermissionToViewBranchAdmin)
 admin.site.register(Invoice, InvoiceAdmin)
+admin.site.register(HolidayDate, HolidayDateAdmin)
+admin.site.register(HolidayDescription)
 

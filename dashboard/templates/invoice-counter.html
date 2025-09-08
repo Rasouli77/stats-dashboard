@@ -168,10 +168,10 @@
 <script src="{% static 'assets/vendor/libs/toastr/toastr.js' %}"></script>
 <script src="{% static 'assets/js/ui-toasts.js' %}"></script>
 <!-- HighChart JS -->
-<script src="https://code.highcharts.com/highcharts.js"></script>
-<script src="https://code.highcharts.com/modules/exporting.js"></script>
-<script src="https://code.highcharts.com/modules/export-data.js"></script>
-<script src="https://code.highcharts.com/modules/accessibility.js"></script>
+<script src="{% static 'assets/js/highcharts.js' %}"></script>
+<script src="{% static 'assets/js/exporting.js' %}"></script>
+<script src="{% static 'assets/js/export-data.js' %}"></script>
+<script src="{% static 'assets/js/accessibility.js' %}"></script>
 <!-- FlatPicker JS (Calendar) -->
 <script src="{% static 'assets/vendor/libs/jdate/jdate.js' %}"></script>
 <script src="{% static 'assets/vendor/libs/flatpickr/flatpickr-jdate.js' %}"></script>
@@ -181,6 +181,26 @@
 <script src="{% static 'assets/js/app-calendar.js' %}"></script>
 <!-- FlatPicker (JS Calendar) Persian Configuration / Form Checks -->
 <script src="{% static 'assets/js/persian-flatpicker-and-form-checks.js' %}"></script>
+<!-- Holiday Spotter -->
+<script>
+    const holidayDates = []
+     $("#filter-form").on("submit", function (e) {
+        const startDate = $("#start-date").val();
+        const endDate = $("#end-date").val();
+        $.ajax({
+            url: "/api/holiday-spot",
+            data: {
+                "start-date": startDate,
+                "end-date": endDate
+            },
+            traditional: true,
+            success: function (data) {
+                data.forEach(item => {holidayDates.push(item.date)});
+                console.log(holidayDates);
+            }
+        });
+    });
+</script>
 <!-- HighChart Chart Paint (Invoice Aggregation) Raw JavaScript -->
 <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -220,7 +240,17 @@
                         fontSize: '20px',
                         fontWeight: 'bold'
                         }
-                    }
+                    },
+                    labels: {
+                        useHTML: true,  
+                        formatter: function () {
+                                const value = this.value; 
+                                if (holidayDates.includes(value)) {
+                                    return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                }
+                                    return value; 
+                            }
+                        } 
                 },
                 yAxis: {
                     title: {
@@ -249,7 +279,7 @@
                                             "Content-Type": "application/json",
                                             "X-CSRFToken": csrftoken,
                                         },
-                                        body: JSON.stringify({date: date, branch: branch})
+                                        body: JSON.stringify({date: date, branch: branch.replace(/\(.*?\)/, "").trim()})
                                     }).then(response => {
                                         if (!response.ok) throw new Error("Invalid Response");
                                         return response.json()
@@ -313,7 +343,17 @@
                         fontSize: '20px',
                         fontWeight: 'bold'
                         }
-                    }
+                    },
+                    labels: {
+                        useHTML: true,  
+                        formatter: function () {
+                                const value = this.value; 
+                                if (holidayDates.includes(value)) {
+                                    return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                }
+                                    return value; 
+                            }
+                        } 
                 },
                 yAxis: {
                     title: {
@@ -342,7 +382,7 @@
                                             "Content-Type": "application/json",
                                             "X-CSRFToken": csrftoken,
                                         },
-                                        body: JSON.stringify({date: date, branch: branch})
+                                        body: JSON.stringify({date: date, branch: branch.replace(/\(.*?\)/, "").trim()})
                                     }).then(response => {
                                         if (!response.ok) throw new Error("Invalid Response");
                                         return response.json()
@@ -395,6 +435,7 @@
                 return response.json();
             })
             .then(data => {
+                const totalAmount = data.total_amount.reduce((a, b) => a + b, 0);
                 const newCategories = data.dates.map(dateStr => {
                     const date = new Date(dateStr);
                     return date.toLocaleDateString('fa-IR', {
@@ -405,13 +446,37 @@
                 });
 
                 lineChart.update({
-                    xAxis: { categories: newCategories },
-                    series: [{ data: data.total_amount}
+                    xAxis: { 
+                        categories: newCategories, 
+                        labels: {
+                            useHTML: true,  
+                            formatter: function () {
+                                    const value = this.value; 
+                                    if (holidayDates.includes(value)) {
+                                        return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                    }
+                                        return value; 
+                                }
+                            } 
+                    },
+                    series: [{name: `فروش (${Number(totalAmount).toLocaleString('fa-IR')})`, data: data.total_amount}
                     ],
                 });
 
                 thirdLineChart.update({
-                    xAxis: { categories: newCategories },
+                    xAxis: { 
+                        categories: newCategories,
+                        labels: {
+                            useHTML: true,  
+                            formatter: function () {
+                                    const value = this.value; 
+                                    if (holidayDates.includes(value)) {
+                                        return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                    }
+                                        return value; 
+                                }
+                            } 
+                    },
                     series: [{ data: data.total_items }]
                 });
                 
@@ -534,10 +599,13 @@
                     day: '2-digit'
                 });
                 });
-                const series = Object.entries(data.invoice_data).map(([id, invoiceData]) => ({
-                    name: invoiceData.name,
+                const series = Object.entries(data.invoice_data).map(([id, invoiceData]) => {
+                    const totalSAmount = invoiceData.total_amounts.reduce((a, b) => a + b, 0);
+                    return {
+                    name: `${invoiceData.name} (${Number(totalSAmount).toLocaleString('fa-IR')})`,
                     data: invoiceData.total_amounts
-                }));
+                    }
+                });
                 Highcharts.chart("second-container", {
                     chart: { type: "line",
                         backgroundColor: '#f9f9f9',
@@ -559,8 +627,18 @@
                         fontSize: '20px',
                         fontWeight: 'bold'
                         }
-                    }
-                        },
+                    },
+                    labels: {
+                        useHTML: true,  
+                        formatter: function () {
+                                const value = this.value; 
+                                if (holidayDates.includes(value)) {
+                                    return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                }
+                                    return value; 
+                            }
+                        } 
+                    },
                     yAxis: { title: { text: "فروش",
                         style: {
                             fontSize: '20px',
@@ -587,7 +665,7 @@
                                                 "Content-Type": "application/json",
                                                 "X-CSRFToken": csrftoken,
                                             },
-                                            body: JSON.stringify({date: date, branch: branch})
+                                            body: JSON.stringify({date: date, branch: branch.replace(/\(.*?\)/, "").trim()})
                                         }).then(response => {
                                             if (!response.ok) throw new Error("Invalid Response");
                                             return response.json()
@@ -663,8 +741,18 @@
                         fontSize: '20px',
                         fontWeight: 'bold'
                         }
-                    }
-                        },
+                    },
+                    labels: {
+                        useHTML: true,  
+                        formatter: function () {
+                                const value = this.value; 
+                                if (holidayDates.includes(value)) {
+                                    return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                }
+                                    return value; 
+                            }
+                        } 
+                    },
                     yAxis: { title: { text: "تعداد فاکتور",
                         style: {
                             fontSize: '20px',
@@ -761,5 +849,7 @@
 <!-- Button Color and Background -->
  <script src="{% static 'assets/js/accordion-color-and-background.js' %}"></script>
 {% endblock %}
+
+
 
 

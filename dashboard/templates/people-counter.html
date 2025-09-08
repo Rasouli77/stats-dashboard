@@ -171,6 +171,27 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="{% static 'assets/vendor/libs/toastr/toastr.js' %}"></script>
 <script src="{% static 'assets/js/ui-toasts.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment-jalaali@0.10.4/build/moment-jalaali.min.js"></script>
+<!-- Holiday Spotter -->
+<script>
+    const holidayDates = []
+     $("#filter-form").on("submit", function (e) {
+        const startDate = $("#start-date").val();
+        const endDate = $("#end-date").val();
+        $.ajax({
+            url: "/api/holiday-spot",
+            data: {
+                "start-date": startDate,
+                "end-date": endDate
+            },
+            traditional: true,
+            success: function (data) {
+                data.forEach(item => {holidayDates.push(item.date)});
+                console.log(holidayDates);
+            }
+        });
+    });
+</script>
 <!-- HighChart Chart Paint (Aggregation) Raw JavaScript / Invoices Paint Display Raw Javascript -->
 <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -201,6 +222,10 @@
                 color: '#333'
             }
         },
+        subtitle: {
+            text: 'ترافیک روزانه شعب',
+            style: { color: '#666', fontSize: '12px' }
+        },
         xAxis: {
             categories: categories,
             title: {
@@ -220,8 +245,25 @@
                 }
             }
         },
+        tooltip: {
+            backgroundColor: 'white',
+            borderColor: '#ccc',
+            borderRadius: 8,
+            shadow: true,
+            style: { fontSize: '15px' },
+            shared: true, 
+        },
         plotOptions: {
             series: {
+                lineWidth: 3, 
+                marker: {
+                    enabled: true,
+                    radius: 5,
+                    states: { hover: { radius: 7.5 } }
+                },
+                states: {
+                    hover: { lineWidthPlus: 1 }
+                },
                 point: {
                     events: {
                         click: function () {
@@ -266,13 +308,12 @@
             }
         },
         series: [
-            {
-                name: "ترافیک",
+            {   
+                name: `ترافیک`,
                 data: entry_totals
             }
         ]
-    });
-
+        });
         document.getElementById('filter-form').addEventListener('submit', function(event) {
             event.preventDefault(); 
             const form = this;
@@ -289,6 +330,7 @@
                 return response.json();
             })
             .then(data => {
+                const total = data.entry_totals.reduce((a, b) => a + b, 0);
                 const newCategories = data.dates.map(dateStr => {
                     const date = new Date(dateStr);
                     return date.toLocaleDateString('fa-IR', {
@@ -298,8 +340,20 @@
                     });
                 });
                 lineChart.update({
-                    xAxis: { categories: newCategories },
-                    series: [{ data: data.entry_totals},
+                    xAxis: { 
+                        categories: newCategories,
+                        labels: {
+                            useHTML: true,  
+                            formatter: function () {
+                                    const value = this.value; 
+                                    if (holidayDates.includes(value)) {
+                                        return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                    }
+                                        return value; 
+                                }
+                            } 
+                        },
+                    series: [{ name: `ترافیک (${Number(total).toLocaleString('fa-IR')})`, data: data.entry_totals},
                     {data: data.exit_totals}
                     ],
                 });
@@ -427,10 +481,14 @@
                     day: '2-digit'
                 });
                 });
-                const series = Object.entries(data.branches).map(([id, branchData]) => ({
-                    name: branchData.name,
+                console.log(rawCategories);
+                const series = Object.entries(data.branches).map(([id, branchData]) => {
+                    const total = branchData.entry_totals.reduce((a, b) => a + b, 0);
+                    return {
+                    name: `${branchData.name} (${Number(total).toLocaleString('fa-IR')})`,
                     data: branchData.entry_totals
-                }));
+                    }
+                });
                 Highcharts.chart("second-container", {
                     chart: { type: "line",
                         backgroundColor: '#f9f9f9',
@@ -452,7 +510,17 @@
                         fontSize: '20px',
                         fontWeight: 'bold'
                             }
-                        }
+                        },
+                        labels: {
+                            useHTML: true,  
+                            formatter: function () {
+                                    const value = this.value; 
+                                    if (holidayDates.includes(value)) {
+                                        return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                    }
+                                        return value; 
+                                }
+                            } 
                         },
                     yAxis: { title: { text: "ترافیک",
                         style: {
@@ -480,7 +548,7 @@
                                                 "Content-Type": "application/json",
                                                 "X-CSRFToken": csrftoken,
                                             },
-                                            body: JSON.stringify({date: date, branch: branch})
+                                            body: JSON.stringify({date: date, branch: branch.replace(/\(.*?\)/, "").trim()})
                                         }).then(response => {
                                             if (!response.ok) throw new Error("Invalid Response");
                                             return response.json()
@@ -493,7 +561,7 @@
                                                 htmlCampaigns = `<p>هیچ کمپینی یافت نشد.</p>`
                                             }
                                             Swal.fire({
-                                            html: `<h3 style='margin-bottom: 0px;'>${this.y}</h3><p style='margin-bottom: 0px; margin-top: 0px;'>${this.series.name}</p><p style='margin-top: 0px;'>${this.category}</p>
+                                            html: `<h3 style='margin-bottom: 0px;'>${this.y}</h3><p style='margin-bottom: 0px; margin-top: 0px;'>${this.series.name.replace(/\(.*?\)/, "").trim()}</p><p style='margin-top: 0px;'>${this.category}</p>
                                             <p style='margin-bottom: 0px;'>کمپین ها:</p>
                                             ${htmlCampaigns}
                                             `,
@@ -536,10 +604,10 @@
     });
 </script>
 <!-- HighChart JS -->
-<script src="https://code.highcharts.com/highcharts.js"></script>
-<script src="https://code.highcharts.com/modules/exporting.js"></script>
-<script src="https://code.highcharts.com/modules/export-data.js"></script>
-<script src="https://code.highcharts.com/modules/accessibility.js"></script>
+<script src="{% static 'assets/js/highcharts.js' %}"></script>
+<script src="{% static 'assets/js/exporting.js' %}"></script>
+<script src="{% static 'assets/js/export-data.js' %}"></script>
+<script src="{% static 'assets/js/accessibility.js' %}"></script>
 <!-- FlatPicker JS (Calendar) -->
 <script src="{% static 'assets/vendor/libs/jdate/jdate.js' %}"></script>
 <script src="{% static 'assets/vendor/libs/flatpickr/flatpickr-jdate.js' %}"></script>

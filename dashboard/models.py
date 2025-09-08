@@ -323,3 +323,29 @@ class Invoice(models.Model):
 
     def __str__(self):
         return f"{self.pk}"
+    
+
+class HolidayDate(models.Model):
+    gregorian_date = models.DateField(null=True, db_index=True, verbose_name="تاریخ میلادی")
+    date = models.CharField(max_length=10, verbose_name="تاریخ شمسی")
+
+    def __str__(self):
+        return self.date
+    
+    class Meta:
+        verbose_name = "تاریخ تعطیلات"
+        verbose_name_plural = "تاریخ تعطیلات"
+
+class HolidayDescription(models.Model):
+    description = models.CharField(max_length=255, verbose_name="مناسبت")
+    date = models.ForeignKey(HolidayDate, on_delete=models.CASCADE, db_index=True, related_name="holidaydsc", verbose_name="تاریخ")
+
+    def __str__(self):
+        return self.description
+    
+    class Meta:
+        verbose_name = "مناسبت تعطیلات"
+        verbose_name_plural = "مناسبت تعطیلات"
+        indexes = [models.Index(fields=["date"])]
+
+    

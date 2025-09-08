@@ -35,7 +35,7 @@ import subprocess
 import openpyxl
 from io import BytesIO
 import random
-
+import requests
 
 def perm_to_open(request, url_hash):
     """Checks if the user has the right to open the page."""
@@ -434,6 +434,26 @@ def home(request, url_hash):
         )
     except:
         branch_30_day_ranks = []
+    
+    today = datetime.today()
+    today_data = []
+    try:
+        branches_traffic_today = queryset.filter(date=today)
+        for item in branches_traffic_today:
+            today_data_item = []
+            today_data_item.append(float(item.cam.google_latitude))
+            today_data_item.append(float(item.cam.google_longitude))
+            today_data_item.append(float(item.entry))
+            flag = True
+            for i in today_data:
+                if today_data_item[0] == i[0] and today_data_item[1] == i[1]:
+                    flag = False
+                    i[2] += today_data_item[2]
+            if flag:
+                today_data.append(today_data_item)
+    except:
+        pass
+
     return render(
         request,
         "home.html",
@@ -450,6 +470,7 @@ def home(request, url_hash):
             "last_7_days_entry_total": last_7_days_entry["total_entry"],
             "previous_7_days_entry_total": previous_7_days_entry["total_entry"],
             "previous_30_days_entry_total": previous_30_days_entry["total_entry"],
+            "online_map_data": json.dumps(today_data)
         },
     )
 
@@ -735,7 +756,7 @@ def upload_excel_file_invoice(request, url_hash):
                                 date = jalali_date.togregorian()
                             else:
                                 date = datetime.strptime(date, "%Y-%m-%d").date()
-                    if branch and total_amount and total_items:
+                    if branch is not None and total_amount is not None and total_items is not None:
                         if int(branch) not in allowed_branches:
                             messages.warning(
                                 request,
@@ -1090,7 +1111,7 @@ def invoice_counter(request, url_hash):
 
         dates = [str(row["date"].strftime("%Y-%m-%d")) for row in invoices]
         total_items = [float(row["sum_total_items"]) for row in invoices]
-        total_amount = [float(row["sum_total_amount"]) for row in invoices]
+        total_amount = [float(row["sum_total_amount"] // 10000000) for row in invoices]
         campaign_list = []
         for campaign in campaigns:
             dictionary = {
@@ -1453,3 +1474,33 @@ def campaign_comparison(request, url_hash):
             "branches": branches,
         },
     )
+
+
+def ping_ip(ip, timeout=15):
+    try:
+        result = subprocess.run(
+            ["ping", "-c", "1", "-W", str(timeout), ip],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            timeout=timeout + 2  
+        )
+        return result.returncode == 0
+    except subprocess.TimeoutExpired:
+        print(f"Timeout: Ping to {ip} took too long.")
+        return False
+    except Exception as e:
+        print(f"Error: {e}")
+        return False
+
+
+@login_required
+def camera_list(request, url_hash):
+    cameras = Cam.objects.filter(merchant__url_hash=url_hash)
+    
+
+def holiday_spotter(request, year, month, day):
+    response = requests.get(f"https://holidayapi.ir/jalali/{year}/{month}/{day}")
+    if response.status_code == 200:
+        data = response.json()
+        return JsonResponse(data)
+    return JsonResponse({"error": "no response"}, status=response.status_code)

@@ -1,11 +1,12 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .models import PeopleCounting, Branch, Invoice, PermissionToViewBranch, Campaign
+from .models import PeopleCounting, Branch, Invoice, PermissionToViewBranch, Campaign, HolidayDate, HolidayDescription
 from django.db.models import Sum, Q, Min, Max, Avg, F
 from .views import jalali_to_gregorian
 from datetime import datetime
 import math
-
+from rest_framework import serializers
+from django.db import connection
 
 class MultipleBranches(APIView):
     def get(self, request):
@@ -71,7 +72,7 @@ class MultiBranchesInvoice(APIView):
                 for invoice in queryset.filter(branch=branch):
                     amount = invoice.total_amount
                     items = invoice.total_items
-                    total_amounts.append(float(amount))
+                    total_amounts.append(float(amount // 10000000))
                     total_items.append(float(items))
                 response["invoice_data"][str(branch.pk)] = {
                     "name": branch.name,
@@ -187,6 +188,7 @@ class GetCampaignEachPoint(APIView):
         try:
             q_date = request.data.get("date")
             query_branch = request.data.get("branch")
+            print(q_date, query_branch)
         except Exception as e:
             print(e)
         query_date = special_jalali_to_gregorian(q_date)
@@ -195,17 +197,12 @@ class GetCampaignEachPoint(APIView):
             start_date__lte=query_date,
             end_date__gte=query_date,
         )
-        if query_branch not in [
-            "ترافیک",
-            "ورودی",
-            "خروجی",
-            "مبلغ فاکتور",
-            "تعداد فاکتور",
-            "درصد نرخ تبدیل (%)",
-            "نسبت (تومان)",
-            "نسبت (%)",
-        ]:
+        branch = Branch.objects.filter(pk__in=permitted_branches)
+        branch_names = [item.name for item in branch]
+        print(branch_names)
+        if query_branch in branch_names:
             campaigns = campaigns.filter(branch__name=query_branch)
+        print(campaigns)
         campaigns_list = []
         for campaign in campaigns:
             campaigns_list.append(
@@ -214,11 +211,13 @@ class GetCampaignEachPoint(APIView):
                     "campaign_type": campaign.campaign_type,
                 }
             )
+        print(campaigns_list)
         unique_list = []
         for d in campaigns_list:
             if d not in unique_list:
                 unique_list.append(d)
         campaigns_list = unique_list
+        print(campaigns_list)
         return Response(campaigns_list)
 
 
@@ -406,3 +405,53 @@ class CampaignComparison(APIView):
                 campaign["conversion_rate"] = math.floor(conversion_rate)
                 campaign["value_per_visitor"] = math.floor(value_per_visitor) // 10
             return Response(list(campaigns))
+
+
+def to_persian_digits(number_str: str) -> str:
+    persian_digits = {
+        "0": "۰",
+        "1": "۱",
+        "2": "۲",
+        "3": "۳",
+        "4": "۴",
+        "5": "۵",
+        "6": "۶",
+        "7": "۷",
+        "8": "۸",
+        "9": "۹",
+    }
+    return "".join(persian_digits.get(ch, ch) for ch in number_str)
+
+
+class HolidaySpotter(APIView):
+    def get(self, request):
+        try:
+            start_date_str = str(jalali_to_gregorian(request.GET.get("start-date")))
+            end_date_str = str(jalali_to_gregorian(request.GET.get("end-date")))
+            if start_date_str and end_date_str:
+                start_date = datetime.strptime(start_date_str, "%Y-%m-%d").date()
+                end_date = datetime.strptime(end_date_str, "%Y-%m-%d").date()
+                holidays = HolidayDate.objects.filter(gregorian_date__range=(start_date, end_date))
+                complete_holiday_dates = []
+                dictionary = {}
+                descriptions_for_each_holiday = [] 
+                for holiday in holidays:
+                    dictionary = {}
+                    dictionary["date"] = to_persian_digits(holiday.date)
+                    descriptions_for_each_holiday = [] 
+                    descriptions = holiday.holidaydsc.all()
+                    if descriptions:
+                        for x in descriptions:
+                            descriptions_for_each_holiday.append(x.description)
+                        dictionary["descriptions"] = descriptions_for_each_holiday
+                    complete_holiday_dates.append(dictionary)
+                return Response(complete_holiday_dates)
+            else:
+                return Response({"error": f"{e}"})
+        except Exception as e:
+            print(e)
+            return Response({"error": f"{e}"})
+
+
+
+

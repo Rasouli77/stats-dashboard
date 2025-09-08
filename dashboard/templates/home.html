@@ -151,6 +151,23 @@
             <h5 class="card-title mb-3">ترافیک کل 7 روز اخیر</h5>
             <h1 class="display-6 fw-normal mb-0 primary-font num">{{ last_7_days_entry_total }}</h1>
         </div>
+        <div class="card-body">
+            <ul class="p-0 m-0">
+            {% if branch_7_day_ranks %}
+            {% for rank in branch_7_day_ranks %}
+            <li class="mb-3 d-flex justify-content-between">
+                <div class="d-flex align-items-center me-3">
+                <span class="badge badge-dot bg-primary me-2"></span> {{ rank.branch__name }}
+                </div>
+                <div class="d-flex gap-3">
+                <span class="num">{{ rank.total_entry }}</span>
+                <span class="fw-semibold">{{ rank.percent_seven }}%</span>
+                </div>
+            </li>
+            {% endfor %}
+            {% endif %}
+            </ul>
+        </div>
         </div>
     </div>
     <!--/ All Users -->

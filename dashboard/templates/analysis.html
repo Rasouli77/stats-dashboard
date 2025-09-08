@@ -268,10 +268,10 @@
 <script src="{% static 'assets/vendor/libs/toastr/toastr.js' %}"></script>
 <script src="{% static 'assets/js/ui-toasts.js' %}"></script>
 <!-- HighChart JS -->
-<script src="https://code.highcharts.com/highcharts.js"></script>
-<script src="https://code.highcharts.com/modules/exporting.js"></script>
-<script src="https://code.highcharts.com/modules/export-data.js"></script>
-<script src="https://code.highcharts.com/modules/accessibility.js"></script>
+<script src="{% static 'assets/js/highcharts.js' %}"></script>
+<script src="{% static 'assets/js/exporting.js' %}"></script>
+<script src="{% static 'assets/js/export-data.js' %}"></script>
+<script src="{% static 'assets/js/accessibility.js' %}"></script>
 <!-- FlatPicker JS (Calendar) -->
 <script src="{% static 'assets/vendor/libs/jdate/jdate.js' %}"></script>
 <script src="{% static 'assets/vendor/libs/flatpickr/flatpickr-jdate.js' %}"></script>
@@ -281,6 +281,26 @@
 <script src="{% static 'assets/js/app-calendar.js' %}"></script>
 <!-- FlatPicker (JS Calendar) Persian Configuration / Form Checks -->
 <script src="{% static 'assets/js/persian-flatpicker-and-form-checks.js' %}"></script>
+<!-- Holiday Spotter -->
+<script>
+    const holidayDates = []
+     $("#filter-form").on("submit", function (e) {
+        const startDate = $("#start-date").val();
+        const endDate = $("#end-date").val();
+        $.ajax({
+            url: "/api/holiday-spot",
+            data: {
+                "start-date": startDate,
+                "end-date": endDate
+            },
+            traditional: true,
+            success: function (data) {
+                data.forEach(item => {holidayDates.push(item.date)});
+                console.log(holidayDates);
+            }
+        });
+    });
+</script>
 <!-- HighChart Chart Paint (Analytic Aggregation) Raw JavaScript / Campaigns Separated By Branch Paint -->
 <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -308,7 +328,17 @@
                         fontSize: '20px',
                         fontWeight: 'bold'
                     }
-                }
+                },
+                labels: {
+                    useHTML: true,  
+                    formatter: function () {
+                            const value = this.value; 
+                            if (holidayDates.includes(value)) {
+                                return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                            }
+                                return value; 
+                        }
+                    } 
             },
             yAxis: {
                 title: {
@@ -397,7 +427,17 @@
                         fontSize: '20px',
                         fontWeight: 'bold'
                     }
-                }
+                },
+                labels: {
+                    useHTML: true,  
+                    formatter: function () {
+                            const value = this.value; 
+                            if (holidayDates.includes(value)) {
+                                return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                            }
+                                return value; 
+                        }
+                    } 
             },
             yAxis: {
                 title: {
@@ -485,7 +525,17 @@
                         fontSize: '20px',
                         fontWeight: 'bold'
                     }
-                }
+                },
+                labels: {
+                    useHTML: true,  
+                    formatter: function () {
+                            const value = this.value; 
+                            if (holidayDates.includes(value)) {
+                                return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                            }
+                                return value; 
+                        }
+                    } 
             },
             yAxis: {
                 title: {
@@ -570,18 +620,54 @@
                 const overallAmounts = result.map(row => row.entry_overall)
 
                 ratioChart.update({
-                    xAxis: { categories: ratioDates },
+                    xAxis: { 
+                        categories: ratioDates,
+                        labels: {
+                        useHTML: true,  
+                        formatter: function () {
+                                const value = this.value; 
+                                if (holidayDates.includes(value)) {
+                                    return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                }
+                                    return value; 
+                            }
+                        } 
+                    },
                     series: [{ data: ratioValues }]
                 });
 
                 secondRatioChart.update({
-                    xAxis: { categories: ratioDates },
+                    xAxis: { 
+                        categories: ratioDates, 
+                        labels: {
+                        useHTML: true,  
+                        formatter: function () {
+                                const value = this.value; 
+                                if (holidayDates.includes(value)) {
+                                    return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                }
+                                    return value; 
+                            }
+                        } 
+                    },
                     series: [{ data: secondRatioValues }]
                 });
 
                 if (document.querySelectorAll('input[type="checkbox"]:checked').length === 2) {
                     oneToAllContainer.update({
-                    xAxis: { categories: ratioDates },
+                    xAxis: { 
+                        categories: ratioDates,
+                        labels: {
+                        useHTML: true,  
+                        formatter: function () {
+                                const value = this.value; 
+                                if (holidayDates.includes(value)) {
+                                    return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                }
+                                    return value; 
+                            }
+                        }  
+                    },
                     series: [{
                     name: 'نسبت یک فروشگاه به کل', 
                     data: oneToAllValues,
@@ -596,7 +682,19 @@
                 });
                 } else {
                     oneToAllContainer.update({
-                    xAxis: { categories: [] },
+                    xAxis: { 
+                        categories: [],
+                        labels: {
+                        useHTML: true,  
+                        formatter: function () {
+                                const value = this.value; 
+                                if (holidayDates.includes(value)) {
+                                    return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                }
+                                    return value; 
+                            }
+                        } 
+                    },
                     series: [{ data: [] }]
                 });
                 }
@@ -821,8 +919,18 @@
                         fontSize: '20px',
                         fontWeight: 'bold'
                         }
-                    }
-                        },
+                    },
+                    labels: {
+                        useHTML: true,  
+                        formatter: function () {
+                                const value = this.value; 
+                                if (holidayDates.includes(value)) {
+                                    return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                }
+                                    return value; 
+                            }
+                        } 
+                    },
                     yAxis: { title: { text: "درصد تبدیل (%)",
                         style: {
                             fontSize: '20px',
@@ -928,8 +1036,18 @@
                         fontSize: '20px',
                         fontWeight: 'bold'
                         }
-                    }
-                        },
+                    },
+                    labels: {
+                        useHTML: true,  
+                        formatter: function () {
+                                const value = this.value; 
+                                if (holidayDates.includes(value)) {
+                                    return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                }
+                                    return value; 
+                            }
+                        } 
+                    },
                     yAxis: { title: { text: "نسبت (تومان)",
                         style: {
                             fontSize: '20px',
@@ -1038,7 +1156,17 @@
                             fontSize: '20px',
                             fontWeight: 'bold'
                         }
-                    }
+                    },
+                    labels: {
+                        useHTML: true,  
+                        formatter: function () {
+                                const value = this.value; 
+                                if (holidayDates.includes(value)) {
+                                    return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                }
+                                    return value; 
+                            }
+                        } 
                 },
                 yAxis: {
                     title: {
