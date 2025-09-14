@@ -591,8 +591,9 @@ def create_campaign(request, url_hash):
                         **form.cleaned_data,
                     )
                 messages.success(request, "کمپین با موفقیت ساخته شد")
+                return redirect("campaign", request.user.profile.merchant.url_hash)
             else:
-                messages.error(request, "مشکلی در اطلاعات وارد شده وجود دارد")
+                messages.error(request, "لطفا اطلاعات کمپین را به درستی وارد نمایید")
         return render(
             request, "create-campaign.html", {"form": form, "branches": branches}
         )

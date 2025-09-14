@@ -366,7 +366,10 @@
                                 if (holidayDates.includes(value)) {
                                     return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
                                 }
-                                    return value; 
+                                if (fridays.includes(value)) {
+                                    return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                }
+                                return value; 
                             }
                         } 
                 },

@@ -15,7 +15,10 @@
 <!-- Custom Style for FlatPicker Calendar -->
 <style>
     .light-style .flatpickr-calendar {
-    box-shadow: none !important;
+        box-shadow: none !important;
+    }
+    small {
+        display: none;
     }
 </style>
 {% endblock %}
@@ -39,6 +42,7 @@
                 <div>
                     <label for="id_name" class="form-label">نام کمپین</label>
                     <input type="text" name="name" value="" maxlength="255" required class="form-control" id="id_name" placeholder="کمپین نوروز" aria-describedby="defaultFormControlHelp">
+                    <small id="err-name" style="color: #ff5b5c;">نام کمپین را وارد کنید</small>
                 </div>
 
                 <div id="start-date" style="display: none;">
@@ -54,11 +58,13 @@
                 <div>
                     <label for="flatpickr-date" class="form-label">تاریخ شروع</label>
                     <input type="text" class="form-control" placeholder="YYYY/MM/DD" id="flatpickr-date">
+                    <small id="err-start-date" style="color: #ff5b5c;">تاریخ شروع را وارد کنید</small>
                 </div>
 
                 <div>
                     <label for="flatpickr-date-end" class="form-label">تاریخ پایان</label>
                     <input type="text" class="form-control" placeholder="YYYY/MM/DD" id="flatpickr-date-end">
+                    <small id="err-end-date" style="color: #ff5b5c;">تاریخ پایان را وارد کنید</small>
                 </div>
 
                 <div id="id_branch">
@@ -68,11 +74,13 @@
                         <label class="form-check-label"><input class="form-check-input" type="checkbox" name="branch" value="{{ branch.pk }}" aria-invalid="true" style="margin-left: 10px;">{{ branch.name }}</label>
                     </div>
                     {% endfor %}
+                    <small id="err-branch" style="color: #ff5b5c;">شعبه یا شعب مورد نظر را انتخاب کنید</small>
                 </div>
 
                 <div>
                     <label for="id_cost" class="form-label">هزینه:</label>
                     <input type="number" name="cost" value="" maxlength="255" id="id_cost" class="form-control" placeholder="(هزینه کمپین به تومان)" aria-describedby="defaultFormControlHelp">
+                    <small id="err-cost" style="color: #ff5b5c;">هزینه را وارد کنید</small>
                 </div>
 
                 <div>
@@ -82,6 +90,7 @@
                             <option value="ویترین">ویترین</option>
                             <option value="فروش">فروش</option>
                     </select>
+                    <small id="err-type" style="color: #ff5b5c;">نوع کمپین را وارد کنید</small>
                 </div>
 
                 <button class="btn btn-primary" style="margin-top: 35px;" id="submit-btn">ثبت</button>
@@ -140,5 +149,70 @@
     console.log(idStartDate.value, idEndDate.value)
     formCreateCampaign.submit()
     })
+</script>
+<!-- Form Confirmation -->
+<script>
+    const idName = document.getElementById("id_name");
+    const idStartDateS = document.querySelectorAll(".flatpickr-input")[0];
+    const idEndDateS = document.querySelectorAll(".flatpickr-input")[1];
+    const formCheckInput = document.querySelectorAll(".form-check-input");
+    const branchChecks = []
+    const idCost = document.getElementById("id_cost");
+    const idCampaignType = document.getElementById("id_campaign_type");
+    const errName = document.getElementById("err-name");
+    const errStartDate = document.getElementById("err-start-date");
+    const errEndDate = document.getElementById("err-end-date");
+    const errBranch = document.getElementById("err-branch");
+    const errCost = document.getElementById("err-cost");
+    const errType = document.getElementById("err-type");
+    // Event Listner Form Confirmation and Error Handling
+    idName.addEventListener("change", () => {
+        if (!idName.value) {
+            errName.style.display = 'block';
+        } else {
+            errName.style.display = 'none';
+        } 
+    });
+    idStartDateS.addEventListener("change", () => {
+        if (!idStartDateS.value) {
+            errStartDate.style.display = 'block';
+        } else {
+            errStartDate.style.display = 'none';
+        } 
+    });
+    idEndDateS.addEventListener("change", () => {
+        if (!idEndDateS.value) {
+            errEndDate.style.display = 'block';
+        } else {
+            errEndDate.style.display = 'none';
+        } 
+    });
+    idCost.addEventListener("change", () => {
+       if (!idCost.value) {
+            errCost.style.display = 'block';
+        } else {
+            errCost.style.display = 'none';
+        }
+        branchChecks.length = 0;
+        formCheckInput.forEach(
+            i => {
+                if (i.checked) {
+                    branchChecks.push(i);
+                }
+            }
+        );
+        if (branchChecks.length === 0) {
+            errBranch.style.display = 'block';
+        } else {
+            errBranch.style.display = 'none';
+        }
+    });
+    idCampaignType.addEventListener("change", () => {
+        if (!idCampaignType.value) {
+            errType.style.display = 'block';
+        } else {
+            errType.style.display = 'none';
+        }  
+    });
 </script>
 {% endblock %}
