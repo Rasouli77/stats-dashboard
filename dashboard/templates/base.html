@@ -110,7 +110,13 @@
             <li class="menu-item">
               <a href="{% url 'campaign_menu' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-calendar"></i>
-                <div data-i18n="Page 2">کمپین ها</div>
+                <div data-i18n="Page 2">کمپین</div>
+              </a>
+            </li>
+            <li class="menu-item">
+              <a href="{% url 'camera_list' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-map"></i>
+                <div data-i18n="Page 2">دوربین</div>
               </a>
             </li>
             <li class="menu-item">

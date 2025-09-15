@@ -42,7 +42,8 @@ from dashboard.views import (
     info_menu,
     campaign_menu,
     campaign_comparison,
-    holiday_spotter
+    holiday_spotter,
+    camera_list
 )
 from dashboard.api_views import (
     MultipleBranches,
@@ -52,7 +53,8 @@ from dashboard.api_views import (
     GroupedCampaigns,
     GroupedCampaignComparison,
     CampaignComparison,
-    HolidaySpotter
+    HolidaySpotter,
+    CamStatus
 )
 from django.contrib.auth import views as auth_views
 from django.contrib import admin
@@ -154,6 +156,8 @@ urlpatterns = [
     path("dashboard/stats-menu/<str:url_hash>", stats_menu, name="stats_menu"),
     path("dashboard/info-menu/<str:url_hash>", info_menu, name="info_menu"),
     path("dashboard/campaign-menu/<str:url_hash>", campaign_menu, name="campaign_menu"),
+    path("dashboard/camera-list/<str:url_hash>", camera_list, name="camera_list"), 
     path("api/holiday-spotter/<str:year>/<str:month>/<str:day>/", holiday_spotter, name="holiday_spotter"),
-    path("api/holiday-spot", HolidaySpotter.as_view(), name="holiday_spot")
+    path("api/holiday-spot", HolidaySpotter.as_view(), name="holiday_spot"),
+    path("api/cam-status", CamStatus.as_view(), name="cam_status")
 ]

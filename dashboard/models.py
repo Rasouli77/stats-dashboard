@@ -162,6 +162,7 @@ class Cam(models.Model):
     last_modified = models.DateTimeField(
         auto_now=True, verbose_name="تاریخ آخرین تغییر"
     )
+    status = models.BooleanField(null=True, verbose_name="وضعیت", blank=True)
 
     def __str__(self):
         return f"{self.cam_name} {self.ip}"

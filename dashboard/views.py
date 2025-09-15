@@ -1496,7 +1496,16 @@ def ping_ip(ip, timeout=15):
 
 @login_required
 def camera_list(request, url_hash):
-    cameras = Cam.objects.filter(merchant__url_hash=url_hash)
+    # Rights
+    if not perm_to_open(request, url_hash):
+        return render(request, "401.html", status=401)
+    if not request.user.profile.is_manager:
+        return render(request, "401.html", status=401)
+    cameras = Cam.objects.filter(merchant__url_hash=request.user.profile.merchant.url_hash)
+    for camera in cameras:
+        camera.status = ping_ip(camera.ip)
+        camera.save()
+    return render(request, "camera-list.html", {"cameras": cameras})
     
 
 def holiday_spotter(request, year, month, day):

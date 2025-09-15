@@ -1,12 +1,14 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .models import PeopleCounting, Branch, Invoice, PermissionToViewBranch, Campaign, HolidayDate, HolidayDescription
+from .models import PeopleCounting, Branch, Invoice, PermissionToViewBranch, Campaign, HolidayDate, HolidayDescription, Cam
 from django.db.models import Sum, Q, Min, Max, Avg, F
 from .views import jalali_to_gregorian
 from datetime import datetime
 import math
 from rest_framework import serializers
 from django.db import connection
+import re
+import subprocess
 
 class MultipleBranches(APIView):
     def get(self, request):
@@ -423,6 +425,23 @@ def to_persian_digits(number_str: str) -> str:
     return "".join(persian_digits.get(ch, ch) for ch in number_str)
 
 
+def to_english_digits(number_str: str) -> str:
+    english_digits = {
+        "۰": "0",
+        "۱": "1",
+        "۲": "2",
+        "۳": "3",
+        "۴": "4",
+        "۵": "5",
+        "۶": "6",
+        "۷": "7",
+        "۸": "8",
+        "۹": "9",
+    }
+    return "".join(english_digits.get(ch, ch) for ch in number_str)
+
+
+
 class HolidaySpotter(APIView):
     def get(self, request):
         try:
@@ -451,6 +470,74 @@ class HolidaySpotter(APIView):
         except Exception as e:
             print(e)
             return Response({"error": f"{e}"})
+
+
+def ping_ip(ip, timeout=15):
+    try:
+        result = subprocess.run(
+            ["ping", "-c", "1", "-W", str(timeout), ip],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            timeout=timeout + 2  
+        )
+        return result.returncode == 0
+    except subprocess.TimeoutExpired:
+        print(f"Timeout: Ping to {ip} took too long.")
+        return False
+    except Exception as e:
+        print(f"Error: {e}")
+        return False
+    
+
+def get_ping(ip, timeout=15):
+    try:
+        # Run ping command and capture output
+        result = subprocess.run(
+            ["ping", "-c", "1", "-W", str(timeout), ip],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            timeout=timeout + 2
+        )
+
+        if result.returncode == 0:
+            # Example ping output line on Linux:
+            match = re.search(r"time=([\d.]+)\s*ms", result.stdout)
+            if match:
+                return float(match.group(1))  # return RTT in ms
+            else:
+                return None
+        else:
+            return None
+
+    except subprocess.TimeoutExpired:
+        print(f"Timeout: Ping to {ip} took too long.")
+        return None
+    except Exception as e:
+        print(f"Error: {e}")
+        return None
+
+
+
+class CamStatus(APIView):
+    def post(self, request):
+        try:
+            raw_cam_id = str(request.data.get("id"))
+            cam_id = int(to_english_digits(raw_cam_id))
+            cam = Cam.objects.get(pk=cam_id)
+            if ping_ip(cam.ip):
+                cam.status = True
+                cam.save()
+                ping = get_ping(cam.ip)
+                return Response({"cam_id": cam.pk, "status": cam.status, "ping": ping})
+            else:
+                cam.status = False
+                cam.save()
+                return Response({"cam_id": cam.pk, "status": cam.status})
+        except Exception as e:
+            return Response({"error": f"{e}"})
+
+
 
 
 
