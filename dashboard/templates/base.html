@@ -28,9 +28,11 @@
     <link rel="stylesheet" href="{% static 'assets/vendor/libs/select2/select2.css' %}">
     <link rel="stylesheet" href="{% static 'assets/vendor/libs/quill/editor-fa.css' %}">
     <link rel="stylesheet" href="{% static 'assets/vendor/libs/formvalidation/dist/css/formValidation.min.css' %}">
+    <!-- Google Font Vazirmatn -->
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap" rel="stylesheet">
     <style>
       body {
-        font-family: Vazirmatn, sans-serif;
+        font-family: 'Vazirmatn', sans-serif;
         padding: 20px;
         background: #f9f9f9;
       }
@@ -117,6 +119,12 @@
               <a href="{% url 'camera_list' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-map"></i>
                 <div data-i18n="Page 2">دوربین</div>
+              </a>
+            </li>
+            <li class="menu-item">
+              <a href="{% url 'alert_menu' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-envelope"></i>
+                <div data-i18n="Page 2">اطلاع رسانی</div>
               </a>
             </li>
             <li class="menu-item">

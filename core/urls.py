@@ -43,7 +43,10 @@ from dashboard.views import (
     campaign_menu,
     campaign_comparison,
     holiday_spotter,
-    camera_list
+    camera_list,
+    alert_menu,
+    alert_form_sms,
+    alert_form_social
 )
 from dashboard.api_views import (
     MultipleBranches,
@@ -159,5 +162,9 @@ urlpatterns = [
     path("dashboard/camera-list/<str:url_hash>", camera_list, name="camera_list"), 
     path("api/holiday-spotter/<str:year>/<str:month>/<str:day>/", holiday_spotter, name="holiday_spotter"),
     path("api/holiday-spot", HolidaySpotter.as_view(), name="holiday_spot"),
-    path("api/cam-status", CamStatus.as_view(), name="cam_status")
+    path("api/cam-status", CamStatus.as_view(), name="cam_status"),
+    path("dashboard/alert-menu/<str:url_hash>", alert_menu, name="alert_menu"),
+    path("dashboard/alert-form-sms/<str:url_hash>", alert_form_sms, name="alert_form_sms"),
+    path("dahsboard/alert-form-social/<str:url_hash>", alert_form_social, name="alert_form_social")
+
 ]

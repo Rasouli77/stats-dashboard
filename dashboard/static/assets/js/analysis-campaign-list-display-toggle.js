@@ -1,10 +1,7 @@
 const returnBtn = document.getElementById("return");
 const menuTwo = document.getElementById("menu");
 const body = document.getElementById("body");
-const campaigns = document.querySelector("#campaigns");
 const groupedCampaigns = document.querySelector("#grouped-campaigns");
-const instruction = document.getElementById("instruction");
-const instructionForOneToAllContainer = document.getElementById("instruction-for-one-to-all-container");
 
 // Return Button
 returnBtn.addEventListener("click", () => {
@@ -66,10 +63,7 @@ aggConPercentCard.addEventListener("click", () => {
     oneToAllEntryChart.style.display = "none";
     allToAllEntryChart.style.display = "none";
     returnBtn.style.display = "block";
-    campaigns.style.display = "none";
     groupedCampaigns.style.display = "block";
-    instruction.style.display = "none";
-    instructionForOneToAllContainer.style.display = "none";
 });
 
 // Second Card
@@ -83,11 +77,7 @@ branchConPercentCard.addEventListener("click", () => {
     oneToAllEntryChart.style.display = "none";
     allToAllEntryChart.style.display = "none";
     returnBtn.style.display = "block";
-    campaigns.style.display = "none";
-    campaigns.style.display = "block";
-    groupedCampaigns.style.display = "none";
-    instruction.style.display = "block";
-    instructionForOneToAllContainer.style.display = "none";
+    groupedCampaigns.style.display = "block";
 });
 
 // Third Card
@@ -101,10 +91,7 @@ aggEntryValCard.addEventListener("click", () => {
     oneToAllEntryChart.style.display = "none";
     allToAllEntryChart.style.display = "none";
     returnBtn.style.display = "block";
-    campaigns.style.display = "none";
     groupedCampaigns.style.display = "block";
-    instruction.style.display = "none";
-    instructionForOneToAllContainer.style.display = "none";
 });
 
 // Forth Card
@@ -118,10 +105,7 @@ branchEntryValCard.addEventListener("click", () => {
     oneToAllEntryChart.style.display = "none";
     allToAllEntryChart.style.display = "none";
     returnBtn.style.display = "block";
-    campaigns.style.display = "block";
-    groupedCampaigns.style.display = "none";
-    instruction.style.display = "block";
-    instructionForOneToAllContainer.style.display = "none";
+    groupedCampaigns.style.display = "block";
 });
 
 // Fifth Card
@@ -135,10 +119,7 @@ oneToAllEntryCard.addEventListener("click", () => {
     oneToAllEntryChart.style.display = "block";
     allToAllEntryChart.style.display = "none";
     returnBtn.style.display = "block";
-    campaigns.style.display = "none";
     groupedCampaigns.style.display = "block";
-    instruction.style.display = "none";
-    instructionForOneToAllContainer.style.display = "block";
 });
 
 // Sixth Card
@@ -152,8 +133,5 @@ allToAllEntryCard.addEventListener("click", () => {
     oneToAllEntryChart.style.display = "none";
     allToAllEntryChart.style.display = "block";
     returnBtn.style.display = "block";
-    campaigns.style.display = "block";
-    groupedCampaigns.style.display = "none";
-    instruction.style.display = "block";
-    instructionForOneToAllContainer.style.display = "none";
+    groupedCampaigns.style.display = "block";
 });

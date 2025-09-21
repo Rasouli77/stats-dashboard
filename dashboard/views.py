@@ -128,9 +128,21 @@ def people_counter(request, url_hash):
                 merchant__url_hash=url_hash
             )
             campaigns = (
-                Campaign.objects.defer("date_created", "last_modified")
-                .filter(branch__merchant__url_hash=url_hash)
+                Campaign.objects.filter(
+                    branch__merchant__url_hash=request.user.profile.merchant.url_hash
+                )
                 .filter(Q(start_date__lte=end_date) & Q(end_date__gte=start_date))
+                .values("group_id")
+                .annotate(
+                    campaign_name=Min("name"),
+                    campaign_start_date=Min("start_date"),
+                    campaign_end_date=Max("end_date"),
+                    campaign_cost=Sum("cost"),
+                    campaign_type=Min("campaign_type"),
+                    campaign_last_modified=Max("last_modified"),
+                    campaign_group_id=Min("group_id"),
+                )
+                .order_by("-campaign_last_modified")
             )
         else:
             permitted_branches = (
@@ -145,22 +157,32 @@ def people_counter(request, url_hash):
                 merchant__url_hash=url_hash, pk__in=permitted_branches_list
             )
             campaigns = (
-                Campaign.objects.defer("date_created", "last_modified")
-                .select_related("branch")
-                .filter(
-                    branch__merchant__url_hash=url_hash,
-                    branch__pk__in=permitted_branches_list,
+                Campaign.objects.filter(
+                    branch__merchant__url_hash=request.user.profile.merchant.url_hash
                 )
+                .filter(branch__pk__in=permitted_branches_list)
+                .filter(Q(start_date__lte=end_date) & Q(end_date__gte=start_date))
+                .values("group_id")
+                .annotate(
+                    campaign_name=Min("name"),
+                    campaign_start_date=Min("start_date"),
+                    campaign_end_date=Max("end_date"),
+                    campaign_cost=Sum("cost"),
+                    campaign_type=Min("campaign_type"),
+                    campaign_last_modified=Max("last_modified"),
+                    campaign_group_id=Min("group_id"),
+                )
+                .order_by("-campaign_last_modified")
             )
             campaign_list = []
+            dictionary = {}
             for campaign in campaigns:
                 dictionary = {
-                    "campaign_name": campaign.name,
-                    "campaign_start_date": campaign.start_date,
-                    "campaign_end_date": campaign.end_date,
-                    "campaign_branch_name": campaign.branch.name,
-                    "campaign_type": campaign.campaign_type,
-                    "campaign_cost": campaign.cost,
+                    "campaign_name": campaign["campaign_name"],
+                    "campaign_start_date": campaign["campaign_start_date"],
+                    "campaign_end_date": campaign["campaign_end_date"],
+                    "campaign_cost": campaign["campaign_cost"],
+                    "campaign_type": campaign["campaign_type"],
                 }
                 campaign_list.append(dictionary)
             queryset = queryset.filter(branch__pk__in=permitted_branches_list)
@@ -168,20 +190,69 @@ def people_counter(request, url_hash):
         selected_branches = [int(pk) for pk in selected_branches_str]
         try:
             queryset = queryset.filter(branch__pk__in=selected_branches)
-            campaigns = campaigns.filter(branch__pk__in=selected_branches)
-            entry_totals = [float(row["total_entry"]) for row in queryset]
-            exit_totals = []
+            if request.user.profile.is_manager:
+                campaigns = (
+                Campaign.objects.filter(
+                    branch__merchant__url_hash=request.user.profile.merchant.url_hash
+                )
+                .filter(branch__pk__in=selected_branches)
+                .filter(Q(start_date__lte=end_date) & Q(end_date__gte=start_date))
+                .values("group_id")
+                .annotate(
+                    campaign_name=Min("name"),
+                    campaign_start_date=Min("start_date"),
+                    campaign_end_date=Max("end_date"),
+                    campaign_cost=Sum("cost"),
+                    campaign_type=Min("campaign_type"),
+                    campaign_last_modified=Max("last_modified"),
+                    campaign_group_id=Min("group_id"),
+                )
+                .order_by("-campaign_last_modified")
+                )
+            else:
+                permitted_branches = (
+                PermissionToViewBranch.objects.defer("date_created", "last_modified")
+                .select_related("branch")
+                .filter(user__pk=request.user.profile.pk)
+                )
+                permitted_branches_list = []
+                for permitted_branch in permitted_branches:
+                    permitted_branches_list.append(permitted_branch.branch.pk)
+                branches = Branch.objects.only("name", "pk").filter(
+                    merchant__url_hash=url_hash, pk__in=permitted_branches_list
+                )
+                campaigns = (
+                    Campaign.objects.filter(
+                        branch__merchant__url_hash=request.user.profile.merchant.url_hash
+                    )
+                    .filter(branch__pk__in=permitted_branches_list)
+                    .filter(Q(start_date__lte=end_date) & Q(end_date__gte=start_date))
+                    .values("group_id")
+                    .annotate(
+                        campaign_name=Min("name"),
+                        campaign_start_date=Min("start_date"),
+                        campaign_end_date=Max("end_date"),
+                        campaign_cost=Sum("cost"),
+                        campaign_type=Min("campaign_type"),
+                        campaign_last_modified=Max("last_modified"),
+                        campaign_group_id=Min("group_id"),
+                    )
+                    .order_by("-campaign_last_modified")
+                )
             campaign_list = []
+            dictionary = {}
             for campaign in campaigns:
                 dictionary = {
-                    "campaign_name": campaign.name,
-                    "campaign_start_date": campaign.start_date,
-                    "campaign_end_date": campaign.end_date,
-                    "campaign_branch_name": campaign.branch.name,
-                    "campaign_type": campaign.campaign_type,
-                    "campaign_cost": campaign.cost,
+                    "campaign_name": campaign["campaign_name"],
+                    "campaign_start_date": campaign["campaign_start_date"],
+                    "campaign_end_date": campaign["campaign_end_date"],
+                    "campaign_cost": campaign["campaign_cost"],
+                    "campaign_type": campaign["campaign_type"],
                 }
                 campaign_list.append(dictionary)
+            entry_totals = [float(row["total_entry"]) for row in queryset]
+            exit_totals = []
+            
         except Exception as e:
             print(e)
 
@@ -190,7 +261,7 @@ def people_counter(request, url_hash):
     dates = [str(row["date"].strftime("%Y-%m-%d")) for row in queryset]
 
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-        print(connection.queries, len(connection.queries))
+        print(campaign_list)
         return JsonResponse(
             {
                 "dates": dates,
@@ -1070,29 +1141,38 @@ def invoice_counter(request, url_hash):
         )
         .order_by("date")
     )
-    campaigns = (
-        Campaign.objects.defer("date_created", "last_modified")
-        .select_related("branch", "branch__merchant")
-        .filter(branch__merchant__url_hash=url_hash, branch__pk__in=allowed_branches)
-    )
     if start_date_str != "None" and end_date_str != "None":
-        print(start_date_str, end_date_str)
         try:
             start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
             end_date = datetime.strptime(end_date_str, "%Y-%m-%d")
             invoices = invoices.filter(date__range=(start_date, end_date))
-            campaigns = campaigns.filter(
-                Q(start_date__lte=end_date) & Q(end_date__gte=start_date)
+            campaigns = (
+                Campaign.objects.filter(
+                    branch__merchant__url_hash=request.user.profile.merchant.url_hash
+                )
+                .filter(branch__pk__in=allowed_branches)
+                .filter(Q(start_date__lte=end_date) & Q(end_date__gte=start_date))
+                .values("group_id")
+                .annotate(
+                    campaign_name=Min("name"),
+                    campaign_start_date=Min("start_date"),
+                    campaign_end_date=Max("end_date"),
+                    campaign_cost=Sum("cost"),
+                    campaign_type=Min("campaign_type"),
+                    campaign_last_modified=Max("last_modified"),
+                    campaign_group_id=Min("group_id"),
+                )
+                .order_by("-campaign_last_modified")
             )
             campaign_list = []
+            dictionary = {}
             for campaign in campaigns:
                 dictionary = {
-                    "campaign_name": campaign.name,
-                    "campaign_start_date": campaign.start_date,
-                    "campaign_end_date": campaign.end_date,
-                    "campaign_branch_name": campaign.branch.name,
-                    "campaign_type": campaign.campaign_type,
-                    "campaign_cost": campaign.cost,
+                    "campaign_name": campaign["campaign_name"],
+                    "campaign_start_date": campaign["campaign_start_date"],
+                    "campaign_end_date": campaign["campaign_end_date"],
+                    "campaign_cost": campaign["campaign_cost"],
+                    "campaign_type": campaign["campaign_type"],
                 }
                 campaign_list.append(dictionary)
         except Exception as e:
@@ -1108,20 +1188,38 @@ def invoice_counter(request, url_hash):
                 branches = []
             if branches:
                 invoices = invoices.filter(branch__pk__in=branches)
-                campaigns = campaigns.filter(branch__pk__in=branches)
+                campaigns = (
+                Campaign.objects.filter(
+                    branch__merchant__url_hash=request.user.profile.merchant.url_hash
+                )
+                .filter(branch__pk__in=allowed_branches)
+                .filter(branch__pk__in=branches)
+                .filter(Q(start_date__lte=end_date) & Q(end_date__gte=start_date))
+                .values("group_id")
+                .annotate(
+                    campaign_name=Min("name"),
+                    campaign_start_date=Min("start_date"),
+                    campaign_end_date=Max("end_date"),
+                    campaign_cost=Sum("cost"),
+                    campaign_type=Min("campaign_type"),
+                    campaign_last_modified=Max("last_modified"),
+                    campaign_group_id=Min("group_id"),
+                )
+                .order_by("-campaign_last_modified")
+            )
 
         dates = [str(row["date"].strftime("%Y-%m-%d")) for row in invoices]
         total_items = [float(row["sum_total_items"]) for row in invoices]
         total_amount = [float(row["sum_total_amount"] // 10000000) for row in invoices]
         campaign_list = []
+        dictionary = {}
         for campaign in campaigns:
             dictionary = {
-                "campaign_name": campaign.name,
-                "campaign_start_date": campaign.start_date,
-                "campaign_end_date": campaign.end_date,
-                "campaign_branch_name": campaign.branch.name,
-                "campaign_type": campaign.campaign_type,
-                "campaign_cost": campaign.cost,
+                "campaign_name": campaign["campaign_name"],
+                "campaign_start_date": campaign["campaign_start_date"],
+                "campaign_end_date": campaign["campaign_end_date"],
+                "campaign_cost": campaign["campaign_cost"],
+                "campaign_type": campaign["campaign_type"],
             }
             campaign_list.append(dictionary)
 
@@ -1514,3 +1612,24 @@ def holiday_spotter(request, year, month, day):
         data = response.json()
         return JsonResponse(data)
     return JsonResponse({"error": "no response"}, status=response.status_code)
+
+
+def alert_menu(request, url_hash):
+    # Rights
+    if not perm_to_open(request, url_hash):
+        return render(request, "401.html", status=401)
+    return render(request, "alert-menu.html")
+
+
+def alert_form_sms(request, url_hash):
+    # Rights
+    if not perm_to_open(request, url_hash):
+        return render(request, "401.html", status=401)
+    return render(request, "alert-form-sms.html")
+
+
+def alert_form_social(request, url_hash):
+    # Rights
+    if not perm_to_open(request, url_hash):
+        return render(request, "401.html", status=401)
+    return render(request, "alert-form-social.html")

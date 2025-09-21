@@ -48,81 +48,109 @@
     .highcharts-credits {
         display: none;
     }
+
+    .demo-inline-spacing > * {
+        margin: 0px !important;
+    }
+    .box {
+        height: 25vh;  
+        overflow-y: auto;
+    }
+
 </style>
 {% endblock %}
 {% block content %}
-<h6>شمارشگر</h6>
 <div class="loading-overlay" id="loading-overlay">
     <div class="loader"></div>
 </div>
 <div class="calendar-container">
     <div class="container">
-        <div class="row" style="margin-bottom: 20px;">
-            <!-- Date Accordion -->
-            <div class="col-xl-4 col-lg-4 col-md-12 col-sm-12" style="margin-bottom: 10px;">
-            <h6>تاریخ</h6>
-            <div class="accordion mt-3 accordion-header-primary" id="accordionDate">
-                <div class="card accordion-item">
-                <h2 class="accordion-header d-flex align-items-center">
-                    <button type="button" class="accordion-button" data-bs-toggle="collapse" data-bs-target="#collapseDate" aria-expanded="true">
-                    <i class="menu-icon tf-icons bx bx-calendar"></i>
-                    انتخاب تاریخ
-                    </button>
-                </h2>
-
-                <div id="collapseDate" class="accordion-collapse collapse" data-bs-parent="#accordionDate">
-                    <div class="accordion-body" style="display: flex; justify-content: center; align-items: center; position: absolute; z-index: 1001; width: 100%; background-color: white; box-shadow: 0 0.25rem 1rem rgba(147, 158, 170, 0.45);">
-                    <div id="date-range"></div>
-                    </div>
-                </div>
-                </div>
-            </div>              
+        <div class="row">
+            <!-- Date Picker Card -->
+            <div class="col-xl-7 col-lg-2 col-md-12 col-sm-12" style="margin-bottom: 10px; display: none;" id="title-type-1">
+                <h1 style="color: #262626; font-size: 1.38rem; font-weight: 700;">گزارش ترافیک تجمیعی</h1>
             </div>
-            <!-- Branch Accordion -->
+            <div class="col-xl-7 col-lg-2 col-md-12 col-sm-12" style="margin-bottom: 10px; display: none;" id="title-type-2">
+                <h1 style="color: #262626; font-size: 1.38rem; font-weight: 700;">گزارش ترافیک تفکیکی</h1>
+            </div>
+            <div class="col-xl-2 col-lg-2 col-md-12 col-sm-12" style="margin-bottom: 10px;">
+                <h1 style="color: #262626; font-size: 1.125rem; font-weight: 700;">گزارش بر اساس:</h1>
+            </div>
             <div class="col-xl-3 col-lg-3 col-md-12 col-sm-12" style="margin-bottom: 10px;">
-            <h6>شعب</h6>
-            <div class="accordion mt-3 accordion-header-primary" id="accordionBranch">
-                <div class="card accordion-item">
-                <h2 class="accordion-header d-flex align-items-center">
-                    <button type="button" class="accordion-button" data-bs-toggle="collapse" data-bs-target="#collapseBranch" aria-expanded="true">
-                    <i class="menu-icon tf-icons bx bx-map-alt"></i>
-                    انتخاب شعب
-                    </button>
-                </h2>
-                <div id="collapseBranch" class="accordion-collapse collapse" data-bs-parent="#accordionBranch">
-                    <div class="accordion-body" style="position: absolute; z-index: 999; width: 100%; background-color: white; box-shadow: 0 0.25rem 1rem rgba(147, 158, 170, 0.45);">
-                    <div class="branches-grid mt-3">
-                        <div class="form-check mt-3">
-                            <input class="form-check-input" type="checkbox" id="select-all">
-                            <label class="form-check-label" for="defaultCheck1">انتخاب همه</label>
-                        </div>
-                        {% for branch in branches %}
-                        <div class="form-check mt-3">
-                            <input class="form-check-input fake-check" type="checkbox" value="{{ branch.pk }}">
-                            <label class="form-check-label" for="defaultCheck1">{{ branch.name }}</label>
-                        </div>
-                        {% endfor %}
-                    </div>
+                <small>بازه زمانی گزارش و شعب</small>
+                <div class="card mt-3">
+                    <div class="card-body" style="padding: 0px !important;">
+                        <button type="button" class="btn btn-outline-primary w-100" data-bs-toggle="modal" data-bs-target="#dateModal" style="border: none; color: black; background-color: #ccdbf1;">
+                            <i class="menu-icon tf-icons bx bx-filter"></i>
+                            فیلتر
+                        </button>
                     </div>
                 </div>
-                </div>
-            </div>   
             </div>
-            <!-- Dropdown Display -->
-            <div class="col-xl-2 col-lg-2 col-md-12 col-sm-12" style="margin-top: 20px; display: flex; justify-content: center; align-items: center;">
-                <form action="" method="get" id="filter-form">
-                        <label style="display: none;" for="start-date">از تاریخ</label>
-                        <input type="text" name="start-date" id="start-date" style="display: none;">
-                        <label style="display: none;" for="end-date">تا</label>
-                        <input type="text" name="end-date" id="end-date" style="display: none;">
-                        {% for branch in branches %}
-                        <div class="form-check mt-3" style="display: none;">
-                            <input class="form-check-input real-check" type="checkbox" value="{{ branch.pk }}" name="branch">
-                            <label class="form-check-label" for="defaultCheck1">{{ branch.name }}</label>
+            <!-- Date Picker Modal -->
+            <div class="modal fade" id="dateModal" tabindex="-1" aria-labelledby="dateModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="dateModalLabel">بازه زمانی گزارش</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="بستن"></button>
                         </div>
-                        {% endfor %}
-                        <button class="btn btn-primary btn-md" type="submit" id="filter-proxy-button">فیلتر</button>
-                </form>
+                        <div class="modal-body" style="display: flex; justify-content: center; align-items: center;">
+                            <!-- Your date range picker goes here -->
+                            <div id="date-range"></div>
+                        </div>
+                        <div class="modal-footer">
+                            <button 
+                                type="button" 
+                                class="btn btn-primary" 
+                                id="confirmDateBtn">
+                                بعدی
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Branch Selector Card -->
+            <!-- Branch Selector Modal -->
+            <div class="modal fade" id="branchModal" tabindex="-1" aria-labelledby="branchModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="branchModalLabel">انتخاب شعب</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="بستن"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="branches-grid">
+                            <div class="form-check mt-2">
+                                <input class="form-check-input" type="checkbox" id="select-all">
+                                <label class="form-check-label" for="select-all">انتخاب همه</label>
+                            </div>
+                            {% for branch in branches %}
+                            <div class="form-check mt-2">
+                                <input class="form-check-input fake-check" type="checkbox" value="{{ branch.pk }}" id="branch-{{ branch.pk }}">
+                                <label class="form-check-label" for="branch-{{ branch.pk }}">{{ branch.name }}</label>
+                            </div>
+                            {% endfor %}
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary">قبلی</button>
+                            <form action="" method="get" id="filter-form">
+                                <label style="display: none;" for="start-date">از تاریخ</label>
+                                <input type="text" name="start-date" id="start-date" style="display: none;">
+                                <label style="display: none;" for="end-date">تا</label>
+                                <input type="text" name="end-date" id="end-date" style="display: none;">
+                                {% for branch in branches %}
+                                <div class="form-check mt-3" style="display: none;">
+                                    <input class="form-check-input real-check" type="checkbox" value="{{ branch.pk }}" name="branch">
+                                    <label class="form-check-label" for="defaultCheck1">{{ branch.name }}</label>
+                                </div>
+                                {% endfor %}
+                                <button class="btn btn-primary btn-md" type="submit" id="filter-proxy-button" data-bs-dismiss="modal">فیلتر</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="row">
@@ -132,68 +160,50 @@
                         <!-- total traffic aggregation -->
                         <div id="container" style="width: 100%; height: 400px; margin-top: 45px; display: none;"></div>
                         <!-- total traffic aggregation by branches -->
-                        <h6 id="instruction" style="display: none;">❗ برای مشاهده مقایسه شعب باید حداقل یک شعبه را انتخاب کنید.</h6>
                         <div id="second-container" style="width: 100%; height: 400px; margin-top: 45px; display: none;"></div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="row" style="margin-bottom: 40px; display: none;" id="holiday-container">
-            <small>تعطیلات و مناسبت ها</small>
-            <div class="col-6">
-                <div class="demo-inline-spacing mt-3" style="margin-bottom: 25px;">
-                    <ul class="list-group list-group-timeline">
-                        <li class="list-group-item list-group-timeline-primary">
-                            <span class="holiday-date" style="background-color: #5a8dee; border-radius: 5px; color: white; padding-left: 5px; padding-right: 5px; padding-top: 2.5px; padding-bottom: 2.5px; margin-left: 25px;">1404/04/01</span>
-                            <span class="description">جمعه</span>
-                        </li>
-                    </ul>
-                </div>
-                <button id="more-holidays-btn" style="display: none;" class="btn btn-primary btn-sm" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasStart" aria-controls="offcanvasStart">
-                          نمایش بیشتر
-                </button>
-                <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasStart" aria-labelledby="offcanvasStartLabel">
-                    <div class="offcanvas-header">
+        <div class="row">
+            <div class="col-lg-3 box" style="margin-bottom: 10px;" id="holiday-container">
+                <div class="card" id="holiday-card" style="background-clip: padding-box;
+                border-style: solid;
+                box-shadow: none;
+                border-width: 1px;
+                border-color: #e5e5e5;
+                border-radius: 12px;
+                height: 100%;  
+                padding: 10px">
+                    <div class="demo-inline-spacing mt-3" style="margin-bottom: 25px;">
                         <ul class="list-group list-group-timeline">
-                            
                         </ul>
                     </div>
-                    <div class="offcanvas-body my-auto mx-0 flex-grow-0" style="margin-top: 0px !important;">
-                        <div id="holiday-canvas" style="margin-bottom: 20px;">
-                            <ul class="list-group list-group-timeline">
-                            </ul>
-                        </div>    
-                        <button type="button" class="btn btn-label-secondary d-grid w-100" data-bs-dismiss="offcanvas">
-                        بستن
-                        </button>
+                </div>
+            </div>
+            <div class="col-lg-9 box">
+                <div class="card" style="border-radius: 12px; border-color: #e5e5e5; box-shadow: none !important; border-width: 1px;">
+                    <h5 class="card-header heading-color">کمپین ها</h5>
+                    <div class="table-responsive text-nowrap" style="margin-bottom: 100px;">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                <th>نام کمپین</th>
+                                <th>تاریخ شروع</th>
+                                <th>تاریخ پایان</th>
+                                <th>نوع کمپین</th>
+                                <th>هزینه</th>
+                                </tr>
+                            </thead>
+                            <tbody class="table-border-bottom-0">
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="row">
-            <div class="card">
-            <h5 class="card-header heading-color">کمپین ها</h5>
-            <div class="table-responsive text-nowrap" style="margin-bottom: 100px;">
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                        <th>نام کمپین</th>
-                        <th>تاریخ شروع</th>
-                        <th>تاریخ پایان</th>
-                        <th>شعبه</th>
-                        <th>نوع کمپین</th>
-                        <th>هزینه</th>
-                        </tr>
-                    </thead>
-                    <tbody class="table-border-bottom-0">
-                    </tbody>
-                </table>
-            </div>
-            </div>
-        </div>
-        <a href="{% url 'stats_menu' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="btn btn-secondary btn-md"  id="return" style="margin-top: 25px;">بازگشت</a>
-    </div>
-</div><br>
+    </div><br>
+</div>
 <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" style="display: none;">
 {% endblock %}
 {% block extra_js %}
@@ -247,7 +257,6 @@
             },
             traditional: true,
             success: function (data) {
-                console.log(data)
                 data.forEach(item => {
                     if (item.descriptions[0] !== 'جمعه') {
                         holidayDates.push(item.date);
@@ -268,21 +277,19 @@
                     });
                 }
                 timelineHolidays = timelineHolidays.filter(i => i.descriptions.length > 0)
-                console.log(timelineHolidays)
                 const holidayContainer = document.querySelector("#holiday-container");
-                const moreHolidaysBtn = document.querySelector("#more-holidays-btn");
+                if (timelineHolidays.length === 0) {
+                    document.querySelector(".list-group-timeline").innerHTML = "<p style='display: flex; justify-content: center; align-items: center; font-weight: bold;'>مناسبتی وجود ندارد</p>";
+                }
                 if (timelineHolidays.length > 0) {
-                    holidayContainer.style.display = "";
-                } else {
-                    holidayContainer.style.display = "none";
+                    document.querySelector(".list-group-timeline").innerHTML = "";
                 }
-                if (timelineHolidays.length > 5) {
-                    moreHolidaysBtn.style.display = "";
+                if (timelineHolidays.length > 3) {
+                    document.getElementById("holiday-card").style.height = "";
                 } else {
-                    moreHolidaysBtn.style.display = "none";
+                    document.getElementById("holiday-card").style.height = "100%";
                 }
-                document.querySelector(".list-group-timeline").innerHTML = "";
-                timelineHolidays.slice(0, 3).forEach(i => {
+                timelineHolidays.forEach(i => {
                     if (i.descriptions.length !== 0) {
                         const rowhtml = `
                         <li class="list-group-item list-group-timeline-primary">
@@ -293,7 +300,158 @@
                         document.querySelector(".list-group-timeline").insertAdjacentHTML("beforeend", rowhtml);
                     } 
                 });
-                document.querySelectorAll(".list-group-timeline")[1].innerHTML = "";
+            }
+        });
+    });
+</script>
+<!-- Initial HighChart Chart Paint (Aggregation) Raw JavaScript -->
+<script>
+    // getJalaliDateRange returns the last 7 days
+    function getJalaliDateRange() {
+        const today = new Date();
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(today.getDate() - 7);
+
+        function toJalaliStr(date) {
+            const { jy, jm, jd } = jalaali.toJalaali(date);
+            return `${jy}-${String(jm).padStart(2, "0")}-${String(jd).padStart(2, "0")}`;
+        }
+
+        const inStartDate = toJalaliStr(sevenDaysAgo);
+        const inEndDate = toJalaliStr(today);
+
+        return { inStartDate, inEndDate };
+    }
+    // This triggers on page load
+    document.addEventListener("DOMContentLoaded", () => {
+        // The last 7 days: start and end
+        const {inStartDate, inEndDate} = getJalaliDateRange();
+        // This takes care of campaigns in the last 7 days
+        fetch(`{% url 'invoice_counter' url_hash=request.user.profile.merchant.url_hash %}?start-date=${inStartDate}&end-date=${inEndDate}`, {
+                method: 'GET',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.json();
+        })
+        .then(data => {
+            document.querySelector(".table-border-bottom-0").innerHTML = "";
+            data.campaigns.forEach(campaign => {
+            const rowhtml = `
+                <tr>
+                    <td>
+                        ${campaign.campaign_name} 
+                    </td>
+                    <td class="greg-date">
+                        ${campaign.campaign_start_date}
+                    </td>
+                    <td class="greg-date">
+                        ${campaign.campaign_end_date}
+                    </td>
+                    <td>
+                        ${campaign.campaign_type}
+                    </td>
+                    <td class="campaign-cost">
+                        ${campaign.campaign_cost}
+                    </td>
+                </tr>
+                `
+            document.querySelector(".table-border-bottom-0").insertAdjacentHTML("beforeend", rowhtml);
+            });
+            function jalaliDateConvertor() {
+            document.querySelectorAll(".greg-date").forEach(el => {
+                const gregorian = el.innerHTML.split("-");
+                const gYear = parseInt(gregorian[0]);
+                const gMonth = parseInt(gregorian[1]);
+                const gDay = parseInt(gregorian[2]);
+                const jdate = jalaali.toJalaali(gYear, gMonth, gDay);
+                el.innerText = `${jdate.jy}/${String(jdate.jm).padStart(2, '0')}/${String(jdate.jd).padStart(2, '0')}`;
+                });
+            }
+            document.querySelectorAll(".campaign-cost").forEach(el => {
+                const cost = Number(el.innerText);
+                const separatedCost = cost.toLocaleString('fa-IR');
+                el.innerText = separatedCost;
+            })
+            setTimeout(jalaliDateConvertor, 500)
+            })
+            .catch(error => {
+                console.error('Error:', error);
+        });
+        // Selected events for holiday display
+        const inevents = [
+            "جشن نوروز/جشن سال نو",
+            "شب قدر",
+            "عید سعید فطر",
+            "روز جمهوری اسلامی",
+            "تعطیل به مناسبت عید سعید فطر",
+            "جشن سیزده به در",
+            "شهادت امام جعفر صادق علیه السلام",
+            "ولادت امام رضا علیه السلام",
+            "رحلت حضرت امام خمینی",
+            "شهادت امام محمد باقر علیه السلام",
+            "قیام 15 خرداد",
+            "عید سعید قربان",
+            "عید سعید غدیر خم",
+            "تاسوعای حسینی",
+            "عاشورای حسینی",
+            "اربعین حسینی",
+            "رحلت رسول اکرم؛شهادت امام حسن مجتبی علیه السلام",
+            "شهادت امام رضا علیه السلام",
+            "شهادت امام حسن عسکری علیه السلام",
+            "میلاد رسول اکرم و امام جعفر صادق علیه السلام",
+            "شهادت حضرت فاطمه زهرا سلام الله علیها",
+            "ولادت امام علی علیه السلام و روز پدر",
+            "مبعث رسول اکرم (ص)",
+            "ولادت حضرت قائم عجل الله تعالی فرجه و جشن نیمه شعبان",
+            "شهادت حضرت علی علیه السلام",
+            "روز ملی شدن صنعت نفت ایران"
+        ];
+        // Holidays in the last 7 days
+        const startDate = inStartDate;
+        const endDate = inEndDate;
+        // Takes care of holiday display
+        $.ajax({
+            url: "/api/holiday-spot",
+            data: {
+                "start-date": startDate,
+                "end-date": endDate
+            },
+            traditional: true,
+            success: function (data) {
+                data.forEach(item => {
+                    if (item.descriptions[0] !== 'جمعه') {
+                        holidayDates.push(item.date);
+                    }
+                });
+                data.forEach(item => {
+                    if (item.descriptions[0] === 'جمعه') {
+                        fridays.push(item.date);
+                    }
+                });
+                timelineHolidays = data;
+                if (timelineHolidays.length > 0) {
+                    timelineHolidays.forEach(item => {
+                        item.descriptions = item.descriptions.filter(i => inevents.includes(i));
+                        if (item.descriptions.length > 1) {
+                            item.descriptions.length = 1;
+                        }
+                    });
+                }
+                timelineHolidays = timelineHolidays.filter(i => i.descriptions.length > 0)
+                const holidayContainer = document.querySelector("#holiday-container");
+                if (timelineHolidays.length === 0) {
+                    document.querySelector(".list-group-timeline").innerHTML = "<p style='display: flex; justify-content: center; align-items: center; font-weight: bold;'>مناسبتی وجود ندارد</p>";
+                }
+                if (timelineHolidays.length > 0) {
+                    document.querySelector(".list-group-timeline").innerHTML = "";
+                }
+                if (timelineHolidays.length > 3) {
+                    document.getElementById("holiday-card").style.height = "";
+                } else {
+                    document.getElementById("holiday-card").style.height = "100%";
+                }
                 timelineHolidays.forEach(i => {
                     if (i.descriptions.length !== 0) {
                         const rowhtml = `
@@ -302,9 +460,196 @@
                             <span class="description">${i.descriptions[0]}</span>
                         </li> 
                         `
-                        document.querySelectorAll(".list-group-timeline")[1].insertAdjacentHTML("beforeend", rowhtml);
+                        document.querySelector(".list-group-timeline").insertAdjacentHTML("beforeend", rowhtml);
+                    } 
+                });
+            }
+        });
+        // This takes care of people counting data
+        fetch(`{% url 'people_counter' url_hash=request.user.profile.merchant.url_hash %}?start-date=${inStartDate}&end-date=${inEndDate}`, {
+            method: 'GET',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.json();
+        })
+        .then(data => {
+            const total = data.entry_totals.reduce((a, b) => a + b, 0);
+            const newCategories = data.dates.map(dateStr => {
+                const date = new Date(dateStr);
+                return date.toLocaleDateString('fa-IR', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit'
+                });
+            });
+            lineChart.update({
+                xAxis: { 
+                    categories: newCategories,
+                    labels: {
+                        useHTML: true,  
+                        formatter: function () {
+                                const value = this.value; 
+                                if (holidayDates.includes(value)) {
+                                    return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                }
+                                if (fridays.includes(value)) {
+                                    return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                }
+                                return value; 
+                            }
+                        } 
+                    },
+                series: [{ name: `ترافیک (${Number(total).toLocaleString('fa-IR')})`, data: data.entry_totals},
+                {data: data.exit_totals}
+                ],
+            });
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('خطا در بارگذاری داده‌ها. لطفاً دوباره تلاش کنید.');
+        });
+    });
+</script>
+<!-- Initial HighChart Chart Paint (Branch Separation) JQuery -->
+<script>
+    // Since the holiday section and the campaign sections are taken care of above, this part is only dedicated to the chart display
+    // This triggers on page load
+    document.addEventListener("DOMContentLoaded", () => {
+        // Get the last 7 days: start and end
+        const {inStartDate, inEndDate} = getJalaliDateRange();
+        // Branch pks colloected from DOM 
+        const inBranches = []
+        document.querySelector(".branches-grid").querySelectorAll(".form-check").forEach(i => {
+            if (i.querySelector(".form-check-input").value !== "on") {
+                inBranches.push(i.querySelector(".form-check-input").value);
+            }
+        });
+        // Send an ajax request on page load based on the last 7 days and only affects the charts
+        $.ajax({
+            url: "/api/multi-branch-data",
+            data: {
+                "start-date": inStartDate,
+                "end-date": inEndDate,
+                "branch": inBranches
+            },
+            traditional: true, 
+            success: function (data) {
+                const rawCategories = data.dates;
+                const categories = rawCategories.map(dateStr => {
+                const date = new Date(dateStr);
+                return date.toLocaleDateString('fa-IR', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit'
+                });
+                });
+                const series = Object.entries(data.branches).map(([id, branchData]) => {
+                    const total = branchData.entry_totals.reduce((a, b) => a + b, 0);
+                    return {
+                    name: `${branchData.name} (${Number(total).toLocaleString('fa-IR')})`,
+                    data: branchData.entry_totals
                     }
                 });
+                Highcharts.chart("second-container", {
+                    chart: { type: "line",
+                        borderColor: '#e5e5e5',  
+                        borderWidth: 1,           
+                        borderRadius: 12,         
+                        spacing: [30, 20, 30, 20],
+                        backgroundColor: '#ffffff',
+                        style: {
+                            fontFamily: 'Vazirmatn, sans-serif',
+                            fontSize: '20px'
+                            }
+                        },
+                    title: { text: "ترافیک تفکیکی",
+                        style: {
+                            fontFamily: 'Vazirmatn, sans-serif',
+                            fontSize: '25px',
+                            color: '#333'
+                        } 
+                    },
+                    xAxis: { categories,
+                        title: {
+                        text: "تاریخ",
+                        style: {
+                        fontSize: '20px',
+                        fontWeight: 'bold',
+                        fontFamily: 'Vazirmatn, sans-serif',
+                            }
+                        },
+                        labels: {
+                            useHTML: true,  
+                            formatter: function () {
+                                    const value = this.value; 
+                                    if (holidayDates.includes(value)) {
+                                        return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                    }
+                                    if (fridays.includes(value)) {
+                                        return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                    }
+                                        return value; 
+                                }
+                            } 
+                        },
+                    yAxis: { title: { text: "ترافیک",
+                        style: {
+                            fontSize: '20px',
+                            fontWeight: 'bold',
+                            fontFamily: 'Vazirmatn, sans-serif',
+                            } 
+                        } 
+                    },
+                    series: series,
+                    plotOptions: {
+                        series: {
+                            point: {
+                                events: {
+                                    click: function () {
+                                        const apiUrl = "/api/get-campaign-each-point";
+                                        const date = this.category;
+                                        const branch = this.series.name;
+                                        const body = document.querySelector("body");
+                                        const infoModal = document.querySelector("#info-modal");
+                                        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                                        fetch(apiUrl, {
+                                            method: "POST",
+                                            headers: {
+                                                "Content-Type": "application/json",
+                                                "X-CSRFToken": csrftoken,
+                                            },
+                                            body: JSON.stringify({date: date, branch: branch.replace(/\(.*?\)/, "").trim()})
+                                        }).then(response => {
+                                            if (!response.ok) throw new Error("Invalid Response");
+                                            return response.json()
+                                        }).then(data => {
+                                            let htmlCampaigns = data.map((camp, index) =>
+                                                `<p style='margin-bottom: 0px;' style='margin-bottom: 0px; margin-top: 0px;'>${index + 1}. ${camp.campaign_name}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${camp.campaign_type}</p>`
+                                            ).join('')
+                                            if (data.length === 0) {
+                                                htmlCampaigns = `<p>هیچ کمپینی یافت نشد.</p>`
+                                            }
+                                            Swal.fire({
+                                            html: `<h3 style='margin-bottom: 0px;'>${this.y}</h3><p style='margin-bottom: 0px; margin-top: 0px;'>${this.series.name.replace(/\(.*?\)/, "").trim()}</p><p style='margin-top: 0px;'>${this.category}</p>
+                                            <p style='margin-bottom: 0px;'>کمپین ها:</p>
+                                            ${htmlCampaigns}
+                                            `,
+                                            confirmButtonText: 'بستن',
+                                            confirmButtonColor: '#5a8dee'
+                                        });
+                                        })
+
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            },
+            error: function (xhr) {
+                console.error("Error loading data");
             }
         });
     });
@@ -326,22 +671,27 @@
         lineChart = Highcharts.chart('container', {
         chart: {
             type: 'line',
-            backgroundColor: '#f9f9f9',
+            backgroundColor: '#ffffff',
+            borderColor: '#e5e5e5',  
+            borderWidth: 1,           
+            borderRadius: 12,         
+            spacing: [30, 20, 30, 20],
             style: {
-                fontFamily: 'tahoma',
+                fontFamily: 'Vazirmatn, sans-serif',
                 fontSize: '20px'
             }
         },
         title: {
-            text: "ترافیک",
+            text: "ترافیک تجمیعی",
             style: {
                 fontSize: '25px',
-                color: '#333'
+                color: '#333',
+                fontFamily: 'Vazirmatn, sans-serif',
             }
         },
         subtitle: {
             text: 'ترافیک روزانه شعب',
-            style: { color: '#666', fontSize: '12px' }
+            style: { color: '#666', fontSize: '12px', fontFamily: 'Vazirmatn, sans-serif' }
         },
         xAxis: {
             categories: categories,
@@ -349,7 +699,8 @@
                 text: "تاریخ",
                 style: {
                     fontSize: '20px',
-                    fontWeight: 'bold'
+                    fontWeight: 'bold',
+                    fontFamily: 'Vazirmatn, sans-serif',
                 }
             }
         },
@@ -358,7 +709,8 @@
                 text: "ترافیک",
                 style: {
                     fontSize: '20px',
-                    fontWeight: 'bold'
+                    fontWeight: 'bold',
+                    fontFamily: 'Vazirmatn, sans-serif',
                 }
             }
         },
@@ -389,7 +741,6 @@
                             const branch = this.series.name;
                             const body = document.querySelector("body");
                             const infoModal = document.querySelector("#info-modal");
-                            console.log(date, branch)
                             const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
                             fetch(apiUrl, {
                                 method: "POST",
@@ -402,7 +753,6 @@
                                 if (!response.ok) throw new Error("Invalid Response");
                                 return response.json()
                             }).then(data => {
-                                console.log(data)
                                 let htmlCampaigns = data.map((camp, index) =>
                                     `<p style='margin-bottom: 0px;' style='margin-bottom: 0px; margin-top: 0px;'>${index + 1}. ${camp.campaign_name}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${camp.campaign_type}</p>`
                                 ).join('')
@@ -447,6 +797,8 @@
                 return response.json();
             })
             .then(data => {
+                console.log(queryString);
+                console.log(data);
                 const total = data.entry_totals.reduce((a, b) => a + b, 0);
                 const newCategories = data.dates.map(dateStr => {
                     const date = new Date(dateStr);
@@ -489,9 +841,6 @@
                         </td>
                         <td class="greg-date">
                             ${campaign.campaign_end_date}
-                        </td>
-                        <td>
-                            ${campaign.campaign_branch_name}
                         </td>
                         <td>
                             ${campaign.campaign_type}
@@ -601,7 +950,10 @@
                     day: '2-digit'
                 });
                 });
-                console.log(rawCategories);
+                console.log(startDate);
+                console.log(endDate);
+                console.log(selectedBranches);
+                console.log(data);
                 const series = Object.entries(data.branches).map(([id, branchData]) => {
                     const total = branchData.entry_totals.reduce((a, b) => a + b, 0);
                     return {
@@ -611,16 +963,21 @@
                 });
                 Highcharts.chart("second-container", {
                     chart: { type: "line",
-                        backgroundColor: '#f9f9f9',
+                        backgroundColor: '#ffffff',
+                        borderColor: '#e5e5e5',  
+                        borderWidth: 1,           
+                        borderRadius: 12,         
+                        spacing: [30, 20, 30, 20],
                         style: {
-                            fontFamily: 'tahoma',
+                            fontFamily: 'Vazirmatn, sans-serif',
                             fontSize: '20px'
                             }
                         },
-                    title: { text: "مقایسه ترافیک شعب",
+                    title: { text: "ترافیک تفکیکی",
                         style: {
                             fontSize: '25px',
-                            color: '#333'
+                            color: '#333',
+                            fontFamily: 'Vazirmatn, sans-serif',
                         } 
                     },
                     xAxis: { categories,
@@ -628,7 +985,8 @@
                         text: "تاریخ",
                         style: {
                         fontSize: '20px',
-                        fontWeight: 'bold'
+                        fontWeight: 'bold',
+                        fontFamily: 'Vazirmatn, sans-serif',
                             }
                         },
                         labels: {
@@ -663,7 +1021,6 @@
                                         const branch = this.series.name;
                                         const body = document.querySelector("body");
                                         const infoModal = document.querySelector("#info-modal");
-                                        console.log(date, branch)
                                         const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
                                         fetch(apiUrl, {
                                             method: "POST",
@@ -676,7 +1033,6 @@
                                             if (!response.ok) throw new Error("Invalid Response");
                                             return response.json()
                                         }).then(data => {
-                                            console.log(data)
                                             let htmlCampaigns = data.map((camp, index) =>
                                                 `<p style='margin-bottom: 0px;' style='margin-bottom: 0px; margin-top: 0px;'>${index + 1}. ${camp.campaign_name}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${camp.campaign_type}</p>`
                                             ).join('')
@@ -711,18 +1067,21 @@
     const queryString = window.location.search; 
     const urlParams = new URLSearchParams(queryString);
     const type = urlParams.get("type");
+    const titleTypeOne = document.getElementById("title-type-1");
+    const titleTypeTwo = document.getElementById("title-type-2");
     document.addEventListener("DOMContentLoaded", () => {
         const secondContainer = document.querySelector("#second-container");
-        const intruction = document.querySelector("#instruction");
         if (type === "1") {
             container.style.display = "block";
             secondContainer.style.display = "none";
-            intruction.style.display = "none";
+            titleTypeOne.style.display = "";
+            titleTypeTwo.style.display = "none";
         }
         else {
             container.style.display = "none";
             secondContainer.style.display = "block";
-            intruction.style.display = "block";
+            titleTypeOne.style.display = "none";
+            titleTypeTwo.style.display = "";
         }
     });
 </script>
@@ -744,10 +1103,32 @@
 <script src="{% static 'assets/js/campaign-gregorian-to-jalali-date-convert.js' %}"></script>
 <!-- Sweet Alert CDN -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<!-- Button Collapse -->
-<script src="{% static 'assets/js/accordion-collapse-toggle.js' %}"></script>
-<!-- Button Color and Background -->
- <script src="{% static 'assets/js/accordion-color-and-background.js' %}"></script>
+<!-- Date and Branch Modal Configuration -->
+<script>
+    document.getElementById("confirmDateBtn").addEventListener("click", function () {
+    // Close the date modal
+    var dateModal = bootstrap.Modal.getInstance(document.getElementById("dateModal"));
+    dateModal.hide();
+
+    // When it's fully hidden, open the branch modal
+    document.getElementById("dateModal").addEventListener("hidden.bs.modal", function () {
+        var branchModal = new bootstrap.Modal(document.getElementById("branchModal"));
+        branchModal.show();
+    }, { once: true });
+    });
+
+    document.querySelector(".btn-secondary").addEventListener("click", function () {
+    // Close the date modal
+    var dateModal = bootstrap.Modal.getInstance(document.getElementById("branchModal"));
+    dateModal.hide();
+
+    // When it's fully hidden, open the date modal
+    document.getElementById("branchModal").addEventListener("hidden.bs.modal", function () {
+        var branchModal = new bootstrap.Modal(document.getElementById("dateModal"));
+        branchModal.show();
+    }, { once: true });
+    });
+</script>
 {% endblock %}
 
 

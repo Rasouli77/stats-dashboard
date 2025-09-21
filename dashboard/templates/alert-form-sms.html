@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}
+	فرم اطلاع رسانی sms
+{% endblock %}
+{% block meta_description %}
+	فرم اطلاع رسانی sms
+{% endblock %}
+{% block content %}
+{% if request.user.is_authenticated %}
+    {% if request.user.is_superuser %}
+    <h4 class="py-3 breadcrumb-wrapper mb-4">فرم اطلاع رسانی اختلال</h4>
+    <form action="" method="post">
+        {% csrf_token %}
+        <div class="row">
+            <div class="col-md-6">
+              <div class="card mb-4">
+                <div class="card-body">
+                  <div>
+                    <label for="id_first_name" class="form-label">نام</label>
+                    <input type="text" class="form-control" name="first_name" id="id_first_name" aria-describedby="defaultFormControlHelp">
+                    <label for="id_last_name" class="form-label">شماره موبایل</label>
+                    <input type="text" class="form-control" name="last_name" id="id_last_name" aria-describedby="defaultFormControlHelp">
+                    <label for="flatpickr-time" class="form-label" style="margin-top: 20px;">انتخاب‌گر زمان</label>
+                    <input type="text" id="flatpickr-time" class="form-control" placeholder="HH:MM">
+                    <button class="btn btn-primary" type="submit" style="margin-top: 20px;">ثبت</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+        </div>
+    </form>
+{% else %}
+<p>شما اجازه دسترسی به این قسمت را ندارید</p>
+{% endif %}
+{% endif %}
+{% endblock %}

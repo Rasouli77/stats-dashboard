@@ -504,7 +504,7 @@ def get_ping(ip, timeout=15):
             # Example ping output line on Linux:
             match = re.search(r"time=([\d.]+)\s*ms", result.stdout)
             if match:
-                return float(match.group(1))  # return RTT in ms
+                return int(float(match.group(1)))  # return RTT in ms
             else:
                 return None
         else:
@@ -516,7 +516,6 @@ def get_ping(ip, timeout=15):
     except Exception as e:
         print(f"Error: {e}")
         return None
-
 
 
 class CamStatus(APIView):
@@ -536,6 +535,7 @@ class CamStatus(APIView):
                 return Response({"cam_id": cam.pk, "status": cam.status})
         except Exception as e:
             return Response({"error": f"{e}"})
+
 
 
 

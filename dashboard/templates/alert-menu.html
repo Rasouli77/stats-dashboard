@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}
+    اطلاع رسانی
+{% endblock %}
+{% block meta_description %}
+	اطلاع رسانی
+{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12">
+            <a href="{% url 'alert_form_social' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" style="text-decoration: none; color: inherit;">
+                <div class="card" style="background-color: #f8f2dbcc;">
+                    <div class="card-body">
+                        <h4 class="card-title">گزارش روزانه</h4>
+                        <p class="card-text"> در این بخش می‌توانید گزارش روزانه‌ای از ترافیک، میزان فروش و نرخ تبدیل در تلگرام و واتساپ داشته باشید. با ارائهٔ یک اکانت تلگرام یا واتساپ، امکان اتصال و مشاهدهٔ داده‌ها فراهم می‌شود. <br>❓<strong>پاسخ به سؤال:</strong> در هر روز چه تعداد بازدید، چه میزان فروش و چه نرخ تبدیل در تلگرام و واتساپ ثبت می‌شود؟ </p>
+                        <p style="text-decoration: underline;">مشاهده</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12">
+            <a href="{% url 'alert_form_sms' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" style="text-decoration: none; color: inherit;">
+                <div class="card" style="background-color: #ddf0ffcc;">
+                    <div class="card-body">
+                        <h4 class="card-title">اطلاع رسانی اختلال</h4>
+                        <p class="card-text"> در این بخش می‌توانید یک شماره تلفن وارد کنید تا در صورت بروز اختلال یا آفلاین شدن دوربین‌ها، سریعاً مطلع شوید. این گزینه به‌منظور کاهش زمان پاسخ‌دهی در شرایط اضطراری تعبیه شده است. <br>❓<strong>پاسخ به سؤال:</strong> در صورت اختلال یا آفلاین شدن دوربین‌ها، چه شماره‌ای برای اطلاع‌رسانی ثبت شده است؟ </p>
+                        <p style="text-decoration: underline;">مشاهده</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

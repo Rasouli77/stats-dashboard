@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}
+	فرم اطلاع رسانی گزارش روزانه 
+{% endblock %}
+{% block meta_description %}
+	 فرم اطلاع رسانی گزارش روزانه
+{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+{% endblock %}
+{% block content %}
+{% if request.user.is_authenticated %}
+    {% if request.user.is_superuser %}
+    <h4 class="py-3 breadcrumb-wrapper mb-4">فرم اطلاع رسانی گزارش روزانه</h4>
+    <form action="" method="post">
+        {% csrf_token %}
+        <div class="row">
+            <div class="col-md-6">
+              <div class="card mb-4">
+                <div class="card-body">
+                  <div>
+                    <label for="id_first_name" class="form-label">نام</label>
+                    <input type="text" class="form-control" name="first_name" id="id_first_name" aria-describedby="defaultFormControlHelp">
+                    <label for="id_last_name" class="form-label">شماره موبایل</label>
+                    <input type="text" class="form-control" name="last_name" id="id_last_name" aria-describedby="defaultFormControlHelp">
+                    <label for="id_username" class="form-label">آی دی تلگرام</label>
+                    <input type="text" class="form-control" name="username" id="id_username" aria-describedby="defaultFormControlHelp">
+                    <div id="options">
+                    <label class="form-label" style="margin-top: 20px;">گزارش مورد نظر را انتخاب کنید</label>
+                        <div>
+                            <label class="form-check-label"><input class="form-check-input" type="checkbox" name="branch" value="1" aria-invalid="true" style="margin-left: 10px;">گزارش ترافیک روزانه</label>
+                        </div>
+                        <div>
+                            <label class="form-check-label"><input class="form-check-input" type="checkbox" name="branch" value="2" aria-invalid="true" style="margin-left: 10px;">گزارش تعداد فلکتور روزانه</label>
+                        </div>
+                        <div>
+                            <label class="form-check-label"><input class="form-check-input" type="checkbox" name="branch" value="3" aria-invalid="true" style="margin-left: 10px;">گزارش ریالی فروش روزانه</label>
+                        </div>
+                        <div>
+                            <label class="form-check-label"><input class="form-check-input" type="checkbox" name="branch" value="4" aria-invalid="true" style="margin-left: 10px;">گزارش نرخ تبدیل روزانه</label>
+                        </div>
+                    </div>
+                    <div class="form-check form-switch mb-2" style="margin-top: 20px;">
+                        <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" name="is_staff">
+                        <label class="form-check-label" for="id_is_staff">ارسال گزارش در تلگرام</label>
+                    </div>
+                    <div class="form-check form-switch mb-2" style="margin-top: 20px;">
+                        <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" name="is_active">
+                        <label class="form-check-label" for="id_is_active">ارسال گزارش در واتساپ</label>
+                    </div>
+                    <label for="flatpickr-time" class="form-label" style="margin-top: 20px;">انتخاب‌گر زمان</label>
+                    <input type="text" id="flatpickr-time" class="form-control" placeholder="HH:MM">
+                    <button class="btn btn-primary" type="submit" style="margin-top: 20px;">ثبت</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+        </div>
+    </form>
+{% else %}
+<p>شما اجازه دسترسی به این قسمت را ندارید</p>
+{% endif %}
+{% endif %}
+{% endblock %}
+{% block extra_js %}
+<!-- Flatpickr JS -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+  flatpickr("#flatpickr-time", {
+    enableTime: true,
+    noCalendar: true,
+    dateFormat: "H:i",
+    time_24hr: true
+  });
+</script>
+{% endblock %}
