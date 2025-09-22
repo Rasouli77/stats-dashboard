@@ -1,7 +1,12 @@
 const returnBtn = document.getElementById("return");
 const menuTwo = document.getElementById("menu");
 const body = document.getElementById("body");
-const groupedCampaigns = document.querySelector("#grouped-campaigns");
+const titleOne = document.getElementById("title-type-1");
+const titleTwo = document.getElementById("title-type-2");
+const titleThree = document.getElementById("title-type-3");
+const titleFour = document.getElementById("title-type-4");
+const titleFive = document.getElementById("title-type-5");
+const titleSix = document.getElementById("title-type-6");
 
 // Return Button
 returnBtn.addEventListener("click", () => {
@@ -52,6 +57,17 @@ const allToAllEntryCard = document.getElementById("all-to-all-entry");
 // Chart
 const allToAllEntryChart = document.getElementById("second-one-to-all-container");
 
+function showTitleAnalysis(one, two, three, four, five, six) {
+    // one is always dispalyed
+    one.style.display = "block";
+    // The rest are hidden
+    two.style.display = "none";
+    three.style.display = "none";
+    four.style.display = "none";
+    five.style.display = "none";
+    six.style.display = "none";
+}
+
 // First Card
 aggConPercentCard.addEventListener("click", () => {
     menuTwo.style.display = "none";
@@ -63,7 +79,7 @@ aggConPercentCard.addEventListener("click", () => {
     oneToAllEntryChart.style.display = "none";
     allToAllEntryChart.style.display = "none";
     returnBtn.style.display = "block";
-    groupedCampaigns.style.display = "block";
+    showTitleAnalysis(titleOne, titleTwo, titleThree, titleFour, titleFive, titleSix);
 });
 
 // Second Card
@@ -77,7 +93,7 @@ branchConPercentCard.addEventListener("click", () => {
     oneToAllEntryChart.style.display = "none";
     allToAllEntryChart.style.display = "none";
     returnBtn.style.display = "block";
-    groupedCampaigns.style.display = "block";
+    showTitleAnalysis(titleTwo, titleOne, titleThree, titleFour, titleFive, titleSix);
 });
 
 // Third Card
@@ -91,7 +107,7 @@ aggEntryValCard.addEventListener("click", () => {
     oneToAllEntryChart.style.display = "none";
     allToAllEntryChart.style.display = "none";
     returnBtn.style.display = "block";
-    groupedCampaigns.style.display = "block";
+    showTitleAnalysis(titleThree, titleOne, titleTwo, titleFour, titleFive, titleSix);
 });
 
 // Forth Card
@@ -105,7 +121,7 @@ branchEntryValCard.addEventListener("click", () => {
     oneToAllEntryChart.style.display = "none";
     allToAllEntryChart.style.display = "none";
     returnBtn.style.display = "block";
-    groupedCampaigns.style.display = "block";
+    showTitleAnalysis(titleFour, titleOne, titleTwo, titleThree, titleFive, titleSix);
 });
 
 // Fifth Card
@@ -119,7 +135,7 @@ oneToAllEntryCard.addEventListener("click", () => {
     oneToAllEntryChart.style.display = "block";
     allToAllEntryChart.style.display = "none";
     returnBtn.style.display = "block";
-    groupedCampaigns.style.display = "block";
+    showTitleAnalysis(titleFive, titleOne, titleTwo, titleThree, titleFour, titleSix);
 });
 
 // Sixth Card
@@ -133,5 +149,5 @@ allToAllEntryCard.addEventListener("click", () => {
     oneToAllEntryChart.style.display = "none";
     allToAllEntryChart.style.display = "block";
     returnBtn.style.display = "block";
-    groupedCampaigns.style.display = "block";
+    showTitleAnalysis(titleSix, titleOne, titleTwo, titleThree, titleFour, titleFive);
 });

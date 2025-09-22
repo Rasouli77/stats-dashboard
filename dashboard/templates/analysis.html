@@ -15,7 +15,7 @@
 <!-- Custom Style for FlatPicker Calendar -->
 <style>
     .light-style .flatpickr-calendar {
-    box-shadow: none !important;
+        box-shadow: none !important;
     }
 </style>
 <!-- Custom Style for the Loading Overlay / Additional CSS -->
@@ -147,22 +147,22 @@
     <div class="row">
         <!-- Date Picker Card -->
         <div class="col-xl-7 col-lg-2 col-md-12 col-sm-12" style="margin-bottom: 10px; display: none;" id="title-type-1">
-            <h1 style="color: #262626; font-size: 1.38rem; font-weight: 700;">نرخ تبدیل ترافیک (TCR)</h1>
+            <h1 style="color: #262626; font-size: 1.38rem; font-weight: 700;">گزارش نرخ تبدیل ترافیک (TCR)</h1>
         </div>
         <div class="col-xl-7 col-lg-2 col-md-12 col-sm-12" style="margin-bottom: 10px; display: none;" id="title-type-2">
-            <h1 style="color: #262626; font-size: 1.38rem; font-weight: 700;">نرخ تبدیل به تفکیک ()</h1>
+            <h1 style="color: #262626; font-size: 1.38rem; font-weight: 700;">گزارش نرخ تبدیل به تفکیک شعب (BTCR)</h1>
         </div>
-        <div class="col-xl-7 col-lg-2 col-md-12 col-sm-12" style="margin-bottom: 10px; display: none;" id="title-type-2">
-            <h1 style="color: #262626; font-size: 1.38rem; font-weight: 700;">گزارش فروش تفکیکی</h1>
+        <div class="col-xl-7 col-lg-2 col-md-12 col-sm-12" style="margin-bottom: 10px; display: none;" id="title-type-3">
+            <h1 style="color: #262626; font-size: 1.38rem; font-weight: 700;">گزارش ارزش ورودی (EV)</h1>
         </div>
-        <div class="col-xl-7 col-lg-2 col-md-12 col-sm-12" style="margin-bottom: 10px; display: none;" id="title-type-2">
-            <h1 style="color: #262626; font-size: 1.38rem; font-weight: 700;">گزارش فروش تفکیکی</h1>
+        <div class="col-xl-7 col-lg-2 col-md-12 col-sm-12" style="margin-bottom: 10px; display: none;" id="title-type-4">
+            <h1 style="color: #262626; font-size: 1.38rem; font-weight: 700;">گزارش ارزش ورودی به تفکیک شعب (BEV)</h1>
         </div>
-        <div class="col-xl-7 col-lg-2 col-md-12 col-sm-12" style="margin-bottom: 10px; display: none;" id="title-type-2">
-            <h1 style="color: #262626; font-size: 1.38rem; font-weight: 700;">گزارش فروش تفکیکی</h1>
+        <div class="col-xl-7 col-lg-2 col-md-12 col-sm-12" style="margin-bottom: 10px; display: none;" id="title-type-5">
+            <h1 style="color: #262626; font-size: 1.38rem; font-weight: 700;">گزارش سهم ترافیک شعبه (BTS)</h1>
         </div>
-        <div class="col-xl-7 col-lg-2 col-md-12 col-sm-12" style="margin-bottom: 10px; display: none;" id="title-type-2">
-            <h1 style="color: #262626; font-size: 1.38rem; font-weight: 700;">گزارش فروش تفکیکی</h1>
+        <div class="col-xl-7 col-lg-2 col-md-12 col-sm-12" style="margin-bottom: 10px; display: none;" id="title-type-6">
+            <h1 style="color: #262626; font-size: 1.38rem; font-weight: 700;">گزارش سهم ترافیک همه (TBTS)</h1>
         </div>
         <div class="col-xl-2 col-lg-2 col-md-12 col-sm-12" style="margin-bottom: 10px;">
             <h1 style="color: #262626; font-size: 1.125rem; font-weight: 700;">گزارش بر اساس:</h1>
@@ -2199,6 +2199,8 @@
     }, { once: true });
     });
 </script>
+<!-- Flatpickr Initial Date Range -->
+<script src="{% static 'assets/js/flatpickr-initial-date-range.js' %}"></script>
 {% endblock %}
 
 
