@@ -66,16 +66,24 @@
 <div class="container">
     <div class="row">
         <!-- Date Picker Card -->
-        <div class="col-xl-7 col-lg-2 col-md-12 col-sm-12" style="margin-bottom: 10px; display: none;" id="title-type-1">
-            <h1 style="color: #262626; font-size: 1.38rem; font-weight: 700;">گزارش فروش تجمیعی</h1>
-        </div>
-        <div class="col-xl-7 col-lg-2 col-md-12 col-sm-12" style="margin-bottom: 10px; display: none;" id="title-type-2">
-            <h1 style="color: #262626; font-size: 1.38rem; font-weight: 700;">گزارش فروش تفکیکی</h1>
+        <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12" style="margin-bottom: 10px;">
+            <h1 style="color: #262626; font-size: 1.38rem; font-weight: 700;">گزارش فروش و تعداد فاکتور</h1>
         </div>
         <div class="col-xl-2 col-lg-2 col-md-12 col-sm-12" style="margin-bottom: 10px;">
             <h1 style="color: #262626; font-size: 1.125rem; font-weight: 700;">گزارش بر اساس:</h1>
         </div>
-        <div class="col-xl-3 col-lg-3 col-md-12 col-sm-12" style="margin-bottom: 10px;">
+        <div class="col-xl-2 col-lg-2 col-md-12 col-sm-12" style="margin-bottom: 10px;">
+            <small>نمایش</small>
+            <div class="card mt-3">
+                <div class="card-body" style="padding: 0px !important;">
+                    <select class="form-select w-100" aria-label="Filter select" id="chart-display-toggle">
+                        <option value="1" selected>تجمیعی</option>
+                        <option value="2">تفکیکی</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-2 col-lg-2 col-md-12 col-sm-12" style="margin-bottom: 10px;">
             <small>بازه زمانی گزارش و شعب</small>
             <div class="card mt-3">
                 <div class="card-body" style="padding: 0px !important;">
@@ -337,8 +345,6 @@
     }
     const inQueryString = window.location.search; 
     const inUrlParams = new URLSearchParams(inQueryString);
-    const inType = inUrlParams.get("type");
-    if (inType === "1") {
         document.addEventListener("DOMContentLoaded", () => {
         const {inStartDate, inEndDate} = getJalaliDateRange();
         const inevents = [
@@ -529,258 +535,376 @@
             console.error('Error:', error);
         });
     });
-    }
 </script>
 <!-- Initial HighChart Chart Paint (Invoice Separation) JQuery -->
 <script>
     document.addEventListener("DOMContentLoaded", () => {
-        if (inType === "2") {
-            const {inStartDate, inEndDate} = getJalaliDateRange();
-            const inBranches = []
-            fetch(`{% url 'invoice_counter' url_hash=request.user.profile.merchant.url_hash %}?start-date=${inStartDate}&end-date=${inEndDate}`, {
-                method: 'GET',
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
-            })
-            .then(response => {
-                if (!response.ok) throw new Error('Network response was not ok');
-                return response.json();
-            })
-            .then(data => {
-                document.querySelector(".table-border-bottom-0").innerHTML = "";
-                data.campaigns.forEach(campaign => {
-                const rowhtml = `
-                    <tr>
-                        <td>
-                            ${campaign.campaign_name} 
-                        </td>
-                        <td class="greg-date">
-                            ${campaign.campaign_start_date}
-                        </td>
-                        <td class="greg-date">
-                            ${campaign.campaign_end_date}
-                        </td>
-                        <td>
-                            ${campaign.campaign_type}
-                        </td>
-                        <td class="campaign-cost">
-                            ${campaign.campaign_cost}
-                        </td>
-                    </tr>
-                    `
-                document.querySelector(".table-border-bottom-0").insertAdjacentHTML("beforeend", rowhtml);
-                });
-
-                function jalaliDateConvertor() {
-                document.querySelectorAll(".greg-date").forEach(el => {
-                    const gregorian = el.innerHTML.split("-");
-                    const gYear = parseInt(gregorian[0]);
-                    const gMonth = parseInt(gregorian[1]);
-                    const gDay = parseInt(gregorian[2]);
-                    const jdate = jalaali.toJalaali(gYear, gMonth, gDay);
-                    el.innerText = `${jdate.jy}/${String(jdate.jm).padStart(2, '0')}/${String(jdate.jd).padStart(2, '0')}`;
-                    });
-                }
-                document.querySelectorAll(".campaign-cost").forEach(el => {
-                    const cost = Number(el.innerText);
-                    const separatedCost = cost.toLocaleString('fa-IR');
-                    el.innerText = separatedCost;
-                })
-                setTimeout(jalaliDateConvertor, 500)
-            })
-            .catch(error => {
-                console.error('Error:', error);
+        const {inStartDate, inEndDate} = getJalaliDateRange();
+        const inBranches = []
+        fetch(`{% url 'invoice_counter' url_hash=request.user.profile.merchant.url_hash %}?start-date=${inStartDate}&end-date=${inEndDate}`, {
+            method: 'GET',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.json();
+        })
+        .then(data => {
+            document.querySelector(".table-border-bottom-0").innerHTML = "";
+            data.campaigns.forEach(campaign => {
+            const rowhtml = `
+                <tr>
+                    <td>
+                        ${campaign.campaign_name} 
+                    </td>
+                    <td class="greg-date">
+                        ${campaign.campaign_start_date}
+                    </td>
+                    <td class="greg-date">
+                        ${campaign.campaign_end_date}
+                    </td>
+                    <td>
+                        ${campaign.campaign_type}
+                    </td>
+                    <td class="campaign-cost">
+                        ${campaign.campaign_cost}
+                    </td>
+                </tr>
+                `
+            document.querySelector(".table-border-bottom-0").insertAdjacentHTML("beforeend", rowhtml);
             });
-            const inevents = [
-            "جشن نوروز/جشن سال نو",
-            "شب قدر",
-            "عید سعید فطر",
-            "روز جمهوری اسلامی",
-            "تعطیل به مناسبت عید سعید فطر",
-            "جشن سیزده به در",
-            "شهادت امام جعفر صادق علیه السلام",
-            "ولادت امام رضا علیه السلام",
-            "رحلت حضرت امام خمینی",
-            "شهادت امام محمد باقر علیه السلام",
-            "قیام 15 خرداد",
-            "عید سعید قربان",
-            "عید سعید غدیر خم",
-            "تاسوعای حسینی",
-            "عاشورای حسینی",
-            "اربعین حسینی",
-            "رحلت رسول اکرم؛شهادت امام حسن مجتبی علیه السلام",
-            "شهادت امام رضا علیه السلام",
-            "شهادت امام حسن عسکری علیه السلام",
-            "میلاد رسول اکرم و امام جعفر صادق علیه السلام",
-            "شهادت حضرت فاطمه زهرا سلام الله علیها",
-            "ولادت امام علی علیه السلام و روز پدر",
-            "مبعث رسول اکرم (ص)",
-            "ولادت حضرت قائم عجل الله تعالی فرجه و جشن نیمه شعبان",
-            "شهادت حضرت علی علیه السلام",
-            "روز ملی شدن صنعت نفت ایران"
-        ];
-        const startDate = inStartDate;
-        const endDate = inEndDate;
-        $.ajax({
-            url: "/api/holiday-spot",
-            data: {
-                "start-date": startDate,
-                "end-date": endDate
-            },
-            traditional: true,
-            success: function (data) {
-                data.forEach(item => {
-                    if (item.descriptions[0] !== 'جمعه') {
-                        holidayDates.push(item.date);
-                    }
-                });
-                data.forEach(item => {
-                    if (item.descriptions[0] === 'جمعه') {
-                        fridays.push(item.date);
-                    }
-                });
-                timelineHolidays = data;
-                if (timelineHolidays.length > 0) {
-                    timelineHolidays.forEach(item => {
-                        item.descriptions = item.descriptions.filter(i => inevents.includes(i));
-                        if (item.descriptions.length > 1) {
-                            item.descriptions.length = 1;
-                        }
-                    });
-                }
-                timelineHolidays = timelineHolidays.filter(i => i.descriptions.length > 0)
-                const holidayContainer = document.querySelector("#holiday-container");
-                if (timelineHolidays.length === 0) {
-                    document.querySelector(".list-group-timeline").innerHTML = "<p style='display: flex; justify-content: center; align-items: center; font-weight: bold;'>مناسبتی وجود ندارد</p>";
-                }
-                if (timelineHolidays.length > 0) {
-                    document.querySelector(".list-group-timeline").innerHTML = "";
-                }
-                if (timelineHolidays.length > 3) {
-                    document.getElementById("holiday-card").style.height = "";
-                } else {
-                    document.getElementById("holiday-card").style.height = "100%";
-                }
-                timelineHolidays.forEach(i => {
-                    if (i.descriptions.length !== 0) {
-                        const rowhtml = `
-                        <li class="list-group-item list-group-timeline-primary">
-                            <span class="holiday-date" style="background-color: #5a8dee; border-radius: 5px; color: white; padding-left: 5px; padding-right: 5px; padding-top: 2.5px; padding-bottom: 2.5px; margin-left: 25px;">${i.date}</span>
-                            <span class="description">${i.descriptions[0]}</span>
-                        </li> 
-                        `
-                        document.querySelector(".list-group-timeline").insertAdjacentHTML("beforeend", rowhtml);
-                    } 
+
+            function jalaliDateConvertor() {
+            document.querySelectorAll(".greg-date").forEach(el => {
+                const gregorian = el.innerHTML.split("-");
+                const gYear = parseInt(gregorian[0]);
+                const gMonth = parseInt(gregorian[1]);
+                const gDay = parseInt(gregorian[2]);
+                const jdate = jalaali.toJalaali(gYear, gMonth, gDay);
+                el.innerText = `${jdate.jy}/${String(jdate.jm).padStart(2, '0')}/${String(jdate.jd).padStart(2, '0')}`;
                 });
             }
-            });
-            document.querySelector(".branches-grid").querySelectorAll(".form-check").forEach(i => {
-                if (i.querySelector(".form-check-input").value !== "on") {
-                    inBranches.push(i.querySelector(".form-check-input").value);
+            document.querySelectorAll(".campaign-cost").forEach(el => {
+                const cost = Number(el.innerText);
+                const separatedCost = cost.toLocaleString('fa-IR');
+                el.innerText = separatedCost;
+            })
+            setTimeout(jalaliDateConvertor, 500)
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+        const inevents = [
+        "جشن نوروز/جشن سال نو",
+        "شب قدر",
+        "عید سعید فطر",
+        "روز جمهوری اسلامی",
+        "تعطیل به مناسبت عید سعید فطر",
+        "جشن سیزده به در",
+        "شهادت امام جعفر صادق علیه السلام",
+        "ولادت امام رضا علیه السلام",
+        "رحلت حضرت امام خمینی",
+        "شهادت امام محمد باقر علیه السلام",
+        "قیام 15 خرداد",
+        "عید سعید قربان",
+        "عید سعید غدیر خم",
+        "تاسوعای حسینی",
+        "عاشورای حسینی",
+        "اربعین حسینی",
+        "رحلت رسول اکرم؛شهادت امام حسن مجتبی علیه السلام",
+        "شهادت امام رضا علیه السلام",
+        "شهادت امام حسن عسکری علیه السلام",
+        "میلاد رسول اکرم و امام جعفر صادق علیه السلام",
+        "شهادت حضرت فاطمه زهرا سلام الله علیها",
+        "ولادت امام علی علیه السلام و روز پدر",
+        "مبعث رسول اکرم (ص)",
+        "ولادت حضرت قائم عجل الله تعالی فرجه و جشن نیمه شعبان",
+        "شهادت حضرت علی علیه السلام",
+        "روز ملی شدن صنعت نفت ایران"
+    ];
+    const startDate = inStartDate;
+    const endDate = inEndDate;
+    $.ajax({
+        url: "/api/holiday-spot",
+        data: {
+            "start-date": startDate,
+            "end-date": endDate
+        },
+        traditional: true,
+        success: function (data) {
+            data.forEach(item => {
+                if (item.descriptions[0] !== 'جمعه') {
+                    holidayDates.push(item.date);
                 }
             });
-            $.ajax({
-                url: "/api/multi-branch-invoice-data",
-                data: {
-                    "start-date": inStartDate,
-                    "end-date": inEndDate,
-                    "branch": inBranches
-                },
-                traditional: true, 
-                success: function (data) {
-                    const rawCategories = data.dates;
-                    const categories = rawCategories.map(dateStr => {
-                    const date = new Date(dateStr);
-                    return date.toLocaleDateString('fa-IR', {
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit'
-                    });
-                    });
-                    const series = Object.entries(data.invoice_data).map(([id, invoiceData]) => {
-                        const totalSAmount = invoiceData.total_amounts.reduce((a, b) => a + b, 0);
-                        return {
-                        name: `${invoiceData.name} (${Number(totalSAmount).toLocaleString('fa-IR')})`,
-                        data: invoiceData.total_amounts
+            data.forEach(item => {
+                if (item.descriptions[0] === 'جمعه') {
+                    fridays.push(item.date);
+                }
+            });
+            timelineHolidays = data;
+            if (timelineHolidays.length > 0) {
+                timelineHolidays.forEach(item => {
+                    item.descriptions = item.descriptions.filter(i => inevents.includes(i));
+                    if (item.descriptions.length > 1) {
+                        item.descriptions.length = 1;
+                    }
+                });
+            }
+            timelineHolidays = timelineHolidays.filter(i => i.descriptions.length > 0)
+            const holidayContainer = document.querySelector("#holiday-container");
+            if (timelineHolidays.length === 0) {
+                document.querySelector(".list-group-timeline").innerHTML = "<p style='display: flex; justify-content: center; align-items: center; font-weight: bold;'>مناسبتی وجود ندارد</p>";
+            }
+            if (timelineHolidays.length > 0) {
+                document.querySelector(".list-group-timeline").innerHTML = "";
+            }
+            if (timelineHolidays.length > 3) {
+                document.getElementById("holiday-card").style.height = "";
+            } else {
+                document.getElementById("holiday-card").style.height = "100%";
+            }
+            timelineHolidays.forEach(i => {
+                if (i.descriptions.length !== 0) {
+                    const rowhtml = `
+                    <li class="list-group-item list-group-timeline-primary">
+                        <span class="holiday-date" style="background-color: #5a8dee; border-radius: 5px; color: white; padding-left: 5px; padding-right: 5px; padding-top: 2.5px; padding-bottom: 2.5px; margin-left: 25px;">${i.date}</span>
+                        <span class="description">${i.descriptions[0]}</span>
+                    </li> 
+                    `
+                    document.querySelector(".list-group-timeline").insertAdjacentHTML("beforeend", rowhtml);
+                } 
+            });
+        }
+        });
+        document.querySelector(".branches-grid").querySelectorAll(".form-check").forEach(i => {
+            if (i.querySelector(".form-check-input").value !== "on") {
+                inBranches.push(i.querySelector(".form-check-input").value);
+            }
+        });
+        $.ajax({
+            url: "/api/multi-branch-invoice-data",
+            data: {
+                "start-date": inStartDate,
+                "end-date": inEndDate,
+                "branch": inBranches
+            },
+            traditional: true, 
+            success: function (data) {
+                const rawCategories = data.dates;
+                const categories = rawCategories.map(dateStr => {
+                const date = new Date(dateStr);
+                return date.toLocaleDateString('fa-IR', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit'
+                });
+                });
+                const series = Object.entries(data.invoice_data).map(([id, invoiceData]) => {
+                    const totalSAmount = invoiceData.total_amounts.reduce((a, b) => a + b, 0);
+                    return {
+                    name: `${invoiceData.name} (${Number(totalSAmount).toLocaleString('fa-IR')})`,
+                    data: invoiceData.total_amounts
+                    }
+                });
+                Highcharts.chart("second-container", {
+                    chart: { 
+                        type: "line",
+                        borderColor: '#e5e5e5',  
+                        borderWidth: 1,           
+                        borderRadius: 12,         
+                        spacing: [30, 20, 30, 20],
+                        backgroundColor: '#ffffff',
+                        style: {
+                            fontFamily: 'Vazirmatn, sans-serif',
+                            fontSize: '20px'
                         }
-                    });
-                    Highcharts.chart("second-container", {
-                        chart: { 
-                            type: "line",
-                            borderColor: '#e5e5e5',  
-                            borderWidth: 1,           
-                            borderRadius: 12,         
-                            spacing: [30, 20, 30, 20],
-                            backgroundColor: '#ffffff',
-                            style: {
-                                fontFamily: 'Vazirmatn, sans-serif',
-                                fontSize: '20px'
-                            }
-                            },
-                        title: { text: "فروش تفکیکی",
-                            style: {
-                                fontSize: '25px',
-                                color: '#333'
-                            } 
                         },
-                        xAxis: { categories,
-                            title: {
-                            text: "تاریخ",
-                            style: {
+                    title: { text: "فروش تفکیکی",
+                        style: {
+                            fontSize: '25px',
+                            color: '#333'
+                        } 
+                    },
+                    xAxis: { categories,
+                        title: {
+                        text: "تاریخ",
+                        style: {
+                        fontSize: '20px',
+                        fontWeight: 'bold'
+                        }
+                    },
+                    labels: {
+                        useHTML: true,  
+                        formatter: function () {
+                                const value = this.value; 
+                                if (holidayDates.includes(value)) {
+                                    return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                }
+                                if (fridays.includes(value)) {
+                                    return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                }
+                                return value; 
+                            }
+                        } 
+                    },
+                    yAxis: { title: { text: "فروش",
+                        style: {
                             fontSize: '20px',
                             fontWeight: 'bold'
-                            }
-                        },
-                        labels: {
-                            useHTML: true,  
-                            formatter: function () {
-                                    const value = this.value; 
-                                    if (holidayDates.includes(value)) {
-                                        return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                            } 
+                        } 
+                    },
+                    series: series,
+                    plotOptions: {
+                        series: {
+                            point: {
+                                events: {
+                                    click: function () {
+                                        const apiUrl = "/api/get-campaign-each-point";
+                                        const date = this.category;
+                                        const branch = this.series.name;
+                                        const body = document.querySelector("body");
+                                        const infoModal = document.querySelector("#info-modal");
+                                        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                                        fetch(apiUrl, {
+                                            method: "POST",
+                                            headers: {
+                                                "Content-Type": "application/json",
+                                                "X-CSRFToken": csrftoken,
+                                            },
+                                            body: JSON.stringify({date: date, branch: branch.replace(/\(.*?\)/, "").trim()})
+                                        }).then(response => {
+                                            if (!response.ok) throw new Error("Invalid Response");
+                                            return response.json()
+                                        }).then(data => {
+                                            let htmlCampaigns = data.map((camp, index) =>
+                                                `<p style='margin-bottom: 0px;' style='margin-bottom: 0px; margin-top: 0px;'>${index + 1}. ${camp.campaign_name}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${camp.campaign_type}</p>`
+                                            ).join('')
+                                            if (data.length === 0) {
+                                                htmlCampaigns = `<p>هیچ کمپینی یافت نشد.</p>`
+                                            }
+                                            Swal.fire({
+                                            html: `<h3 style='margin-bottom: 0px;'>${this.y}</h3><p style='margin-bottom: 0px; margin-top: 0px;'>${this.series.name}</p><p style='margin-top: 0px;'>${this.category}</p>
+                                            <p style='margin-bottom: 0px;'>کمپین ها:</p>
+                                            ${htmlCampaigns}
+                                            `,
+                                            confirmButtonText: 'بستن',
+                                            confirmButtonColor: '#5a8dee'
+                                        });
+                                        })
                                     }
-                                    if (fridays.includes(value)) {
-                                        return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
-                                    }
-                                    return value; 
                                 }
-                            } 
+                            }
+                        }
+                    }
+                });
+            },
+            error: function (xhr) {
+                console.error("Error loading data");
+            }
+        });
+        $.ajax({
+            url: "/api/multi-branch-invoice-data",
+            data: {
+                "start-date": inStartDate,
+                "end-date": inEndDate,
+                "branch": inBranches
+            },
+            traditional: true, 
+            success: function (data) {
+                console.log(data)
+                const rawCategories = data.dates;
+                const categories = rawCategories.map(dateStr => {
+                const date = new Date(dateStr);
+                return date.toLocaleDateString('fa-IR', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit'
+                });
+                });
+                const series = Object.entries(data.invoice_data).map(([id, invoiceData]) => ({
+                    name: invoiceData.name,
+                    data: invoiceData.total_items
+                }));
+                Highcharts.chart("forth-container", {
+                    chart: { 
+                        type: "line",
+                        borderColor: '#e5e5e5',  
+                        borderWidth: 1,           
+                        borderRadius: 12,         
+                        spacing: [30, 20, 30, 20],
+                        backgroundColor: '#ffffff',
+                        style: {
+                            fontFamily: 'Vazirmatn, sans-serif',
+                            fontSize: '20px'
+                        }
                         },
-                        yAxis: { title: { text: "فروش",
-                            style: {
-                                fontSize: '20px',
-                                fontWeight: 'bold'
-                                } 
+                    title: { text: "تعداد فاکتور تفکیکی",
+                        style: {
+                            fontSize: '25px',
+                            color: '#333'
+                        } 
+                    },
+                    xAxis: { categories,
+                        title: {
+                        text: "تاریخ",
+                        style: {
+                        fontSize: '20px',
+                        fontWeight: 'bold'
+                        }
+                    },
+                    labels: {
+                        useHTML: true,  
+                        formatter: function () {
+                                const value = this.value; 
+                                if (holidayDates.includes(value)) {
+                                    return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                }
+                                if (fridays.includes(value)) {
+                                        return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                }
+                                return value; 
+                            }
+                        } 
+                    },
+                    yAxis: { title: { text: "تعداد فاکتور",
+                        style: {
+                            fontSize: '20px',
+                            fontWeight: 'bold'
                             } 
-                        },
-                        series: series,
-                        plotOptions: {
-                            series: {
-                                point: {
-                                    events: {
-                                        click: function () {
-                                            const apiUrl = "/api/get-campaign-each-point";
-                                            const date = this.category;
-                                            const branch = this.series.name;
-                                            const body = document.querySelector("body");
-                                            const infoModal = document.querySelector("#info-modal");
-                                            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-                                            fetch(apiUrl, {
-                                                method: "POST",
-                                                headers: {
-                                                    "Content-Type": "application/json",
-                                                    "X-CSRFToken": csrftoken,
-                                                },
-                                                body: JSON.stringify({date: date, branch: branch.replace(/\(.*?\)/, "").trim()})
-                                            }).then(response => {
-                                                if (!response.ok) throw new Error("Invalid Response");
-                                                return response.json()
-                                            }).then(data => {
-                                                let htmlCampaigns = data.map((camp, index) =>
-                                                    `<p style='margin-bottom: 0px;' style='margin-bottom: 0px; margin-top: 0px;'>${index + 1}. ${camp.campaign_name}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${camp.campaign_type}</p>`
-                                                ).join('')
-                                                if (data.length === 0) {
-                                                    htmlCampaigns = `<p>هیچ کمپینی یافت نشد.</p>`
-                                                }
-                                                Swal.fire({
+                        } 
+                    },
+                    series: series,
+                    plotOptions: {
+                        series: {
+                            point: {
+                                events: {
+                                    click: function () {
+                                        const apiUrl = "/api/get-campaign-each-point";
+                                        const date = this.category;
+                                        const branch = this.series.name;
+                                        const body = document.querySelector("body");
+                                        const infoModal = document.querySelector("#info-modal");
+                                        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                                        fetch(apiUrl, {
+                                            method: "POST",
+                                            headers: {
+                                                "Content-Type": "application/json",
+                                                "X-CSRFToken": csrftoken,
+                                            },
+                                            body: JSON.stringify({date: date, branch: branch})
+                                        }).then(response => {
+                                            if (!response.ok) throw new Error("Invalid Response");
+                                            return response.json()
+                                        }).then(data => {
+                                            let htmlCampaigns = data.map((camp, index) =>
+                                                `<p style='margin-bottom: 0px;' style='margin-bottom: 0px; margin-top: 0px;'>${index + 1}. ${camp.campaign_name}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${camp.campaign_type}</p>`
+                                            ).join('')
+                                            if (data.length === 0) {
+                                                htmlCampaigns = `<p>هیچ کمپینی یافت نشد.</p>`
+                                            }
+                                            Swal.fire({
                                                 html: `<h3 style='margin-bottom: 0px;'>${this.y}</h3><p style='margin-bottom: 0px; margin-top: 0px;'>${this.series.name}</p><p style='margin-top: 0px;'>${this.category}</p>
                                                 <p style='margin-bottom: 0px;'>کمپین ها:</p>
                                                 ${htmlCampaigns}
@@ -788,140 +912,18 @@
                                                 confirmButtonText: 'بستن',
                                                 confirmButtonColor: '#5a8dee'
                                             });
-                                            })
-                                        }
+                                        })
                                     }
                                 }
                             }
                         }
-                    });
-                },
-                error: function (xhr) {
-                    console.error("Error loading data");
-                }
-            });
-            $.ajax({
-                url: "/api/multi-branch-invoice-data",
-                data: {
-                    "start-date": inStartDate,
-                    "end-date": inEndDate,
-                    "branch": inBranches
-                },
-                traditional: true, 
-                success: function (data) {
-                    console.log(data)
-                    const rawCategories = data.dates;
-                    const categories = rawCategories.map(dateStr => {
-                    const date = new Date(dateStr);
-                    return date.toLocaleDateString('fa-IR', {
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit'
-                    });
-                    });
-                    const series = Object.entries(data.invoice_data).map(([id, invoiceData]) => ({
-                        name: invoiceData.name,
-                        data: invoiceData.total_items
-                    }));
-                    Highcharts.chart("forth-container", {
-                        chart: { 
-                            type: "line",
-                            borderColor: '#e5e5e5',  
-                            borderWidth: 1,           
-                            borderRadius: 12,         
-                            spacing: [30, 20, 30, 20],
-                            backgroundColor: '#ffffff',
-                            style: {
-                                fontFamily: 'Vazirmatn, sans-serif',
-                                fontSize: '20px'
-                            }
-                            },
-                        title: { text: "تعداد فاکتور تفکیکی",
-                            style: {
-                                fontSize: '25px',
-                                color: '#333'
-                            } 
-                        },
-                        xAxis: { categories,
-                            title: {
-                            text: "تاریخ",
-                            style: {
-                            fontSize: '20px',
-                            fontWeight: 'bold'
-                            }
-                        },
-                        labels: {
-                            useHTML: true,  
-                            formatter: function () {
-                                    const value = this.value; 
-                                    if (holidayDates.includes(value)) {
-                                        return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
-                                    }
-                                    if (fridays.includes(value)) {
-                                            return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
-                                    }
-                                    return value; 
-                                }
-                            } 
-                        },
-                        yAxis: { title: { text: "تعداد فاکتور",
-                            style: {
-                                fontSize: '20px',
-                                fontWeight: 'bold'
-                                } 
-                            } 
-                        },
-                        series: series,
-                        plotOptions: {
-                            series: {
-                                point: {
-                                    events: {
-                                        click: function () {
-                                            const apiUrl = "/api/get-campaign-each-point";
-                                            const date = this.category;
-                                            const branch = this.series.name;
-                                            const body = document.querySelector("body");
-                                            const infoModal = document.querySelector("#info-modal");
-                                            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-                                            fetch(apiUrl, {
-                                                method: "POST",
-                                                headers: {
-                                                    "Content-Type": "application/json",
-                                                    "X-CSRFToken": csrftoken,
-                                                },
-                                                body: JSON.stringify({date: date, branch: branch})
-                                            }).then(response => {
-                                                if (!response.ok) throw new Error("Invalid Response");
-                                                return response.json()
-                                            }).then(data => {
-                                                let htmlCampaigns = data.map((camp, index) =>
-                                                    `<p style='margin-bottom: 0px;' style='margin-bottom: 0px; margin-top: 0px;'>${index + 1}. ${camp.campaign_name}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${camp.campaign_type}</p>`
-                                                ).join('')
-                                                if (data.length === 0) {
-                                                    htmlCampaigns = `<p>هیچ کمپینی یافت نشد.</p>`
-                                                }
-                                                Swal.fire({
-                                                    html: `<h3 style='margin-bottom: 0px;'>${this.y}</h3><p style='margin-bottom: 0px; margin-top: 0px;'>${this.series.name}</p><p style='margin-top: 0px;'>${this.category}</p>
-                                                    <p style='margin-bottom: 0px;'>کمپین ها:</p>
-                                                    ${htmlCampaigns}
-                                                    `,
-                                                    confirmButtonText: 'بستن',
-                                                    confirmButtonColor: '#5a8dee'
-                                                });
-                                            })
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    });
-                },
-                error: function (xhr) {
-                    console.error("Error loading data");
-                }
-            });
-        
-        }
+                    }
+                });
+            },
+            error: function (xhr) {
+                console.error("Error loading data");
+            }
+        });
     });
 </script>
 <!-- HighChart Chart Paint (Invoice Aggregation) Raw JavaScript -->
@@ -1560,31 +1562,18 @@
 </script>
 <!-- Display Toggles -->
 <script>
-    const queryString = window.location.search; 
-    const urlParams = new URLSearchParams(queryString);
-    const type = urlParams.get("type");
-    const titleTypeOne = document.getElementById("title-type-1");
-    const titleTypeTwo = document.getElementById("title-type-2");
-    document.addEventListener("DOMContentLoaded", () => {
-        const secondContainer = document.querySelector("#second-container");
-        const thirdContainer = document.querySelector("#third-container");
-        const forthContainer = document.querySelector("#forth-container");
-        const intruction = document.querySelector("#instruction");
-        if (type === "1") {
-            container.style.display = "block";
-            thirdContainer.style.display = "block";
-            secondContainer.style.display = "none";
-            forthContainer.style.display = "none";
-            titleTypeOne.style.display = "";
-            titleTypeTwo.style.display = "none";
-        }
-        else {
-            container.style.display = "none";
-            thirdContainer.style.display = "none";
-            secondContainer.style.display = "block";
-            forthContainer.style.display = "block";
-            titleTypeOne.style.display = "none";
-            titleTypeTwo.style.display = "";
+    const chartDisplayToggle = document.getElementById("chart-display-toggle");
+    chartDisplayToggle.addEventListener("change", () => {
+        if (chartDisplayToggle.value === '1') {
+            document.getElementById("container").style.display = '';
+            document.getElementById("third-container").style.display = '';
+            document.getElementById("second-container").style.display = 'none';
+            document.getElementById("forth-container").style.display = 'none';
+        } else {
+            document.getElementById("container").style.display = 'none';
+            document.getElementById("third-container").style.display = 'none';
+            document.getElementById("second-container").style.display = '';
+            document.getElementById("forth-container").style.display = '';
         }
     });
 </script>

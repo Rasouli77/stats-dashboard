@@ -390,7 +390,7 @@ def branch_permissions(request, user_id):
         )
     return render(request, "401.html", status=401)
 
-
+from django.db.models import F, ExpressionWrapper, FloatField
 @login_required
 def home(request, url_hash):
     """A general overview of certain aggregations"""
@@ -447,7 +447,7 @@ def home(request, url_hash):
         queryset.filter(date__range=(last_7_days_start, last_7_days_end))
         .values("branch__id", "branch__name")
         .annotate(total_entry=Sum("entry"))
-        .annotate(percent_seven=(Sum("entry") / last_7_days_entry["total_entry"]) * 100)
+        .annotate(percent_seven=ExpressionWrapper((Sum("entry") / last_7_days_entry["total_entry"] * 100), output_field=FloatField()))
         .order_by("-total_entry")
     )
 
@@ -499,21 +499,24 @@ def home(request, url_hash):
             .values("branch__id", "branch__name")
             .annotate(total_entry=Sum("entry"))
             .annotate(
-                percent_thirty=(Sum("entry") / last_30_days_entry["total_entry"]) * 100
+                percent_thirty=ExpressionWrapper((Sum("entry") / last_30_days_entry["total_entry"]) * 100,
+                output_field=FloatField()
+                )
             )
             .order_by("-total_entry")
         )
     except:
         branch_30_day_ranks = []
-    
+
+    # online data
     today = datetime.today()
     today_data = []
     try:
         branches_traffic_today = queryset.filter(date=today)
         for item in branches_traffic_today:
             today_data_item = []
-            today_data_item.append(float(item.cam.google_latitude))
             today_data_item.append(float(item.cam.google_longitude))
+            today_data_item.append(float(item.cam.google_latitude))
             today_data_item.append(float(item.entry))
             flag = True
             for i in today_data:
@@ -541,9 +544,10 @@ def home(request, url_hash):
             "last_7_days_entry_total": last_7_days_entry["total_entry"],
             "previous_7_days_entry_total": previous_7_days_entry["total_entry"],
             "previous_30_days_entry_total": previous_30_days_entry["total_entry"],
-            "online_map_data": json.dumps(today_data)
+            "online_map_data": json.dumps(today_data),
         },
     )
+
 
 
 @login_required

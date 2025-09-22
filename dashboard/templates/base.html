@@ -91,17 +91,46 @@
                 <div data-i18n="Page 1">خانه</div>
               </a>
             </li>
-            <li class="menu-item">
-              <a href="{% url 'stats_menu' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-spreadsheet"></i>
-                <div data-i18n="Page 1">آمار</div>
-              </a>
+            <li class="menu-item open">
+                <a href="javascript:void(0);" class="menu-link menu-toggle">
+                  <i class="menu-icon tf-icons bx bx-spreadsheet"></i>
+                  <div data-i18n="Invoice">آمار</div>
+                </a>
+                <ul class="menu-sub">
+                  <li class="menu-item">
+                    <a href="{% url 'people_counter' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
+                      <div data-i18n="List">ترافیک</div>
+                    </a>
+                  </li>
+                  <li class="menu-item">
+                    <a href="{% url 'invoice_counter' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
+                      <div data-i18n="Preview">فروش</div>
+                    </a>
+                  </li>
+                </ul>
             </li>
-            <li class="menu-item">
-              <a href="{% url 'analysis' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-chart"></i>
-                <div data-i18n="Page 2">آنالیز</div>
-              </a>
+            <li class="menu-item open">
+                <a href="javascript:void(0);" class="menu-link menu-toggle">
+                  <i class="menu-icon tf-icons bx bx-chart"></i>
+                  <div data-i18n="Invoice">آنالیز</div>
+                </a>
+                <ul class="menu-sub">
+                  <li class="menu-item">
+                    <a href="{% url 'analysis' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}?type=1" class="menu-link">
+                      <div data-i18n="List">نرخ تبدیل</div>
+                    </a>
+                  </li>
+                  <li class="menu-item">
+                    <a href="{% url 'analysis' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}?type=2" class="menu-link">
+                      <div data-i18n="Preview">ارزش ورودی</div>
+                    </a>
+                  </li>
+                  <li class="menu-item">
+                    <a href="{% url 'analysis' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}?type=3" class="menu-link">
+                      <div data-i18n="Preview">سهم ترافیک</div>
+                    </a>
+                  </li>
+                </ul>
             </li>
             <li class="menu-item">
               <a href="{% url 'info_menu' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
@@ -127,7 +156,7 @@
                 <div data-i18n="Page 2">اطلاع رسانی</div>
               </a>
             </li>
-            <li class="menu-item">
+            <li class="menu-item open">
                 <a href="javascript:void(0);" class="menu-link menu-toggle">
                   <i class="menu-icon tf-icons bx bx-user"></i>
                   <div data-i18n="Invoice">کاربران</div>
@@ -144,7 +173,7 @@
                     </a>
                   </li>
                 </ul>
-              </li>
+            </li>
           </ul>
         </aside>
         <!-- / Menu -->

@@ -63,111 +63,33 @@
 <div class="loading-overlay" id="loading-overlay">
     <div class="loader"></div>
 </div>
-<div class="container" id="menu">
-    <div class="row">
-        <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12" style="margin: 20px 0px; color: rgb(0, 0, 0); cursor: pointer;" id="agg-con-percent">
-            <div class="card" style="background-color: #f8f2dbcc;">
-                <div class="card-body">
-                    <h4 class="card-title">نرخ تبدیل ترافیک (TCR)</h4>
-                    <p class="card-text">
-                        این نمودار نشان می‌دهد که در هر روز، به‌صورت تجمیعی در همه شعب، چه درصدی از ورودی‌ها به خرید منجر شده‌اند. 
-                        محاسبه به این شکل است که تعداد کل فاکتورها تقسیم بر تعداد کل ورودی‌ها شده و در 100 ضرب می‌شود.
-                        <br>❓<strong>پاسخ به سؤال:</strong> در هر روز چه درصدی از افرادی که وارد شعب شده‌اند، خرید انجام داده‌اند؟
-                    </p>
-                    <p style="text-decoration: underline;">مشاهده</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12" style="margin: 20px 0px; color: rgb(0, 0, 0); cursor: pointer;" id="branch-con-percent">
-            <div class="card">
-                <div class="card-body" style="background-color: #daedfacd;">
-                    <h4 class="card-title">نرخ تبدیل به تفکیک شعب (BTCR)</h4>
-                    <p class="card-text">
-                        این نمودار مشابه "نرخ تبدیل ترافیک" است با این تفاوت که آمار هر شعبه به‌صورت جداگانه و همزمان نمایش داده می‌شود.
-                        <br>❓<strong>پاسخ به سؤال:</strong> نرخ تبدیل هر شعبه در هر روز چگونه با دیگر شعب مقایسه می‌شود؟
-                    </p>
-                    <p style="text-decoration: underline;">مشاهده</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12" style="margin: 20px 0px; color: rgb(0, 0, 0); cursor: pointer;" id="agg-entry-val">
-            <div class="card">
-                <div class="card-body" style="background-color: #fddcdcbc;">
-                    <h4 class="card-title">ارزش ورودی (EV)</h4>
-                    <p>
-                        این نمودار میانگین ارزش تومانی هر ورودی را در همه شعب و برای هر روز نشان می‌دهد. 
-                        محاسبه به این شکل است که مجموع مبلغ فاکتورها تقسیم بر تعداد کل ورودی‌ها می‌شود.
-                        <br>❓<strong>پاسخ به سؤال:</strong> در هر روز به‌طور میانگین هر ورودی چه مقدار فروش ایجاد کرده است؟
-                    </p>
-                    <p style="text-decoration: underline;">مشاهده</p>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12" style="margin: 20px 0px; color: rgb(0, 0, 0); cursor: pointer;" id="branch-entry-val">
-            <div class="card" style="background-color: #f2fcdcdc;">
-                <div class="card-body">
-                    <h4 class="card-title">ارزش ورودی به تفکیک شعب (BEV)</h4>
-                    <p>
-                        این نمودار همان "ارزش ورودی" است با این تفاوت که امکان مشاهده آمار به‌صورت همزمان یا تفکیکی برای هر شعبه وجود دارد.
-                        <br>❓<strong>پاسخ به سؤال:</strong> میانگین ارزش هر ورودی در هر شعبه چقدر است و چقدر با سایر شعب تفاوت دارد؟
-                    </p>
-                    <p style="text-decoration: underline;">مشاهده</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12" style="margin: 20px 0px; color: rgb(0, 0, 0); cursor: pointer;" id="one-to-all-entry">
-            <div class="card" style="background-color: #eadafdcc;">
-                <div class="card-body">
-                    <h4 class="card-title">سهم ترافیک شعبه (BTS)</h4>
-                    <p>
-                        این نمودار نشان می‌دهد که در هر روز، چه درصدی از کل ترافیک ورودی همه شعب، مربوط به یک شعبه خاص بوده است.
-                        <br>❓<strong>پاسخ به سؤال:</strong> سهم یک شعبه از کل ورودی‌های روزانه چند درصد است؟
-                    </p>
-                    <p style="text-decoration: underline;">مشاهده</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12" style="margin: 20px 0px; color: rgb(0, 0, 0); cursor: pointer;" id="all-to-all-entry">
-            <div class="card">
-                <div class="card-body" style="background-color: #e7e7e7cd;">
-                    <h4 class="card-title">سهم ترافیک همه شعب (TBTS)</h4>
-                    <p>
-                        این نمودار درصد سهم هر شعبه از کل ورودی‌های هر روز را نشان می‌دهد. همه شعب همزمان نمایش داده می‌شوند و مجموع درصدها برابر با 100% است.
-                        <br>❓<strong>پاسخ به سؤال:</strong> سهم هر شعبه از ترافیک کل در هر روز به چه شکل توزیع شده است؟
-                    </p>
-                    <p style="text-decoration: underline;">مشاهده</p>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-<div class="container" id="body" style="display: none;">
+<div class="container" id="body">
     <div class="row">
         <!-- Date Picker Card -->
-        <div class="col-xl-7 col-lg-2 col-md-12 col-sm-12" style="margin-bottom: 10px; display: none;" id="title-type-1">
+        <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12" style="margin-bottom: 10px;" id="title-type-1">
             <h1 style="color: #262626; font-size: 1.38rem; font-weight: 700;">گزارش نرخ تبدیل ترافیک (TCR)</h1>
         </div>
-        <div class="col-xl-7 col-lg-2 col-md-12 col-sm-12" style="margin-bottom: 10px; display: none;" id="title-type-2">
-            <h1 style="color: #262626; font-size: 1.38rem; font-weight: 700;">گزارش نرخ تبدیل به تفکیک شعب (BTCR)</h1>
-        </div>
-        <div class="col-xl-7 col-lg-2 col-md-12 col-sm-12" style="margin-bottom: 10px; display: none;" id="title-type-3">
+        <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12" style="margin-bottom: 10px;" id="title-type-2">
             <h1 style="color: #262626; font-size: 1.38rem; font-weight: 700;">گزارش ارزش ورودی (EV)</h1>
         </div>
-        <div class="col-xl-7 col-lg-2 col-md-12 col-sm-12" style="margin-bottom: 10px; display: none;" id="title-type-4">
-            <h1 style="color: #262626; font-size: 1.38rem; font-weight: 700;">گزارش ارزش ورودی به تفکیک شعب (BEV)</h1>
-        </div>
-        <div class="col-xl-7 col-lg-2 col-md-12 col-sm-12" style="margin-bottom: 10px; display: none;" id="title-type-5">
-            <h1 style="color: #262626; font-size: 1.38rem; font-weight: 700;">گزارش سهم ترافیک شعبه (BTS)</h1>
-        </div>
-        <div class="col-xl-7 col-lg-2 col-md-12 col-sm-12" style="margin-bottom: 10px; display: none;" id="title-type-6">
-            <h1 style="color: #262626; font-size: 1.38rem; font-weight: 700;">گزارش سهم ترافیک همه (TBTS)</h1>
+        <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12" style="margin-bottom: 10px;" id="title-type-3">
+            <h1 style="color: #262626; font-size: 1.38rem; font-weight: 700;">گزارش سهم ترافیک شعب (TBTS)</h1>
         </div>
         <div class="col-xl-2 col-lg-2 col-md-12 col-sm-12" style="margin-bottom: 10px;">
             <h1 style="color: #262626; font-size: 1.125rem; font-weight: 700;">گزارش بر اساس:</h1>
         </div>
-        <div class="col-xl-3 col-lg-3 col-md-12 col-sm-12" style="margin-bottom: 10px;">
+        <div class="col-xl-2 col-lg-2 col-md-12 col-sm-12" style="margin-bottom: 10px;">
+            <small>نمایش</small>
+            <div class="card mt-3">
+                <div class="card-body" style="padding: 0px !important;">
+                    <select class="form-select w-100" aria-label="Filter select" id="chart-display-toggle">
+                        <option value="1" selected>تجمیعی</option>
+                        <option value="2">تفکیکی</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-2 col-lg-2 col-md-12 col-sm-12" style="margin-bottom: 10px;">
             <small>بازه زمانی گزارش و شعب</small>
             <div class="card mt-3">
                 <div class="card-body" style="padding: 0px !important;">
@@ -248,7 +170,6 @@
         <div class="col-lg-12">
             <div class="demo-inline-spacing mt-3">
             <div class="tab-content px-0 pt-2">
-                <h6 id="instruction-for-one-to-all-container" style="display: none;">❗ برای مشاهده این قسمت فقط باید یک شعبه انتخاب شود.</h6>
                 <div id="ratio-container" style="width: 100%; height: 400px; margin-top: 45px;"></div>
                 <div id="second-ratio-container" style="width: 100%; height: 400px; margin-top: 45px;"></div>
                 <div id="one-to-all-container" style="width: 100%; height: 400px; margin-top: 45px;"></div>
@@ -296,7 +217,6 @@
             </div>
         </div>
     </div>
-    <button class="btn btn-secondary btn-md" id="return" style="margin-top: 25px;">بازگشت</button>
 </div>
 {% endblock %}
 {% block extra_js %}
