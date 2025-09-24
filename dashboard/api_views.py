@@ -71,15 +71,19 @@ class MultiBranchesInvoice(APIView):
             for branch in branches:
                 total_amounts = []
                 total_items = []
+                total_products = []
                 for invoice in queryset.filter(branch=branch):
                     amount = invoice.total_amount
                     items = invoice.total_items
+                    products = invoice.total_product
                     total_amounts.append(float(amount // 10000000))
                     total_items.append(float(items))
+                    total_products.append(float(products))
                 response["invoice_data"][str(branch.pk)] = {
                     "name": branch.name,
                     "total_amounts": total_amounts,
                     "total_items": total_items,
+                    "total_products": total_products
                 }
             return Response(response)
 
@@ -132,15 +136,24 @@ class Analysis(APIView):
             for branch in branches:
                 total_amounts = []
                 total_items = []
+                total_products = []
+                total_products_avg = []
                 for invoice in invoice_queryset.filter(branch=branch):
                     amount = invoice.total_amount
                     items = invoice.total_items
+                    products = invoice.total_product
                     total_amounts.append(float(amount))
                     total_items.append(float(items))
+                    total_products.append(float(products))
+                total_products_avg = [round(float(a / b if b != 0 else 0), 1) for a, b in zip(total_products, total_items)]
+                print(total_products)
+                print(total_items)
+                print(total_products_avg)
                 response["invoice_data"][str(branch.pk)] = {
                     "name": branch.name,
                     "total_amounts": total_amounts,
                     "total_items": total_items,
+                    "total_products_avg": total_products_avg
                 }
             for branch in branches:
                 entry_totals = []
@@ -535,6 +548,9 @@ class CamStatus(APIView):
                 return Response({"cam_id": cam.pk, "status": cam.status})
         except Exception as e:
             return Response({"error": f"{e}"})
+        
+
+
 
 
 

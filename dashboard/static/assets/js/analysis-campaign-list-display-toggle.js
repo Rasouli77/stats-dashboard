@@ -2,10 +2,11 @@
 const currentURL = window.location.href;
 const parsedURL = new URL(currentURL);
 const urlType = parsedURL.searchParams.get("type");
-//Titles
+// Titles
 const titleOne = document.getElementById("title-type-1");
 const titleTwo = document.getElementById("title-type-2");
 const titleThree = document.getElementById("title-type-3");
+const titleFour = document.getElementById("title-type-4");
 // Display Toggle
 const displayToggle = document.getElementById("chart-display-toggle");
 // TCR
@@ -20,16 +21,21 @@ const branchEntryValChart = document.getElementById("second-ratio-container-mult
 const oneToAllEntryChart =  document.getElementById("one-to-all-container");
 // TBTS
 const allToAllEntryChart = document.getElementById("second-one-to-all-container");
+// IPB
+const cproductCounter = document.getElementById("product-counter");
+// BIPB
+const productCounterBranch = document.getElementById("product-counter-branch");
 // Title Display Function
-function showTitleAnalysis(one, two, three) {
+function showTitleAnalysis(one, two, three, four) {
     // one is always dispalyed
     one.style.display = "block";
     // The rest are hidden
     two.style.display = "none";
     three.style.display = "none";
-}
+    four.style.display = "none";
+}   
 // Chart Display Function
-function showChartAnalysis(one, two, three, four, five, six) {
+function showChartAnalysis(one, two, three, four, five, six, seven, eight) {
     // one is always dispalyed
     one.style.display = "block";
     // The rest are hidden
@@ -38,10 +44,12 @@ function showChartAnalysis(one, two, three, four, five, six) {
     four.style.display = "none";
     five.style.display = "none";
     six.style.display = "none";
+    seven.style.display = "none";
+    eight.style.display = "none";
 }
 if (urlType === '1') {
-    showTitleAnalysis(titleOne, titleTwo, titleThree);
-    showChartAnalysis(aggConPercentChart, branchConPercentChart, aggEntryValChart, branchEntryValChart, oneToAllEntryChart, allToAllEntryChart);
+    showTitleAnalysis(titleOne, titleTwo, titleThree, titleFour);
+    showChartAnalysis(aggConPercentChart, branchConPercentChart, aggEntryValChart, branchEntryValChart, oneToAllEntryChart, allToAllEntryChart, cproductCounter, productCounterBranch);
     displayToggle.addEventListener("change", () => {
         if (displayToggle.value === '1') {
             aggConPercentChart.style.display = "";
@@ -53,8 +61,8 @@ if (urlType === '1') {
     });
 }
 if (urlType === '2') {
-    showTitleAnalysis(titleTwo, titleOne, titleThree);
-    showChartAnalysis(aggEntryValChart, aggConPercentChart, branchConPercentChart, branchEntryValChart, oneToAllEntryChart, allToAllEntryChart);
+    showTitleAnalysis(titleTwo, titleOne, titleThree, titleFour);
+    showChartAnalysis(aggEntryValChart, aggConPercentChart, branchConPercentChart, branchEntryValChart, oneToAllEntryChart, allToAllEntryChart, cproductCounter, productCounterBranch);
     displayToggle.addEventListener("change", () => {
         if (displayToggle.value === '1') {
             aggEntryValChart.style.display = "";
@@ -66,8 +74,8 @@ if (urlType === '2') {
     });
 }
 if (urlType === '3') {
-    showTitleAnalysis(titleThree, titleOne, titleTwo);
-    showChartAnalysis(allToAllEntryChart, oneToAllEntryChart, branchEntryValChart, aggEntryValChart, branchConPercentChart, aggConPercentChart);
+    showTitleAnalysis(titleThree, titleOne, titleTwo, titleFour);
+    showChartAnalysis(allToAllEntryChart, oneToAllEntryChart, branchEntryValChart, aggEntryValChart, branchConPercentChart, aggConPercentChart, cproductCounter, productCounterBranch);
     displayToggle.addEventListener("change", () => {
         if (displayToggle.value === '1') {
             allToAllEntryChart.style.display = "";
@@ -78,5 +86,17 @@ if (urlType === '3') {
         }
     });
 }
-
+if (urlType === '4') {
+    showTitleAnalysis(titleFour, titleOne, titleTwo, titleThree);
+    showChartAnalysis(cproductCounter, oneToAllEntryChart, branchEntryValChart, aggEntryValChart, branchConPercentChart, aggConPercentChart, productCounterBranch, allToAllEntryChart);
+    displayToggle.addEventListener("change", () => {
+        if (displayToggle.value === '1') {
+            cproductCounter.style.display = "";
+            productCounterBranch.style.display = "none";
+        } else {
+            cproductCounter.style.display = "none";
+            productCounterBranch.style.display = "";
+        }
+    });
+}
 

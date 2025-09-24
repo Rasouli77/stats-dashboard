@@ -310,6 +310,7 @@ class Invoice(models.Model):
     branch = models.ForeignKey(Branch, on_delete=models.CASCADE, db_index=True)
     total_amount = models.BigIntegerField(verbose_name="مبلغ کل")
     total_items = models.BigIntegerField(verbose_name="تعداد آیتم")
+    total_product = models.IntegerField(null=True, blank=True, verbose_name="تعداد محصول")
     date_created = models.DateTimeField(
         null=True, default=datetime.now, verbose_name="تاریخ ساخت"
     )

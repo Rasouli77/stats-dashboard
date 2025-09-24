@@ -36,6 +36,7 @@ import openpyxl
 from io import BytesIO
 import random
 import requests
+from django.db.models import F, ExpressionWrapper, FloatField
 
 def perm_to_open(request, url_hash):
     """Checks if the user has the right to open the page."""
@@ -390,7 +391,7 @@ def branch_permissions(request, user_id):
         )
     return render(request, "401.html", status=401)
 
-from django.db.models import F, ExpressionWrapper, FloatField
+
 @login_required
 def home(request, url_hash):
     """A general overview of certain aggregations"""
@@ -822,7 +823,7 @@ def upload_excel_file_invoice(request, url_hash):
                 wb = openpyxl.load_workbook(excel_file)
                 sheet = wb.active
                 for row in sheet.iter_rows(min_row=2, values_only=True):
-                    date, branch, total_amount, total_items = row[:2] + row[3:]
+                    date, branch, total_amount, total_items, total_product = row[:2] + row[3:]
                     if isinstance(date, str):
                         if date:
                             first_two = date[:2]
@@ -832,7 +833,7 @@ def upload_excel_file_invoice(request, url_hash):
                                 date = jalali_date.togregorian()
                             else:
                                 date = datetime.strptime(date, "%Y-%m-%d").date()
-                    if branch is not None and total_amount is not None and total_items is not None:
+                    if branch is not None and total_amount is not None and total_items is not None and total_product is not None:
                         if int(branch) not in allowed_branches:
                             messages.warning(
                                 request,
@@ -850,8 +851,11 @@ def upload_excel_file_invoice(request, url_hash):
                         Invoice.objects.update_or_create(
                             date=date,
                             branch=branch,
-                            total_amount=str(int(total_amount)),
-                            total_items=str(int(total_items)),
+                            defaults={
+                            "total_amount":int(total_amount),
+                            "total_items":int(total_items),
+                            "total_product":int(total_product)
+                            }
                         )
                 messages.success(request, "اطلاعات فروش با موفقیت آپلود شدند")
                 return redirect(reverse("upload_excel_file_invoice", args=[url_hash]))
@@ -1026,7 +1030,7 @@ def create_excel_template(start_date: str, end_date: str, branch_list: dict):
         color_mapper[item] = random.sample(colors, 1)[0]
     ws = wb.active
     ws.title = "تمپلیت آپلود اطلاعات فروش شعب"
-    ws.append(["تاریخ", "کد شعبه", "نام شعبه", "مبلغ فاکتور", "تعداد فاکتور"])
+    ws.append(["تاریخ", "کد شعبه", "نام شعبه", "مبلغ فاکتور", "تعداد فاکتور", "تعداد کالا"])
     branches = branch_list
     dates = get_dates(start_date, end_date)
     for branch_id, branch_name in branches.items():
@@ -1135,13 +1139,14 @@ def invoice_counter(request, url_hash):
     dates = []
     total_amount = []
     total_items = []
+    total_products = []
     invoices = (
         Invoice.objects.defer("date_created", "last_modified")
         .select_related("branch", "branch__merchant")
         .filter(branch__pk__in=allowed_branches)
         .values("date")
         .annotate(
-            sum_total_amount=Sum("total_amount"), sum_total_items=Sum("total_items")
+            sum_total_amount=Sum("total_amount"), sum_total_items=Sum("total_items"), sum_total_products=Sum("total_product")
         )
         .order_by("date")
     )
@@ -1211,10 +1216,10 @@ def invoice_counter(request, url_hash):
                 )
                 .order_by("-campaign_last_modified")
             )
-
         dates = [str(row["date"].strftime("%Y-%m-%d")) for row in invoices]
         total_items = [float(row["sum_total_items"]) for row in invoices]
         total_amount = [float(row["sum_total_amount"] // 10000000) for row in invoices]
+        total_products = [float(row["sum_total_products"]) for row in invoices]
         campaign_list = []
         dictionary = {}
         for campaign in campaigns:
@@ -1235,6 +1240,7 @@ def invoice_counter(request, url_hash):
                     "total_items": total_items,
                     "total_amount": total_amount,
                     "campaigns": campaign_list,
+                    "total_products": total_products
                 }
             )
     if not profile.is_manager:
@@ -1249,6 +1255,7 @@ def invoice_counter(request, url_hash):
             "dates": json.dumps(dates),
             "total_amount": json.dumps(total_amount),
             "total_items": json.dumps(total_items),
+            "total_products": json.dumps(total_products)
         },
     )
 
@@ -1296,6 +1303,7 @@ def analysis(request, url_hash):
                 .annotate(
                     sum_total_amount=Sum("total_amount"),
                     sum_total_items=Sum("total_items"),
+                    sum_total_products=Sum("total_product")
                 )
                 .order_by("date")
             )
@@ -1346,6 +1354,8 @@ def analysis(request, url_hash):
         dates_invoices = [str(row["date"].strftime("%Y-%m-%d")) for row in invoices]
         total_items = [float(row["sum_total_items"]) for row in invoices]
         total_amount = [float(row["sum_total_amount"]) for row in invoices]
+        total_products = [row["sum_total_products"] for row in invoices]
+        total_products_avg = [round(float(a / b if b != 0 else 0), 1) for a, b in zip(total_products, total_items)]
         entry_totals = [float(row["total_entry"]) for row in queryset]
         entry_overalls = [
             float(row["total_entry"]) for row in queryset_no_branch_filter
@@ -1369,6 +1379,7 @@ def analysis(request, url_hash):
                     "dates_invoices": dates_invoices,
                     "entry_totals": entry_totals,
                     "total_items": total_items,
+                    "total_products_avg": total_products_avg,
                     "total_amount": total_amount,
                     "entry_overalls": entry_overalls,
                     "campaigns": campaign_list,
@@ -1386,6 +1397,7 @@ def analysis(request, url_hash):
             "total_amount": json.dumps(total_amount),
             "total_items": json.dumps(total_items),
             "entry_overalls": json.dumps(entry_overalls),
+            "total_products_avg": json.dumps(total_products_avg)
         },
     )
 

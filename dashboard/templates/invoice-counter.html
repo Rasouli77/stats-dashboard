@@ -172,6 +172,10 @@
                 <div id="third-container" style="width: 100%; height: 400px; margin-top: 45px;"></div>
                 <!-- total count aggregation by branches -->
                 <div id="forth-container" style="width: 100%; height: 400px; margin-top: 45px; display: none;"></div>
+                <!-- total product count aggregation -->
+                <div id="fifth-container" style="width: 100%; height: 400px; margin-top: 45px;"></div>
+                <!-- total product count aggregation by branches -->
+                <div id="sixth-container" style="width: 100%; height: 400px; margin-top: 45px; display: none;"></div>
             </div>
             </div>
         </div>
@@ -488,6 +492,26 @@
                         } 
                 },
                 series: [{ data: data.total_items }]
+            });
+
+            fifthLineChart.update({
+                xAxis: { 
+                    categories: newCategories,
+                    labels: {
+                        useHTML: true,  
+                        formatter: function () {
+                                const value = this.value; 
+                                if (holidayDates.includes(value)) {
+                                    return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                }
+                                if (fridays.includes(value)) {
+                                    return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                }
+                                return value; 
+                            }
+                        } 
+                },
+                series: [{ data: data.total_products }]
             });
             
             document.querySelector(".table-border-bottom-0").innerHTML = "";
@@ -827,6 +851,10 @@
                     name: invoiceData.name,
                     data: invoiceData.total_items
                 }));
+                const seriesProduct = Object.entries(data.invoice_data).map(([id, invoiceData]) => ({
+                    name: invoiceData.name,
+                    data: invoiceData.total_products
+                }));
                 Highcharts.chart("forth-container", {
                     chart: { 
                         type: "line",
@@ -876,6 +904,98 @@
                         } 
                     },
                     series: series,
+                    plotOptions: {
+                        series: {
+                            point: {
+                                events: {
+                                    click: function () {
+                                        const apiUrl = "/api/get-campaign-each-point";
+                                        const date = this.category;
+                                        const branch = this.series.name;
+                                        const body = document.querySelector("body");
+                                        const infoModal = document.querySelector("#info-modal");
+                                        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                                        fetch(apiUrl, {
+                                            method: "POST",
+                                            headers: {
+                                                "Content-Type": "application/json",
+                                                "X-CSRFToken": csrftoken,
+                                            },
+                                            body: JSON.stringify({date: date, branch: branch})
+                                        }).then(response => {
+                                            if (!response.ok) throw new Error("Invalid Response");
+                                            return response.json()
+                                        }).then(data => {
+                                            let htmlCampaigns = data.map((camp, index) =>
+                                                `<p style='margin-bottom: 0px;' style='margin-bottom: 0px; margin-top: 0px;'>${index + 1}. ${camp.campaign_name}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${camp.campaign_type}</p>`
+                                            ).join('')
+                                            if (data.length === 0) {
+                                                htmlCampaigns = `<p>هیچ کمپینی یافت نشد.</p>`
+                                            }
+                                            Swal.fire({
+                                                html: `<h3 style='margin-bottom: 0px;'>${this.y}</h3><p style='margin-bottom: 0px; margin-top: 0px;'>${this.series.name}</p><p style='margin-top: 0px;'>${this.category}</p>
+                                                <p style='margin-bottom: 0px;'>کمپین ها:</p>
+                                                ${htmlCampaigns}
+                                                `,
+                                                confirmButtonText: 'بستن',
+                                                confirmButtonColor: '#5a8dee'
+                                            });
+                                        })
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+                Highcharts.chart("sixth-container", {
+                    chart: { 
+                        type: "line",
+                        borderColor: '#e5e5e5',  
+                        borderWidth: 1,           
+                        borderRadius: 12,         
+                        spacing: [30, 20, 30, 20],
+                        backgroundColor: '#ffffff',
+                        style: {
+                            fontFamily: 'Vazirmatn, sans-serif',
+                            fontSize: '20px'
+                        }
+                        },
+                    title: { text: "تعداد محصول خریداری شده تفکیکی",
+                        style: {
+                            fontSize: '25px',
+                            color: '#333'
+                        } 
+                    },
+                    xAxis: { categories,
+                        title: {
+                        text: "تاریخ",
+                        style: {
+                        fontSize: '20px',
+                        fontWeight: 'bold'
+                        }
+                    },
+                    labels: {
+                        useHTML: true,  
+                        formatter: function () {
+                                const value = this.value; 
+                                if (holidayDates.includes(value)) {
+                                    return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                }
+                                if (fridays.includes(value)) {
+                                        return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                }
+                                return value; 
+                            }
+                        } 
+                    },
+                    yAxis: { title: { text: "تعداد محصول",
+                        style: {
+                            fontSize: '20px',
+                            fontWeight: 'bold'
+                            } 
+                        } 
+                    },
+                    series: seriesProduct,
                     plotOptions: {
                         series: {
                             point: {
@@ -1151,6 +1271,111 @@
             }
         );
         
+        const total_products = JSON.parse('{{ total_products|safe }}');
+        fifthLineChart = Highcharts.chart(
+            'fifth-container', {
+                chart: {
+                    type: 'line',
+                    borderColor: '#e5e5e5',  
+                    borderWidth: 1,           
+                    borderRadius: 12,         
+                    spacing: [30, 20, 30, 20],
+                    backgroundColor: '#ffffff',
+                    style: {
+                        fontFamily: 'Vazirmatn, sans-serif',
+                        fontSize: '20px'
+                    }
+                },
+                title: {
+                    text: "تعداد محصول خریداری شده تجمیعی",
+                    style: {
+                        fontSize: '25px',
+                        color: '#333'
+                    }
+                },
+                xAxis: {
+                    categories : categories,
+                    title: {
+                        text: "تاریخ",
+                        style: {
+                        fontSize: '20px',
+                        fontWeight: 'bold'
+                        }
+                    },
+                    labels: {
+                        useHTML: true,  
+                        formatter: function () {
+                                const value = this.value; 
+                                if (holidayDates.includes(value)) {
+                                    return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                }
+                                if (fridays.includes(value)) {
+                                        return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                }
+                                return value; 
+                            }
+                        } 
+                },
+                yAxis: {
+                    title: {
+                        text: "تعداد محصول",
+                        style: {
+                        fontSize: '20px',
+                        fontWeight: 'bold'
+                        }
+                    }
+                },
+                plotOptions: {
+                    series: {
+                        point: {
+                            events: {
+                                click: function () {
+                                    const apiUrl = "/api/get-campaign-each-point";
+                                    const date = this.category;
+                                    const branch = this.series.name;
+                                    const body = document.querySelector("body");
+                                    const infoModal = document.querySelector("#info-modal");
+                                    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                                    fetch(apiUrl, {
+                                        method: "POST",
+                                        headers: {
+                                            "Content-Type": "application/json",
+                                            "X-CSRFToken": csrftoken,
+                                        },
+                                        body: JSON.stringify({date: date, branch: branch.replace(/\(.*?\)/, "").trim()})
+                                    }).then(response => {
+                                        if (!response.ok) throw new Error("Invalid Response");
+                                        return response.json()
+                                    }).then(data => {
+                                        let htmlCampaigns = data.map((camp, index) =>
+                                            `<p style='margin-bottom: 0px;' style='margin-bottom: 0px; margin-top: 0px;'>${index + 1}. ${camp.campaign_name}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${camp.campaign_type}</p>`
+                                        ).join('')
+                                        if (data.length === 0) {
+                                            htmlCampaigns = `<p>هیچ کمپینی یافت نشد.</p>`
+                                        }
+                                        Swal.fire({
+                                        html: `<h3 style='margin-bottom: 0px;'>${this.y}</h3><p>${this.category}</p>
+                                        <p style='margin-bottom: 0px;'>کمپین ها:</p>
+                                        ${htmlCampaigns}
+                                        `,
+                                        confirmButtonText: 'بستن',
+                                        confirmButtonColor: '#5a8dee'
+                                    });
+                                    })
+                                }
+                            }
+                        }
+                    }
+                },
+                series: [
+                    {
+                        name: "تعداد محصول",
+                        data: total_products
+                    },
+                ]
+            }
+        );
+        
         document.getElementById('filter-form').addEventListener('submit', function(event) {
             event.preventDefault(); 
             const form = this;
@@ -1217,6 +1442,26 @@
                             } 
                     },
                     series: [{ data: data.total_items }]
+                });
+
+                fifthLineChart.update({
+                    xAxis: { 
+                        categories: newCategories,
+                        labels: {
+                            useHTML: true,  
+                            formatter: function () {
+                                    const value = this.value; 
+                                    if (holidayDates.includes(value)) {
+                                        return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                    }
+                                    if (fridays.includes(value)) {
+                                        return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                    }
+                                    return value; 
+                                }
+                            } 
+                    },
+                    series: [{ data: data.total_products }]
                 });
                 
                 document.querySelector(".table-border-bottom-0").innerHTML = "";
@@ -1297,7 +1542,7 @@
             });
             return;
         }
-        if (document.getElementById("container").style.display !== "none" && document.getElementById("third-container").style.display !== "none" && selectedBranches.length === 0 && startDate) {
+        if (document.getElementById("container").style.display !== "none" && document.getElementById("third-container").style.display !== "none" && document.getElementById("fifth-container").style.display !== "none" && selectedBranches.length === 0 && startDate) {
             toastr.options = {
                 positionClass: 'toast-top-center',
             }
@@ -1308,7 +1553,7 @@
                 el.checked = true; 
             });
         }
-        if (document.getElementById("second-container").style.display !== "none" && document.getElementById("forth-container").style.display !== "none" && branchUrl.length === 0) {
+        if (document.getElementById("second-container").style.display !== "none" && document.getElementById("forth-container").style.display !== "none" && document.getElementById("sixth-container").style.display !== "none" && branchUrl.length === 0) {
             Swal.fire({
             icon: "error",
             title: "خطا",
@@ -1326,6 +1571,7 @@
             },
             traditional: true, 
             success: function (data) {
+                console.log(data)
                 const rawCategories = data.dates;
                 const categories = rawCategories.map(dateStr => {
                 const date = new Date(dateStr);
@@ -1462,6 +1708,10 @@
                     name: invoiceData.name,
                     data: invoiceData.total_items
                 }));
+                const seriesProduct = Object.entries(data.invoice_data).map(([id, invoiceData]) => ({
+                    name: invoiceData.name,
+                    data: invoiceData.total_products
+                }));
                 Highcharts.chart("forth-container", {
                     chart: { type: "line",
                         borderColor: '#e5e5e5',  
@@ -1553,6 +1803,97 @@
                         }
                     }
                 });
+                Highcharts.chart("sixth-container", {
+                    chart: { type: "line",
+                        borderColor: '#e5e5e5',  
+                        borderWidth: 1,           
+                        borderRadius: 12,         
+                        spacing: [30, 20, 30, 20],
+                        backgroundColor: '#ffffff',
+                        style: {
+                            fontFamily: 'Vazirmatn, sans-serif',
+                            fontSize: '20px'
+                        }
+                        },
+                    title: { text: "تعداد محصول خریداری شده تفکیکی",
+                        style: {
+                            fontSize: '25px',
+                            color: '#333'
+                        } 
+                    },
+                    xAxis: { categories,
+                        title: {
+                        text: "تاریخ",
+                        style: {
+                        fontSize: '20px',
+                        fontWeight: 'bold'
+                        }
+                    },
+                    labels: {
+                        useHTML: true,  
+                        formatter: function () {
+                                const value = this.value; 
+                                if (holidayDates.includes(value)) {
+                                    return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                }
+                                if (fridays.includes(value)) {
+                                        return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                }
+                                return value; 
+                            }
+                        } 
+                    },
+                    yAxis: { title: { text: "تعداد محصول",
+                        style: {
+                            fontSize: '20px',
+                            fontWeight: 'bold'
+                            } 
+                        } 
+                    },
+                    series: seriesProduct,
+                    plotOptions: {
+                        series: {
+                            point: {
+                                events: {
+                                    click: function () {
+                                        const apiUrl = "/api/get-campaign-each-point";
+                                        const date = this.category;
+                                        const branch = this.series.name;
+                                        const body = document.querySelector("body");
+                                        const infoModal = document.querySelector("#info-modal");
+                                        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                                        fetch(apiUrl, {
+                                            method: "POST",
+                                            headers: {
+                                                "Content-Type": "application/json",
+                                                "X-CSRFToken": csrftoken,
+                                            },
+                                            body: JSON.stringify({date: date, branch: branch})
+                                        }).then(response => {
+                                            if (!response.ok) throw new Error("Invalid Response");
+                                            return response.json()
+                                        }).then(data => {
+                                            let htmlCampaigns = data.map((camp, index) =>
+                                                `<p style='margin-bottom: 0px;' style='margin-bottom: 0px; margin-top: 0px;'>${index + 1}. ${camp.campaign_name}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${camp.campaign_type}</p>`
+                                            ).join('')
+                                            if (data.length === 0) {
+                                                htmlCampaigns = `<p>هیچ کمپینی یافت نشد.</p>`
+                                            }
+                                            Swal.fire({
+                                            html: `<h3 style='margin-bottom: 0px;'>${this.y}</h3><p style='margin-bottom: 0px; margin-top: 0px;'>${this.series.name}</p><p style='margin-top: 0px;'>${this.category}</p>
+                                            <p style='margin-bottom: 0px;'>کمپین ها:</p>
+                                            ${htmlCampaigns}
+                                            `,
+                                            confirmButtonText: 'بستن',
+                                            confirmButtonColor: '#5a8dee'
+                                        });
+                                        })
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
             },
             error: function (xhr) {
                 console.error("Error loading data");
@@ -1567,13 +1908,17 @@
         if (chartDisplayToggle.value === '1') {
             document.getElementById("container").style.display = '';
             document.getElementById("third-container").style.display = '';
+            document.getElementById("fifth-container").style.display = '';
             document.getElementById("second-container").style.display = 'none';
             document.getElementById("forth-container").style.display = 'none';
+            document.getElementById("sixth-container").style.display = 'none';
         } else {
             document.getElementById("container").style.display = 'none';
             document.getElementById("third-container").style.display = 'none';
+            document.getElementById("fifth-container").style.display = 'none';
             document.getElementById("second-container").style.display = '';
             document.getElementById("forth-container").style.display = '';
+            document.getElementById("sixth-container").style.display = '';
         }
     });
 </script>

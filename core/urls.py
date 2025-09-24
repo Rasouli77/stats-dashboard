@@ -165,6 +165,5 @@ urlpatterns = [
     path("api/cam-status", CamStatus.as_view(), name="cam_status"),
     path("dashboard/alert-menu/<str:url_hash>", alert_menu, name="alert_menu"),
     path("dashboard/alert-form-sms/<str:url_hash>", alert_form_sms, name="alert_form_sms"),
-    path("dahsboard/alert-form-social/<str:url_hash>", alert_form_social, name="alert_form_social")
-
+    path("dahsboard/alert-form-social/<str:url_hash>", alert_form_social, name="alert_form_social"),
 ]
