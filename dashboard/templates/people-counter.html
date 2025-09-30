@@ -171,6 +171,8 @@
                         <div id="container-bar-chart" style="width: 100%; height: 400px; margin-top: 45px;"></div>
                         <!-- total traffic aggregation by branches -->
                         <div id="second-container" style="width: 100%; height: 400px; margin-top: 45px; display: none;"></div>
+                        <!-- total traffic aggregation pie chart by branches -->
+                        <div id="second-container-pie-chart" style="width: 100%; height: 400px; margin-top: 45px; display: none;"></div>
                     </div>
                 </div>
             </div>
@@ -583,6 +585,11 @@
                     data: branchData.entry_totals
                     }
                 });
+                // Convert series into pie format
+                const pieData = series.map(branchItem => {
+                    const total = branchItem.data.reduce((sum, val) => sum + val, 0);
+                    return { name: branchItem.name, y: total };
+                });
                 Highcharts.chart("second-container", {
                     chart: { type: "line",
                         borderColor: '#e5e5e5',  
@@ -678,6 +685,46 @@
                         }
                     }
                 });
+
+                Highcharts.chart('second-container-pie-chart', {
+                chart: {
+                    type: 'pie',
+                    backgroundColor: '#ffffff',
+                    borderColor: '#e5e5e5',
+                    borderWidth: 1,
+                    borderRadius: 12,
+                    style: { fontFamily: 'Vazirmatn, sans-serif' }
+                },
+                title: {
+                    text: 'توزیع کل ترافیک شعب',
+                    style: { fontSize: '25px', fontFamily: 'Vazirmatn, sans-serif' }
+                },
+                subtitle: {
+                    text: `از ${categories[0]} تا ${categories[categories.length - 1]}`,
+                    style: { fontSize: '14px', fontFamily: 'Vazirmatn, sans-serif' }
+                },
+                tooltip: {
+                    pointFormat: '<b>{point.y}</b> ({point.percentage:.1f}%)'
+                },
+                plotOptions: {
+                    pie: {
+                        allowPointSelect: true,
+                        cursor: 'pointer',
+                        dataLabels: {
+                            enabled: true,
+                            format: '{point.name}: ({point.percentage:.1f}%)',
+                            style: { fontSize: '14px', fontFamily: 'Vazirmatn, sans-serif' }
+                        },
+                        showInLegend: true
+                    }
+                },
+                series: [{
+                    name: 'ترافیک',
+                    colorByPoint: true,
+                    data: pieData   // aggregated data here
+                }]
+            });
+
             },
             error: function (xhr) {
                 console.error("Error loading data");
@@ -719,10 +766,6 @@
                 color: '#333',
                 fontFamily: 'Vazirmatn, sans-serif',
             }
-        },
-        subtitle: {
-            text: 'ترافیک روزانه شعب',
-            style: { color: '#666', fontSize: '12px', fontFamily: 'Vazirmatn, sans-serif' }
         },
         xAxis: {
             categories: categories,
@@ -832,10 +875,6 @@
                 fontFamily: 'Vazirmatn, sans-serif',
             }
         },
-        subtitle: {
-            text: 'ترافیک روزانه شعب',
-            style: { color: '#666', fontSize: '12px', fontFamily: 'Vazirmatn, sans-serif' }
-        },
         xAxis: {
             categories: categories,
             title: {
@@ -940,8 +979,6 @@
                 return response.json();
             })
             .then(data => {
-                console.log(queryString);
-                console.log(data);
                 const total = data.entry_totals.reduce((a, b) => a + b, 0);
                 const newCategories = data.dates.map(dateStr => {
                     const date = new Date(dateStr);
@@ -1087,7 +1124,7 @@
         } else {
             clearTimeout(noCampaign)
         }
-        if (document.getElementById("second-container").style.display !== "none" && branchUrl.length === 0) {
+        if (document.getElementById("second-container").style.display !== "none" && document.getElementById("second-container-pie-chart").style.display !== "none" && branchUrl.length === 0) {
             Swal.fire({
             icon: "error",
             title: "خطا",
@@ -1114,10 +1151,6 @@
                     day: '2-digit'
                 });
                 });
-                console.log(startDate);
-                console.log(endDate);
-                console.log(selectedBranches);
-                console.log(data);
                 const series = Object.entries(data.branches).map(([id, branchData]) => {
                     const total = branchData.entry_totals.reduce((a, b) => a + b, 0);
                     return {
@@ -1125,6 +1158,14 @@
                     data: branchData.entry_totals
                     }
                 });
+                // Convert series into pie format
+                const pieData = series.map(branchItem => {
+                    const total = branchItem.data.reduce((sum, val) => sum + val, 0);
+                    return { name: branchItem.name, y: total };
+                });
+
+                console.log(series)
+                console.log(categories)
                 Highcharts.chart("second-container", {
                     chart: { type: "line",
                         backgroundColor: '#ffffff',
@@ -1212,13 +1253,52 @@
                                             confirmButtonColor: '#5a8dee'
                                         });
                                         })
-
                                     }
                                 }
                             }
                         }
                     }
                 });
+
+                Highcharts.chart('second-container-pie-chart', {
+                    chart: {
+                        type: 'pie',
+                        backgroundColor: '#ffffff',
+                        borderColor: '#e5e5e5',
+                        borderWidth: 1,
+                        borderRadius: 12,
+                        style: { fontFamily: 'Vazirmatn, sans-serif' }
+                    },
+                    title: {
+                        text: 'توزیع کل ترافیک شعب',
+                        style: { fontSize: '20px', fontFamily: 'Vazirmatn, sans-serif' }
+                    },
+                    subtitle: {
+                        text: `از ${categories[0]} تا ${categories[categories.length - 1]}`,
+                        style: { fontSize: '14px', fontFamily: 'Vazirmatn, sans-serif' }
+                    },
+                    tooltip: {
+                        pointFormat: '<b>{point.y}</b> ({point.percentage:.1f}%)'
+                    },
+                    plotOptions: {
+                        pie: {
+                            allowPointSelect: true,
+                            cursor: 'pointer',
+                            dataLabels: {
+                                enabled: true,
+                                format: '{point.name}: ({point.percentage:.1f}%)',
+                                style: { fontSize: '14px', fontFamily: 'Vazirmatn, sans-serif' }
+                            },
+                            showInLegend: true
+                        }
+                    },
+                    series: [{
+                        name: 'ترافیک',
+                        colorByPoint: true,
+                        data: pieData   // aggregated data here
+                    }]
+                });
+
             },
             error: function (xhr) {
                 console.error("Error loading data");
@@ -1234,10 +1314,12 @@
             document.getElementById("container").style.display = '';
             document.getElementById("container-bar-chart").style.display = '';
             document.getElementById("second-container").style.display = 'none';
+            document.getElementById("second-container-pie-chart").style.display = 'none';
         } else {
             document.getElementById("container").style.display = 'none';
             document.getElementById("container-bar-chart").style.display = 'none';
             document.getElementById("second-container").style.display = '';
+            document.getElementById("second-container-pie-chart").style.display = '';
         }
     });
 </script>

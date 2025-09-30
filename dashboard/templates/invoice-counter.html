@@ -170,18 +170,24 @@
                     <div id="container-bar-chart" style="width: 100%; height: 400px; margin-top: 45px;"></div>
                     <!-- total amount aggregation by branches -->
                     <div id="second-container" style="width: 100%; height: 400px; margin-top: 45px; display: none;"></div>
+                    <!-- total amount aggregation pie chart by branches -->
+                    <div id="second-container-pie-chart" style="width: 100%; height: 400px; margin-top: 45px; display: none;"></div>
                     <!-- total count aggregation -->
                     <div id="third-container" style="width: 100%; height: 400px; margin-top: 45px;"></div>
                     <!-- total count aggregation bar chart -->
                     <div id="third-container-bar-chart" style="width: 100%; height: 400px; margin-top: 45px;"></div>
                     <!-- total count aggregation by branches -->
                     <div id="forth-container" style="width: 100%; height: 400px; margin-top: 45px; display: none;"></div>
+                    <!-- total count aggregation pie chart by branches -->
+                    <div id="forth-container-pie-chart" style="width: 100%; height: 400px; margin-top: 45px; display: none;"></div>
                     <!-- total product count aggregation -->
                     <div id="fifth-container" style="width: 100%; height: 400px; margin-top: 45px;"></div>
                     <!-- total product count aggregation bar chart -->
                     <div id="fifth-container-bar-chart" style="width: 100%; height: 400px; margin-top: 45px;"></div>
                     <!-- total product count aggregation by branches -->
                     <div id="sixth-container" style="width: 100%; height: 400px; margin-top: 45px; display: none;"></div>
+                    <!-- total product count aggregation pie chart by branches -->
+                    <div id="sixth-container-pie-chart" style="width: 100%; height: 400px; margin-top: 45px; display: none;"></div>
                 </div>
             </div>
         </div>
@@ -794,9 +800,13 @@
                 const series = Object.entries(data.invoice_data).map(([id, invoiceData]) => {
                     const totalSAmount = invoiceData.total_amounts.reduce((a, b) => a + b, 0);
                     return {
-                    name: `${invoiceData.name} (${Number(totalSAmount).toLocaleString('fa-IR')})`,
-                    data: invoiceData.total_amounts
+                        name: `${invoiceData.name} (${Number(totalSAmount).toLocaleString('fa-IR')})`,
+                        data: invoiceData.total_amounts
                     }
+                });
+                const pieData = series.map(branchItem => {
+                    const total = branchItem.data.reduce((sum, val) => sum + val, 0);
+                    return {name: branchItem.name, y: total}
                 });
                 Highcharts.chart("second-container", {
                     chart: { 
@@ -890,6 +900,45 @@
                         }
                     }
                 });
+
+                Highcharts.chart('second-container-pie-chart', {
+                    chart: {
+                        type: 'pie',
+                        backgroundColor: '#ffffff',
+                        borderColor: '#e5e5e5',
+                        borderWidth: 1,
+                        borderRadius: 12,
+                        style: { fontFamily: 'Vazirmatn, sans-serif' }
+                    },
+                    title: {
+                        text: 'توزیع کل فروش شعب',
+                        style: { fontSize: '20px', fontFamily: 'Vazirmatn, sans-serif' }
+                    },
+                    subtitle: {
+                        text: `از ${categories[0]} تا ${categories[categories.length - 1]}`,
+                        style: { fontSize: '14px', fontFamily: 'Vazirmatn, sans-serif' }
+                    },
+                    tooltip: {
+                        pointFormat: '<b>{point.y}</b> ({point.percentage:.1f}%)'
+                    },
+                    plotOptions: {
+                        pie: {
+                            allowPointSelect: true,
+                            cursor: 'pointer',
+                            dataLabels: {
+                                enabled: true,
+                                format: '{point.name}: ({point.percentage:.1f}%)',
+                                style: { fontSize: '14px', fontFamily: 'Vazirmatn, sans-serif' }
+                            },
+                            showInLegend: true
+                        }
+                    },
+                    series: [{
+                        name: 'ترافیک',
+                        colorByPoint: true,
+                        data: pieData   // aggregated data here
+                    }]
+                });
             },
             error: function (xhr) {
                 console.error("Error loading data");
@@ -922,6 +971,14 @@
                     name: invoiceData.name,
                     data: invoiceData.total_products
                 }));
+                const pieData = series.map(branchItem => {
+                    const total = branchItem.data.reduce((sum, val) => sum + val, 0)
+                    return {name: branchItem.name, y: total}
+                });
+                const pieDataProduct = seriesProduct.map(branchItem => {
+                    const total = branchItem.data.reduce((sum, val) => sum + val, 0);
+                    return {name: branchItem.name, y: total}
+                });
                 Highcharts.chart("forth-container", {
                     chart: { 
                         type: "line",
@@ -1014,6 +1071,46 @@
                         }
                     }
                 });
+
+                Highcharts.chart('forth-container-pie-chart', {
+                    chart: {
+                        type: 'pie',
+                        backgroundColor: '#ffffff',
+                        borderColor: '#e5e5e5',
+                        borderWidth: 1,
+                        borderRadius: 12,
+                        style: { fontFamily: 'Vazirmatn, sans-serif' }
+                    },
+                    title: {
+                        text: 'توزیع کل تعداد فاکتور شعب',
+                        style: { fontSize: '20px', fontFamily: 'Vazirmatn, sans-serif' }
+                    },
+                    subtitle: {
+                        text: `از ${categories[0]} تا ${categories[categories.length - 1]}`,
+                        style: { fontSize: '14px', fontFamily: 'Vazirmatn, sans-serif' }
+                    },
+                    tooltip: {
+                        pointFormat: '<b>{point.y}</b> ({point.percentage:.1f}%)'
+                    },
+                    plotOptions: {
+                        pie: {
+                            allowPointSelect: true,
+                            cursor: 'pointer',
+                            dataLabels: {
+                                enabled: true,
+                                format: '{point.name}: ({point.percentage:.1f}%)',
+                                style: { fontSize: '14px', fontFamily: 'Vazirmatn, sans-serif' }
+                            },
+                            showInLegend: true
+                        }
+                    },
+                    series: [{
+                        name: 'تعداد فاکتور',
+                        colorByPoint: true,
+                        data: pieData   // aggregated data here
+                    }]
+                });
+
                 Highcharts.chart("sixth-container", {
                     chart: { 
                         type: "line",
@@ -1105,6 +1202,45 @@
                             }
                         }
                     }
+                });
+
+                Highcharts.chart('sixth-container-pie-chart', {
+                    chart: {
+                        type: 'pie',
+                        backgroundColor: '#ffffff',
+                        borderColor: '#e5e5e5',
+                        borderWidth: 1,
+                        borderRadius: 12,
+                        style: { fontFamily: 'Vazirmatn, sans-serif' }
+                    },
+                    title: {
+                        text: 'توزیع کل محصولات خریداری شده شعب',
+                        style: { fontSize: '20px', fontFamily: 'Vazirmatn, sans-serif' }
+                    },
+                    subtitle: {
+                        text: `از ${categories[0]} تا ${categories[categories.length - 1]}`,
+                        style: { fontSize: '14px', fontFamily: 'Vazirmatn, sans-serif' }
+                    },
+                    tooltip: {
+                        pointFormat: '<b>{point.y}</b> ({point.percentage:.1f}%)'
+                    },
+                    plotOptions: {
+                        pie: {
+                            allowPointSelect: true,
+                            cursor: 'pointer',
+                            dataLabels: {
+                                enabled: true,
+                                format: '{point.name}: ({point.percentage:.1f}%)',
+                                style: { fontSize: '14px', fontFamily: 'Vazirmatn, sans-serif' }
+                            },
+                            showInLegend: true
+                        }
+                    },
+                    series: [{
+                        name: 'تعداد محصولات خریداری شده',
+                        colorByPoint: true,
+                        data: pieDataProduct   // aggregated data here
+                    }]
                 });
             },
             error: function (xhr) {
@@ -1995,7 +2131,7 @@
                 el.checked = true; 
             });
         }
-        if (document.getElementById("second-container").style.display !== "none" && document.getElementById("forth-container").style.display !== "none" && document.getElementById("sixth-container").style.display !== "none" && branchUrl.length === 0) {
+        if (document.getElementById("second-container").style.display !== "none" && document.getElementById("second-container-pie-chart").style.display !== "none" && document.getElementById("forth-container").style.display !== "none" && document.getElementById("forth-container-pie-chart") && document.getElementById("sixth-container").style.display !== "none" && document.getElementById("sixth-container-pie-chart").style.display !== "none" && branchUrl.length === 0) {
             Swal.fire({
             icon: "error",
             title: "خطا",
@@ -2029,6 +2165,10 @@
                     name: `${invoiceData.name} (${Number(totalSAmount).toLocaleString('fa-IR')})`,
                     data: invoiceData.total_amounts
                     }
+                });
+                const pieData = series.map(branchItem => {
+                    const total = branchItem.data.reduce((sum, val) => sum + val, 0);
+                    return {name: branchItem.name, y: total}
                 });
                 Highcharts.chart("second-container", {
                     chart: { 
@@ -2123,6 +2263,45 @@
                         }
                     }
                 });
+
+                Highcharts.chart('second-container-pie-chart', {
+                    chart: {
+                        type: 'pie',
+                        backgroundColor: '#ffffff',
+                        borderColor: '#e5e5e5',
+                        borderWidth: 1,
+                        borderRadius: 12,
+                        style: { fontFamily: 'Vazirmatn, sans-serif' }
+                    },
+                    title: {
+                        text: 'توزیع کل فروش شعب',
+                        style: { fontSize: '20px', fontFamily: 'Vazirmatn, sans-serif' }
+                    },
+                    subtitle: {
+                        text: `از ${categories[0]} تا ${categories[categories.length - 1]}`,
+                        style: { fontSize: '14px', fontFamily: 'Vazirmatn, sans-serif' }
+                    },
+                    tooltip: {
+                        pointFormat: '<b>{point.y}</b> ({point.percentage:.1f}%)'
+                    },
+                    plotOptions: {
+                        pie: {
+                            allowPointSelect: true,
+                            cursor: 'pointer',
+                            dataLabels: {
+                                enabled: true,
+                                format: '{point.name}: ({point.percentage:.1f}%)',
+                                style: { fontSize: '14px', fontFamily: 'Vazirmatn, sans-serif' }
+                            },
+                            showInLegend: true
+                        }
+                    },
+                    series: [{
+                        name: 'ترافیک',
+                        colorByPoint: true,
+                        data: pieData   // aggregated data here
+                    }]
+                });
             },
             error: function (xhr) {
                 console.error("Error loading data");
@@ -2154,6 +2333,14 @@
                     name: invoiceData.name,
                     data: invoiceData.total_products
                 }));
+                const pieData = series.map(branchItem => {
+                    const total = branchItem.data.reduce((sum, val) => sum + val, 0);
+                    return {name: branchItem.name, y: total}
+                });
+                const pieDataProduct = seriesProduct.map(branchItem => {
+                    const total = branchItem.data.reduce((sum, val) => sum + val, 0);
+                    return {name: branchItem.name, y: total}
+                });
                 Highcharts.chart("forth-container", {
                     chart: { type: "line",
                         borderColor: '#e5e5e5',  
@@ -2245,6 +2432,46 @@
                         }
                     }
                 });
+
+                Highcharts.chart('forth-container-pie-chart', {
+                    chart: {
+                        type: 'pie',
+                        backgroundColor: '#ffffff',
+                        borderColor: '#e5e5e5',
+                        borderWidth: 1,
+                        borderRadius: 12,
+                        style: { fontFamily: 'Vazirmatn, sans-serif' }
+                    },
+                    title: {
+                        text: 'توزیع کل تعداد فاکتور شعب',
+                        style: { fontSize: '20px', fontFamily: 'Vazirmatn, sans-serif' }
+                    },
+                    subtitle: {
+                        text: `از ${categories[0]} تا ${categories[categories.length - 1]}`,
+                        style: { fontSize: '14px', fontFamily: 'Vazirmatn, sans-serif' }
+                    },
+                    tooltip: {
+                        pointFormat: '<b>{point.y}</b> ({point.percentage:.1f}%)'
+                    },
+                    plotOptions: {
+                        pie: {
+                            allowPointSelect: true,
+                            cursor: 'pointer',
+                            dataLabels: {
+                                enabled: true,
+                                format: '{point.name}: ({point.percentage:.1f}%)',
+                                style: { fontSize: '14px', fontFamily: 'Vazirmatn, sans-serif' }
+                            },
+                            showInLegend: true
+                        }
+                    },
+                    series: [{
+                        name: 'تعداد فاکتور',
+                        colorByPoint: true,
+                        data: pieData   // aggregated data here
+                    }]
+                });
+
                 Highcharts.chart("sixth-container", {
                     chart: { type: "line",
                         borderColor: '#e5e5e5',  
@@ -2336,6 +2563,45 @@
                         }
                     }
                 });
+
+                Highcharts.chart('sixth-container-pie-chart', {
+                    chart: {
+                        type: 'pie',
+                        backgroundColor: '#ffffff',
+                        borderColor: '#e5e5e5',
+                        borderWidth: 1,
+                        borderRadius: 12,
+                        style: { fontFamily: 'Vazirmatn, sans-serif' }
+                    },
+                    title: {
+                        text: 'توزیع کل محصولات خریداری شده شعب',
+                        style: { fontSize: '20px', fontFamily: 'Vazirmatn, sans-serif' }
+                    },
+                    subtitle: {
+                        text: `از ${categories[0]} تا ${categories[categories.length - 1]}`,
+                        style: { fontSize: '14px', fontFamily: 'Vazirmatn, sans-serif' }
+                    },
+                    tooltip: {
+                        pointFormat: '<b>{point.y}</b> ({point.percentage:.1f}%)'
+                    },
+                    plotOptions: {
+                        pie: {
+                            allowPointSelect: true,
+                            cursor: 'pointer',
+                            dataLabels: {
+                                enabled: true,
+                                format: '{point.name}: ({point.percentage:.1f}%)',
+                                style: { fontSize: '14px', fontFamily: 'Vazirmatn, sans-serif' }
+                            },
+                            showInLegend: true
+                        }
+                    },
+                    series: [{
+                        name: 'تعداد محصولات خریداری شده',
+                        colorByPoint: true,
+                        data: pieDataProduct   // aggregated data here
+                    }]
+                });
             },
             error: function (xhr) {
                 console.error("Error loading data");
@@ -2355,8 +2621,11 @@
             document.getElementById("fifth-container").style.display = '';
             document.getElementById("fifth-container-bar-chart").style.display = '';
             document.getElementById("second-container").style.display = 'none';
+            document.getElementById("second-container-pie-chart").style.display = 'none';
             document.getElementById("forth-container").style.display = 'none';
+            document.getElementById("forth-container-pie-chart").style.display = 'none';
             document.getElementById("sixth-container").style.display = 'none';
+            document.getElementById("sixth-container-pie-chart").style.display = 'none';
         } else {
             document.getElementById("container").style.display = 'none';
             document.getElementById("container-bar-chart").style.display = 'none';
@@ -2365,8 +2634,11 @@
             document.getElementById("fifth-container").style.display = 'none';
             document.getElementById("fifth-container-bar-chart").style.display = 'none';
             document.getElementById("second-container").style.display = '';
+            document.getElementById("second-container-pie-chart").style.display = '';
             document.getElementById("forth-container").style.display = '';
+            document.getElementById("forth-container-pie-chart").style.display = '';
             document.getElementById("sixth-container").style.display = '';
+            document.getElementById("sixth-container-pie-chart").style.display = '';
         }
     });
 </script>
