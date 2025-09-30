@@ -454,7 +454,6 @@ def to_english_digits(number_str: str) -> str:
     return "".join(english_digits.get(ch, ch) for ch in number_str)
 
 
-
 class HolidaySpotter(APIView):
     def get(self, request):
         try:

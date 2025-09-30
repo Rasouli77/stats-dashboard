@@ -163,20 +163,26 @@
     <div class="row">
         <div class="col-lg-12">
             <div class="demo-inline-spacing mt-3">
-            <div class="tab-content px-0 pt-2">
-                <!-- total amount aggregation -->
-                <div id="container" style="width: 100%; height: 400px; margin-top: 45px;"></div>
-                <!-- total amount aggregation by branches -->
-                <div id="second-container" style="width: 100%; height: 400px; margin-top: 45px; display: none;"></div>
-                <!-- total count aggregation -->
-                <div id="third-container" style="width: 100%; height: 400px; margin-top: 45px;"></div>
-                <!-- total count aggregation by branches -->
-                <div id="forth-container" style="width: 100%; height: 400px; margin-top: 45px; display: none;"></div>
-                <!-- total product count aggregation -->
-                <div id="fifth-container" style="width: 100%; height: 400px; margin-top: 45px;"></div>
-                <!-- total product count aggregation by branches -->
-                <div id="sixth-container" style="width: 100%; height: 400px; margin-top: 45px; display: none;"></div>
-            </div>
+                <div class="tab-content px-0 pt-2">
+                    <!-- total amount aggregation line chart -->
+                    <div id="container" style="width: 100%; height: 400px; margin-top: 45px;"></div>
+                    <!-- total amount aggregation bar chart -->
+                    <div id="container-bar-chart" style="width: 100%; height: 400px; margin-top: 45px;"></div>
+                    <!-- total amount aggregation by branches -->
+                    <div id="second-container" style="width: 100%; height: 400px; margin-top: 45px; display: none;"></div>
+                    <!-- total count aggregation -->
+                    <div id="third-container" style="width: 100%; height: 400px; margin-top: 45px;"></div>
+                    <!-- total count aggregation bar chart -->
+                    <div id="third-container-bar-chart" style="width: 100%; height: 400px; margin-top: 45px;"></div>
+                    <!-- total count aggregation by branches -->
+                    <div id="forth-container" style="width: 100%; height: 400px; margin-top: 45px; display: none;"></div>
+                    <!-- total product count aggregation -->
+                    <div id="fifth-container" style="width: 100%; height: 400px; margin-top: 45px;"></div>
+                    <!-- total product count aggregation bar chart -->
+                    <div id="fifth-container-bar-chart" style="width: 100%; height: 400px; margin-top: 45px;"></div>
+                    <!-- total product count aggregation by branches -->
+                    <div id="sixth-container" style="width: 100%; height: 400px; margin-top: 45px; display: none;"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -474,6 +480,27 @@
                 ],
             });
 
+            barChart.update({
+                xAxis: { 
+                    categories: newCategories, 
+                    labels: {
+                        useHTML: true,  
+                        formatter: function () {
+                                const value = this.value; 
+                                if (holidayDates.includes(value)) {
+                                    return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                }
+                                if (fridays.includes(value)) {
+                                    return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                }
+                                return value; 
+                            }
+                        } 
+                },
+                series: [{name: `فروش (${Number(totalAmount).toLocaleString('fa-IR')})`, data: data.total_amount}
+                ],
+            });
+
             thirdLineChart.update({
                 xAxis: { 
                     categories: newCategories,
@@ -494,7 +521,47 @@
                 series: [{ data: data.total_items }]
             });
 
+            thirdBarChart.update({
+                xAxis: { 
+                    categories: newCategories,
+                    labels: {
+                        useHTML: true,  
+                        formatter: function () {
+                                const value = this.value; 
+                                if (holidayDates.includes(value)) {
+                                    return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                }
+                                if (fridays.includes(value)) {
+                                    return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                }
+                                return value; 
+                            }
+                        } 
+                },
+                series: [{ data: data.total_items }]
+            });
+
             fifthLineChart.update({
+                xAxis: { 
+                    categories: newCategories,
+                    labels: {
+                        useHTML: true,  
+                        formatter: function () {
+                                const value = this.value; 
+                                if (holidayDates.includes(value)) {
+                                    return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                }
+                                if (fridays.includes(value)) {
+                                    return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                }
+                                return value; 
+                            }
+                        } 
+                },
+                series: [{ data: data.total_products }]
+            });
+
+            fifthBarChart.update({
                 xAxis: { 
                     categories: newCategories,
                     labels: {
@@ -1151,6 +1218,112 @@
                                         confirmButtonColor: '#5a8dee'
                                     });
                                     })
+                                }
+                            }
+                        }
+                    }
+                },
+                series: [
+                    {
+                        name: "مبلغ فاکتور",
+                        data: total_amount
+                    },
+                ]
+            }
+        );
+
+        barChart = Highcharts.chart(
+            'container-bar-chart', {
+                chart: {
+                    type: 'column',
+                    borderColor: '#e5e5e5',  
+                    borderWidth: 1,           
+                    borderRadius: 12,         
+                    spacing: [30, 20, 30, 20],
+                    backgroundColor: '#ffffff',
+                    style: {
+                        fontFamily: 'Vazirmatn, sans-serif',
+                        fontSize: '20px'
+                    }
+                },
+                title: {
+                    text: "فروش تجمیعی",
+                    style: {
+                        fontSize: '25px',
+                        color: '#333'
+                    }
+                },
+                xAxis: {
+                    categories : categories,
+                    title: {
+                        text: "تاریخ",
+                        style: {
+                        fontSize: '20px',
+                        fontWeight: 'bold'
+                        }
+                    },
+                    labels: {
+                        useHTML: true,  
+                        formatter: function () {
+                                const value = this.value; 
+                                if (holidayDates.includes(value)) {
+                                    return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                }
+                                if (fridays.includes(value)) {
+                                    return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                }
+                                return value; 
+                            }
+                        } 
+                },
+                yAxis: {
+                    title: {
+                        text: "فروش",
+                        style: {
+                        fontSize: '20px',
+                        fontWeight: 'bold'
+                        }
+                    }
+                },
+                plotOptions: {
+                    series: {
+                        point: {
+                            events: {
+                                click: function () {
+                                    const apiUrl = "/api/get-campaign-each-point";
+                                    const date = this.category;
+                                    const branch = this.series.name;
+                                    const body = document.querySelector("body");
+                                    const infoModal = document.querySelector("#info-modal");
+                                    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                                    fetch(apiUrl, {
+                                        method: "POST",
+                                        headers: {
+                                            "Content-Type": "application/json",
+                                            "X-CSRFToken": csrftoken,
+                                        },
+                                        body: JSON.stringify({date: date, branch: branch.replace(/\(.*?\)/, "").trim()})
+                                    }).then(response => {
+                                        if (!response.ok) throw new Error("Invalid Response");
+                                        return response.json()
+                                    }).then(data => {
+                                        const rawNum = Number(this.y);
+                                        const num = rawNum.toLocaleString("fa-IR");
+                                        let htmlCampaigns = data.map((camp, index) =>
+                                            `<p style='margin-bottom: 0px;' style='margin-bottom: 0px; margin-top: 0px;'>${index + 1}. ${camp.campaign_name}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${camp.campaign_type}</p>`
+                                        ).join('')
+                                        if (data.length === 0) {
+                                            htmlCampaigns = `<p>هیچ کمپینی یافت نشد.</p>`
+                                        }
+                                        Swal.fire({
+                                        html: `<h3 style='margin-bottom: 0px;'>${num}</h3><p>${this.category}</p>
+                                        <p style='margin-bottom: 0px;'>کمپین ها:</p>
+                                        ${htmlCampaigns}
+                                        `,
+                                        confirmButtonText: 'بستن',
+                                        confirmButtonColor: '#5a8dee'
+                                    });
+                                    })
 
                                 }
                             }
@@ -1171,6 +1344,110 @@
             'third-container', {
                 chart: {
                     type: 'line',
+                    borderColor: '#e5e5e5',  
+                    borderWidth: 1,           
+                    borderRadius: 12,         
+                    spacing: [30, 20, 30, 20],
+                    backgroundColor: '#ffffff',
+                    style: {
+                        fontFamily: 'Vazirmatn, sans-serif',
+                        fontSize: '20px'
+                    }
+                },
+                title: {
+                    text: "تعداد فاکتور تجمیعی",
+                    style: {
+                        fontSize: '25px',
+                        color: '#333'
+                    }
+                },
+                xAxis: {
+                    categories : categories,
+                    title: {
+                        text: "تاریخ",
+                        style: {
+                        fontSize: '20px',
+                        fontWeight: 'bold'
+                        }
+                    },
+                    labels: {
+                        useHTML: true,  
+                        formatter: function () {
+                                const value = this.value; 
+                                if (holidayDates.includes(value)) {
+                                    return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                }
+                                if (fridays.includes(value)) {
+                                        return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                }
+                                return value; 
+                            }
+                        } 
+                },
+                yAxis: {
+                    title: {
+                        text: "تعداد فاکتور",
+                        style: {
+                        fontSize: '20px',
+                        fontWeight: 'bold'
+                        }
+                    }
+                },
+                plotOptions: {
+                    series: {
+                        point: {
+                            events: {
+                                click: function () {
+                                    const apiUrl = "/api/get-campaign-each-point";
+                                    const date = this.category;
+                                    const branch = this.series.name;
+                                    const body = document.querySelector("body");
+                                    const infoModal = document.querySelector("#info-modal");
+                                    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                                    fetch(apiUrl, {
+                                        method: "POST",
+                                        headers: {
+                                            "Content-Type": "application/json",
+                                            "X-CSRFToken": csrftoken,
+                                        },
+                                        body: JSON.stringify({date: date, branch: branch.replace(/\(.*?\)/, "").trim()})
+                                    }).then(response => {
+                                        if (!response.ok) throw new Error("Invalid Response");
+                                        return response.json()
+                                    }).then(data => {
+                                        let htmlCampaigns = data.map((camp, index) =>
+                                            `<p style='margin-bottom: 0px;' style='margin-bottom: 0px; margin-top: 0px;'>${index + 1}. ${camp.campaign_name}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${camp.campaign_type}</p>`
+                                        ).join('')
+                                        if (data.length === 0) {
+                                            htmlCampaigns = `<p>هیچ کمپینی یافت نشد.</p>`
+                                        }
+                                        Swal.fire({
+                                        html: `<h3 style='margin-bottom: 0px;'>${this.y}</h3><p>${this.category}</p>
+                                        <p style='margin-bottom: 0px;'>کمپین ها:</p>
+                                        ${htmlCampaigns}
+                                        `,
+                                        confirmButtonText: 'بستن',
+                                        confirmButtonColor: '#5a8dee'
+                                    });
+                                    })
+                                }
+                            }
+                        }
+                    }
+                },
+                series: [
+                    {
+                        name: "تعداد فاکتور",
+                        data: total_items
+                    },
+                ]
+            }
+        );
+
+        thirdBarChart = Highcharts.chart(
+            'third-container-bar-chart', {
+                chart: {
+                    type: 'column',
                     borderColor: '#e5e5e5',  
                     borderWidth: 1,           
                     borderRadius: 12,         
@@ -1375,6 +1652,110 @@
                 ]
             }
         );
+
+        fifthBarChart = Highcharts.chart(
+            'fifth-container-bar-chart', {
+                chart: {
+                    type: 'column',
+                    borderColor: '#e5e5e5',  
+                    borderWidth: 1,           
+                    borderRadius: 12,         
+                    spacing: [30, 20, 30, 20],
+                    backgroundColor: '#ffffff',
+                    style: {
+                        fontFamily: 'Vazirmatn, sans-serif',
+                        fontSize: '20px'
+                    }
+                },
+                title: {
+                    text: "تعداد محصول خریداری شده تجمیعی",
+                    style: {
+                        fontSize: '25px',
+                        color: '#333'
+                    }
+                },
+                xAxis: {
+                    categories : categories,
+                    title: {
+                        text: "تاریخ",
+                        style: {
+                        fontSize: '20px',
+                        fontWeight: 'bold'
+                        }
+                    },
+                    labels: {
+                        useHTML: true,  
+                        formatter: function () {
+                                const value = this.value; 
+                                if (holidayDates.includes(value)) {
+                                    return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                }
+                                if (fridays.includes(value)) {
+                                        return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                }
+                                return value; 
+                            }
+                        } 
+                },
+                yAxis: {
+                    title: {
+                        text: "تعداد محصول",
+                        style: {
+                        fontSize: '20px',
+                        fontWeight: 'bold'
+                        }
+                    }
+                },
+                plotOptions: {
+                    series: {
+                        point: {
+                            events: {
+                                click: function () {
+                                    const apiUrl = "/api/get-campaign-each-point";
+                                    const date = this.category;
+                                    const branch = this.series.name;
+                                    const body = document.querySelector("body");
+                                    const infoModal = document.querySelector("#info-modal");
+                                    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                                    fetch(apiUrl, {
+                                        method: "POST",
+                                        headers: {
+                                            "Content-Type": "application/json",
+                                            "X-CSRFToken": csrftoken,
+                                        },
+                                        body: JSON.stringify({date: date, branch: branch.replace(/\(.*?\)/, "").trim()})
+                                    }).then(response => {
+                                        if (!response.ok) throw new Error("Invalid Response");
+                                        return response.json()
+                                    }).then(data => {
+                                        let htmlCampaigns = data.map((camp, index) =>
+                                            `<p style='margin-bottom: 0px;' style='margin-bottom: 0px; margin-top: 0px;'>${index + 1}. ${camp.campaign_name}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${camp.campaign_type}</p>`
+                                        ).join('')
+                                        if (data.length === 0) {
+                                            htmlCampaigns = `<p>هیچ کمپینی یافت نشد.</p>`
+                                        }
+                                        Swal.fire({
+                                        html: `<h3 style='margin-bottom: 0px;'>${this.y}</h3><p>${this.category}</p>
+                                        <p style='margin-bottom: 0px;'>کمپین ها:</p>
+                                        ${htmlCampaigns}
+                                        `,
+                                        confirmButtonText: 'بستن',
+                                        confirmButtonColor: '#5a8dee'
+                                    });
+                                    })
+                                }
+                            }
+                        }
+                    }
+                },
+                series: [
+                    {
+                        name: "تعداد محصول",
+                        data: total_products
+                    },
+                ]
+            }
+        );
         
         document.getElementById('filter-form').addEventListener('submit', function(event) {
             event.preventDefault(); 
@@ -1424,6 +1805,27 @@
                     ],
                 });
 
+                barChart.update({
+                    xAxis: { 
+                        categories: newCategories, 
+                        labels: {
+                            useHTML: true,  
+                            formatter: function () {
+                                    const value = this.value; 
+                                    if (holidayDates.includes(value)) {
+                                        return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                    }
+                                    if (fridays.includes(value)) {
+                                        return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                    }
+                                    return value; 
+                                }
+                            } 
+                    },
+                    series: [{name: `فروش (${Number(totalAmount).toLocaleString('fa-IR')})`, data: data.total_amount}
+                    ],
+                });
+
                 thirdLineChart.update({
                     xAxis: { 
                         categories: newCategories,
@@ -1444,7 +1846,47 @@
                     series: [{ data: data.total_items }]
                 });
 
+                thirdBarChart.update({
+                    xAxis: { 
+                        categories: newCategories,
+                        labels: {
+                            useHTML: true,  
+                            formatter: function () {
+                                    const value = this.value; 
+                                    if (holidayDates.includes(value)) {
+                                        return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                    }
+                                    if (fridays.includes(value)) {
+                                        return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                    }
+                                    return value; 
+                                }
+                            } 
+                    },
+                    series: [{ data: data.total_items }]
+                });
+
                 fifthLineChart.update({
+                    xAxis: { 
+                        categories: newCategories,
+                        labels: {
+                            useHTML: true,  
+                            formatter: function () {
+                                    const value = this.value; 
+                                    if (holidayDates.includes(value)) {
+                                        return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                    }
+                                    if (fridays.includes(value)) {
+                                        return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                    }
+                                    return value; 
+                                }
+                            } 
+                    },
+                    series: [{ data: data.total_products }]
+                });
+
+                fifthBarChart.update({
                     xAxis: { 
                         categories: newCategories,
                         labels: {
@@ -1542,7 +1984,7 @@
             });
             return;
         }
-        if (document.getElementById("container").style.display !== "none" && document.getElementById("third-container").style.display !== "none" && document.getElementById("fifth-container").style.display !== "none" && selectedBranches.length === 0 && startDate) {
+        if (document.getElementById("container").style.display !== "none" && document.getElementById("container-bar-chart").style.display !== "none" && document.getElementById("third-container").style.display !== "none" && document.getElementById("third-container-bar-chart").style.display !== "none" && document.getElementById("fifth-container").style.display !== "none" && document.getElementById("fifth-container-bar-chart").style.display !== "none" && selectedBranches.length === 0 && startDate) {
             toastr.options = {
                 positionClass: 'toast-top-center',
             }
@@ -1907,15 +2349,21 @@
     chartDisplayToggle.addEventListener("change", () => {
         if (chartDisplayToggle.value === '1') {
             document.getElementById("container").style.display = '';
+            document.getElementById("container-bar-chart").style.display = '';
             document.getElementById("third-container").style.display = '';
+            document.getElementById("third-container-bar-chart").style.display = '';
             document.getElementById("fifth-container").style.display = '';
+            document.getElementById("fifth-container-bar-chart").style.display = '';
             document.getElementById("second-container").style.display = 'none';
             document.getElementById("forth-container").style.display = 'none';
             document.getElementById("sixth-container").style.display = 'none';
         } else {
             document.getElementById("container").style.display = 'none';
+            document.getElementById("container-bar-chart").style.display = 'none';
             document.getElementById("third-container").style.display = 'none';
+            document.getElementById("third-container-bar-chart").style.display = 'none';
             document.getElementById("fifth-container").style.display = 'none';
+            document.getElementById("fifth-container-bar-chart").style.display = 'none';
             document.getElementById("second-container").style.display = '';
             document.getElementById("forth-container").style.display = '';
             document.getElementById("sixth-container").style.display = '';
