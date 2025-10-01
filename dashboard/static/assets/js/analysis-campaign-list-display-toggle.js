@@ -11,20 +11,36 @@ const titleFour = document.getElementById("title-type-4");
 const displayToggle = document.getElementById("chart-display-toggle");
 // TCR
 const aggConPercentChart = document.getElementById("ratio-container");
+// TCR Bar Chart
+const ratioContainerBarChart = document.getElementById("ratio-container-bar-chart");
 // BTCR
 const branchConPercentChart = document.getElementById("ratio-container-multi-branch");
+// BTCR Pie Chart
+const branchConPercentPieChart = document.getElementById("ratio-container-multi-branch-pie-chart");
 // EV
 const aggEntryValChart = document.getElementById("second-ratio-container");
+// EV Bar Chart
+const aggEntryValBarChart = document.getElementById("second-ratio-container-bar-chart");
 // BEV
 const branchEntryValChart = document.getElementById("second-ratio-container-multi-branch");
+// BEV Pie Chart
+const branchEntryValPieChart = document.getElementById("second-ratio-container-multi-branch-pie-chart");
 // BTS
 const oneToAllEntryChart =  document.getElementById("one-to-all-container");
+// BTS Bar Chart
+const oneToAllEntryBarChart =  document.getElementById("one-to-all-container-bar-chart");
 // TBTS
 const allToAllEntryChart = document.getElementById("second-one-to-all-container");
+// TBTS Pie Chart
+const allToAllEntryPieChart = document.getElementById("second-one-to-all-container-pie-chart");
 // IPB
 const cproductCounter = document.getElementById("product-counter");
+// IPB Bar Chart
+const cproductCounterBarChart = document.getElementById("product-counter-bar-chart");
 // BIPB
 const productCounterBranch = document.getElementById("product-counter-branch");
+// BIPB Pie Chart
+const productCounterBranchPieChart = document.getElementById("product-counter-branch-pie-chart");
 // Title Display Function
 function showTitleAnalysis(one, two, three, four) {
     // one is always dispalyed

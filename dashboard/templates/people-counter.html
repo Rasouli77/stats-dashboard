@@ -58,6 +58,57 @@
     }
 
 </style>
+<!-- Chart Tool Bar -->
+<style>
+    .icon-bar {
+        display: flex;
+        gap: 12px;
+        font-size: 24px;
+        margin-top: 25px;
+    }
+
+    .icon-wrapper {
+        position: relative;
+        cursor: pointer;
+        transition: color 0.3s ease;
+    }
+
+    /* Default color */
+    .icon-wrapper i {
+        color: #555;
+        transition: color 0.3s ease;
+    }
+
+    /* Hover colors for each one */
+    .bar-chart:hover i { color: #4caf50; } /* Green */
+    .pie-chart:hover i { color: #ff9800; } /* Orange */
+    .line-chart:hover i { color: #2196f3; } /* Blue */
+    .ai:hover i { color: #9c27b0; } /* Purple */
+
+    /* Tooltip styling */
+    .icon-wrapper::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        top: -32px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #333;
+        color: #fff;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 12px;
+        opacity: 0;
+        pointer-events: none;
+        white-space: nowrap;
+        transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    /* Show tooltip on hover */
+    .icon-wrapper:hover::after {
+        opacity: 1;
+        transform: translateX(-50%) translateY(4px);
+    }
+</style>
 {% endblock %}
 {% block content %}
 <div class="loading-overlay" id="loading-overlay">
@@ -166,13 +217,45 @@
                 <div class="demo-inline-spacing mt-3">
                     <div class="tab-content px-0 pt-2">
                         <!-- total traffic aggregation line chart -->
-                        <div id="container" style="width: 100%; height: 400px; margin-top: 45px;"></div>
+                        <div id="container-tools" class="icon-bar">
+                            <div class="icon-wrapper bar-chart" data-tooltip="Bar Chart">
+                                <i class="bx bx-bar-chart"></i>
+                            </div>
+                            <div class="icon-wrapper ai" data-tooltip="AI">
+                                <i class="bx bx-brain"></i>
+                            </div>
+                        </div>
+                        <div id="container" style="width: 100%; height: 400px;"></div>
                         <!-- total traffic aggregation bar chart -->
-                        <div id="container-bar-chart" style="width: 100%; height: 400px; margin-top: 45px;"></div>
+                        <div id="container-bar-chart-tools" class="icon-bar">
+                            <div class="icon-wrapper line-chart" data-tooltip="Line Chart">
+                                <i class="bx bx-line-chart"></i>
+                            </div>
+                            <div class="icon-wrapper ai" data-tooltip="AI">
+                                <i class="bx bx-brain"></i>
+                            </div>
+                        </div>
+                        <div id="container-bar-chart" style="width: 100%; height: 400px;"></div>
                         <!-- total traffic aggregation by branches -->
-                        <div id="second-container" style="width: 100%; height: 400px; margin-top: 45px; display: none;"></div>
+                        <div id="second-container-tools" class="icon-bar" style="display: none;">
+                            <div class="icon-wrapper pie-chart" data-tooltip="Pie Chart">
+                                <i class="bx bx-pie-chart"></i>
+                            </div>
+                            <div class="icon-wrapper ai" data-tooltip="AI">
+                                <i class="bx bx-brain"></i>
+                            </div>
+                        </div>
+                        <div id="second-container" style="width: 100%; height: 400px; display: none;"></div>
                         <!-- total traffic aggregation pie chart by branches -->
-                        <div id="second-container-pie-chart" style="width: 100%; height: 400px; margin-top: 45px; display: none;"></div>
+                        <div id="second-container-pie-chart-tools" class="icon-bar" style="display: none;">
+                            <div class="icon-wrapper line-chart" data-tooltip="Line Chart">
+                                <i class="bx bx-line-chart"></i>
+                            </div>
+                            <div class="icon-wrapper ai" data-tooltip="AI">
+                                <i class="bx bx-brain"></i>
+                            </div>
+                        </div>
+                        <div id="second-container-pie-chart" style="width: 100%; height: 400px; display: none;"></div>
                     </div>
                 </div>
             </div>
@@ -687,43 +770,43 @@
                 });
 
                 Highcharts.chart('second-container-pie-chart', {
-                chart: {
-                    type: 'pie',
-                    backgroundColor: '#ffffff',
-                    borderColor: '#e5e5e5',
-                    borderWidth: 1,
-                    borderRadius: 12,
-                    style: { fontFamily: 'Vazirmatn, sans-serif' }
-                },
-                title: {
-                    text: 'توزیع کل ترافیک شعب',
-                    style: { fontSize: '25px', fontFamily: 'Vazirmatn, sans-serif' }
-                },
-                subtitle: {
-                    text: `از ${categories[0]} تا ${categories[categories.length - 1]}`,
-                    style: { fontSize: '14px', fontFamily: 'Vazirmatn, sans-serif' }
-                },
-                tooltip: {
-                    pointFormat: '<b>{point.y}</b> ({point.percentage:.1f}%)'
-                },
-                plotOptions: {
-                    pie: {
-                        allowPointSelect: true,
-                        cursor: 'pointer',
-                        dataLabels: {
-                            enabled: true,
-                            format: '{point.name}: ({point.percentage:.1f}%)',
-                            style: { fontSize: '14px', fontFamily: 'Vazirmatn, sans-serif' }
-                        },
-                        showInLegend: true
-                    }
-                },
-                series: [{
-                    name: 'ترافیک',
-                    colorByPoint: true,
-                    data: pieData   // aggregated data here
-                }]
-            });
+                    chart: {
+                        type: 'pie',
+                        backgroundColor: '#ffffff',
+                        borderColor: '#e5e5e5',
+                        borderWidth: 1,
+                        borderRadius: 12,
+                        style: { fontFamily: 'Vazirmatn, sans-serif' }
+                    },
+                    title: {
+                        text: 'توزیع کل ترافیک شعب',
+                        style: { fontSize: '25px', fontFamily: 'Vazirmatn, sans-serif' }
+                    },
+                    subtitle: {
+                        text: `از ${categories[0]} تا ${categories[categories.length - 1]}`,
+                        style: { fontSize: '14px', fontFamily: 'Vazirmatn, sans-serif' }
+                    },
+                    tooltip: {
+                        pointFormat: '<b>{point.y}</b> ({point.percentage:.1f}%)'
+                    },
+                    plotOptions: {
+                        pie: {
+                            allowPointSelect: true,
+                            cursor: 'pointer',
+                            dataLabels: {
+                                enabled: true,
+                                format: '{point.name}: ({point.percentage:.1f}%)',
+                                style: { fontSize: '14px', fontFamily: 'Vazirmatn, sans-serif' }
+                            },
+                            showInLegend: true
+                        }
+                    },
+                    series: [{
+                        name: 'ترافیک',
+                        colorByPoint: true,
+                        data: pieData   // aggregated data here
+                    }]
+                });
 
             },
             error: function (xhr) {
@@ -950,7 +1033,6 @@
                                 confirmButtonColor: '#5a8dee'
                             });
                             })
-
                         }
                     }
                 }
@@ -1312,14 +1394,22 @@
     chartDisplayToggle.addEventListener("change", () => {
         if (chartDisplayToggle.value === '1') {
             document.getElementById("container").style.display = '';
+            document.getElementById("container-tools").style.display = '';
             document.getElementById("container-bar-chart").style.display = '';
+            document.getElementById("container-bar-chart-tools").style.display = '';
             document.getElementById("second-container").style.display = 'none';
+            document.getElementById("second-container-tools").style.display = 'none';
             document.getElementById("second-container-pie-chart").style.display = 'none';
+            document.getElementById("second-container-pie-chart-tools").style.display = 'none';
         } else {
             document.getElementById("container").style.display = 'none';
+            document.getElementById("container-tools").style.display = 'none';
             document.getElementById("container-bar-chart").style.display = 'none';
+            document.getElementById("container-bar-chart-tools").style.display = 'none';
             document.getElementById("second-container").style.display = '';
+            document.getElementById("second-container-tools").style.display = '';
             document.getElementById("second-container-pie-chart").style.display = '';
+            document.getElementById("second-container-pie-chart-tools").style.display = '';
         }
     });
 </script>

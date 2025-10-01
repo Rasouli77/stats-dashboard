@@ -175,20 +175,36 @@
             <div class="tab-content px-0 pt-2">
                 <!-- Conversion Rate Aggregation -->
                 <div id="ratio-container" style="width: 100%; height: 400px; margin-top: 45px;"></div>
+                <!-- Conversion Rate Bar Chart Aggregation -->
+                <div id="ratio-container-bar-chart" style="width: 100%; height: 400px; margin-top: 45px;"></div>
                 <!-- Value Entry Aggregation -->
                 <div id="second-ratio-container" style="width: 100%; height: 400px; margin-top: 45px;"></div>
+                <!-- Value Entry Bar Chart Aggregation -->
+                <div id="second-ratio-container-bar-chart" style="width: 100%; height: 400px; margin-top: 45px;"></div>
                 <!-- Entry Share -->
                 <div id="one-to-all-container" style="width: 100%; height: 400px; margin-top: 45px;"></div>
+                <!-- Entry Share Bar Chart -->
+                <div id="one-to-all-container-bar-chart" style="width: 100%; height: 400px; margin-top: 45px;"></div>
                 <!-- Conversion Rate Aggregation By Branch -->
                 <div id="ratio-container-multi-branch" style="width: 100%; height: 400px; margin-top: 45px;"></div>
+                <!-- Conversion Rate Aggregation Pie Chart By Branch -->
+                <div id="ratio-container-multi-branch-pie-chart" style="width: 100%; height: 400px; margin-top: 45px;"></div>
                 <!-- Value Entry Aggregation By Branch -->
                 <div id="second-ratio-container-multi-branch" style="width: 100%; height: 400px; margin-top: 45px;"></div>
+                <!-- Value Entry Aggregation Pie Chart By Branch -->
+                <div id="second-ratio-container-multi-branch-pie-chart" style="width: 100%; height: 400px; margin-top: 45px;"></div>
                 <!-- Entry Share By Branch -->
                 <div id="second-one-to-all-container" style="width: 100%; height: 400px; margin-top: 45px;"></div>
+                <!-- Entry Share Pie Chart By Branch -->
+                <div id="second-one-to-all-container-pie-chart" style="width: 100%; height: 400px; margin-top: 45px;"></div>
                 <!-- Product Count Average Aggregation -->
                 <div id="product-counter" style="width: 100%; height: 400px; margin-top: 45px;"></div>
+                <!-- Product Count Average Bar Chart Aggregation -->
+                <div id="product-counter-bar-chart" style="width: 100%; height: 400px; margin-top: 45px;"></div>
                 <!-- Product Count Average Aggregation By Branches -->
                 <div id="product-counter-branch" style="width: 100%; height: 400px; margin-top: 45px;"></div>
+                <!-- Product Count Average Aggregation Pie Chart By Branches -->
+                <div id="product-counter-branch-pie-chart" style="width: 100%; height: 400px; margin-top: 45px;"></div>
             </div>
             </div>
         </div>
@@ -435,7 +451,6 @@
                                 confirmButtonColor: '#5a8dee'
                             });
                             })
-
                         }
                     }
                 }
@@ -448,6 +463,116 @@
             },
         ]
     });
+
+    ratioContainerBarChart = Highcharts.chart('ratio-container-bar-chart', {
+        chart: {
+            type: 'column',
+            backgroundColor: '#ffffff',
+            borderColor: '#e5e5e5',  
+            borderWidth: 1,           
+            borderRadius: 12,         
+            spacing: [30, 20, 30, 20],
+            style: {
+                fontFamily: 'Vazirmatn, sans-serif',
+                fontSize: '20px'
+            }
+        },
+        title: {
+            text: "(TCR) نرخ تبدیل ترافیک",
+            style: {
+                fontSize: '25px',
+                color: '#333',
+                fontFamily: 'Vazirmatn, sans-serif',
+            }
+        },
+        xAxis: {
+            categories: [],
+            title: {
+                text: "تاریخ",
+                style: {
+                    fontSize: '20px',
+                    fontWeight: 'bold',
+                    fontFamily: 'Vazirmatn, sans-serif',
+                }
+            }
+        },
+        yAxis: {
+            title: {
+                text: "درصد نرخ تبدیل (%)",
+                style: {
+                    fontSize: '20px',
+                    fontWeight: 'bold',
+                    fontFamily: 'Vazirmatn, sans-serif',
+                }
+            }
+        },
+        tooltip: {
+            backgroundColor: 'white',
+            borderColor: '#ccc',
+            borderRadius: 8,
+            shadow: true,
+            style: { fontSize: '15px' },
+            shared: true, 
+        },
+        plotOptions: {
+            series: {
+                lineWidth: 3, 
+                marker: {
+                    enabled: true,
+                    radius: 5,
+                    states: { hover: { radius: 7.5 } }
+                },
+                states: {
+                    hover: { lineWidthPlus: 1 }
+                },
+                point: {
+                    events: {
+                        click: function () {
+                            const apiUrl = "/api/get-campaign-each-point";
+                            const date = this.category;
+                            const branch = this.series.name;
+                            const body = document.querySelector("body");
+                            const infoModal = document.querySelector("#info-modal");
+                            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                            fetch(apiUrl, {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    "X-CSRFToken": csrftoken,
+                                },
+                                body: JSON.stringify({date: date, branch: branch})
+                            }).then(response => {
+                                if (!response.ok) throw new Error("Invalid Response");
+                                return response.json()
+                            }).then(data => {
+                                let htmlCampaigns = data.map((camp, index) =>
+                                    `<p style='margin-bottom: 0px;' style='margin-bottom: 0px; margin-top: 0px;'>${index + 1}. ${camp.campaign_name}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${camp.campaign_type}</p>`
+                                ).join('')
+                                if (data.length === 0) {
+                                    htmlCampaigns = `<p>هیچ کمپینی یافت نشد.</p>`
+                                }
+                                Swal.fire({
+                                html: `<h3 style='margin-bottom: 0px;'>${this.y}</h3><p>${this.category}</p>
+                                <p style='margin-bottom: 0px;'>کمپین ها:</p>
+                                ${htmlCampaigns}
+                                `,
+                                confirmButtonText: 'بستن',
+                                confirmButtonColor: '#5a8dee'
+                            });
+                            })
+                        }
+                    }
+                }
+            }
+        },
+        series: [
+            {   
+                name: "درصد نرخ تبدیل (%)",
+                data: []
+            }
+        ]
+        });
+
     let productCounter = Highcharts.chart('product-counter', {
         chart: {
             type: 'line',
@@ -537,7 +662,6 @@
                                 confirmButtonColor: '#5a8dee'
                             });
                             })
-
                         }
                     }
                 }
@@ -550,6 +674,109 @@
             },
         ]
     });
+
+    let productCounterBarChart = Highcharts.chart('product-counter-bar-chart', {
+        chart: {
+            type: 'column',
+            borderColor: '#e5e5e5',  
+            borderWidth: 1,           
+            borderRadius: 12,         
+            spacing: [30, 20, 30, 20],
+            backgroundColor: '#ffffff',
+            style: {
+                fontFamily: 'Vazirmatn, sans-serif',
+                fontSize: '20px'
+            }
+        },
+        title: {
+            text: "میانگین سبد خرید تجمیعی",
+            style: {
+                fontSize: '25px',
+                color: '#333'
+            }
+        },
+        xAxis: {
+            categories: [],
+            title: {
+                text: "تاریخ",
+                style: {
+                    fontSize: '20px',
+                    fontWeight: 'bold'
+                }
+            },
+            labels: {
+                useHTML: true,  
+                formatter: function () {
+                        const value = this.value; 
+                        if (holidayDates.includes(value)) {
+                            return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                        }
+                        if (fridays.includes(value)) {
+                            return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                        }
+                        return value; 
+                    }
+                } 
+        },
+        yAxis: {
+            title: {
+                text: "میانگین سبد خرید", 
+                style: {
+                    fontSize: '20px',
+                    fontWeight: 'bold'
+                }
+            },
+        },
+        plotOptions: {
+            series: {
+                point: {
+                    events: {
+                        click: function () {
+                            const apiUrl = "/api/get-campaign-each-point";
+                            const date = this.category;
+                            const branch = this.series.name;
+                            const body = document.querySelector("body");
+                            const infoModal = document.querySelector("#info-modal");
+                            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                            fetch(apiUrl, {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    "X-CSRFToken": csrftoken,
+                                },
+                                body: JSON.stringify({date: date, branch: branch})
+                            }).then(response => {
+                                if (!response.ok) throw new Error("Invalid Response");
+                                return response.json()
+                            }).then(data => {
+                                let htmlCampaigns = data.map((camp, index) =>
+                                    `<p style='margin-bottom: 0px;' style='margin-bottom: 0px; margin-top: 0px;'>${index + 1}. ${camp.campaign_name}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${camp.campaign_type}</p>`
+                                ).join('')
+                                if (data.length === 0) {
+                                    htmlCampaigns = `<p>هیچ کمپینی یافت نشد.</p>`
+                                }
+                                Swal.fire({
+                                html: `<h3 style='margin-bottom: 0px;'>${this.y}</h3><p>${this.category}</p>
+                                <p style='margin-bottom: 0px;'>کمپین ها:</p>
+                                ${htmlCampaigns}
+                                `,
+                                confirmButtonText: 'بستن',
+                                confirmButtonColor: '#5a8dee'
+                            });
+                            })
+                        }
+                    }
+                }
+            }
+        },
+        series: [
+            {
+                name: "میانگین",
+                data: []
+            },
+        ]
+    });
+
     let secondRatioChart = Highcharts.chart('second-ratio-container', {
         chart: {
             type: 'line',
@@ -641,7 +868,109 @@
                                 confirmButtonColor: '#5a8dee'
                             });
                             })
-
+                        }
+                    }
+                }
+            }
+        },
+        series: [
+            {
+                name: "نسبت (تومان)",
+                data: []
+            },
+        ]
+    });
+    let secondRatioBarChart = Highcharts.chart('second-ratio-container-bar-chart', {
+        chart: {
+            type: 'column',
+            borderColor: '#e5e5e5',  
+            borderWidth: 1,           
+            borderRadius: 12,         
+            spacing: [30, 20, 30, 20],
+            backgroundColor: '#ffffff',
+            style: {
+                fontFamily: 'Vazirmatn, sans-serif',
+                fontSize: '20px'
+            }
+        },
+        title: {
+            text: "(EV) ارزش ورودی",
+            style: {
+                fontSize: '25px',
+                color: '#333'
+            }
+        },
+        xAxis: {
+            categories: [],
+            title: {
+                text: "تاریخ",
+                style: {
+                    fontSize: '20px',
+                    fontWeight: 'bold'
+                }
+            },
+            labels: {
+                useHTML: true,  
+                formatter: function () {
+                        const value = this.value; 
+                        if (holidayDates.includes(value)) {
+                            return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                        }
+                        if (fridays.includes(value)) {
+                            return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                        }
+                        return value; 
+                    }
+                } 
+        },
+        yAxis: {
+            title: {
+                text: "نسبت (تومان)",
+                style: {
+                    fontSize: '20px',
+                    fontWeight: 'bold'
+                }
+            }
+        },
+        plotOptions: {
+            series: {
+                point: {
+                    events: {
+                        click: function () {
+                            const apiUrl = "/api/get-campaign-each-point";
+                            const date = this.category;
+                            const branch = this.series.name;
+                            const body = document.querySelector("body");
+                            const infoModal = document.querySelector("#info-modal");
+                            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                            fetch(apiUrl, {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    "X-CSRFToken": csrftoken,
+                                },
+                                body: JSON.stringify({date: date, branch: branch})
+                            }).then(response => {
+                                if (!response.ok) throw new Error("Invalid Response");
+                                return response.json()
+                            }).then(data => {
+                                const rawNum = this.y;
+                                const num = rawNum.toLocaleString("fa-IR");
+                                let htmlCampaigns = data.map((camp, index) =>
+                                    `<p style='margin-bottom: 0px;' style='margin-bottom: 0px; margin-top: 0px;'>${index + 1}. ${camp.campaign_name}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${camp.campaign_type}</p>`
+                                ).join('')
+                                if (data.length === 0) {
+                                    htmlCampaigns = `<p>هیچ کمپینی یافت نشد.</p>`
+                                }
+                                Swal.fire({
+                                html: `<h3 style='margin-bottom: 0px;'>${num}</h3><p>${this.category}</p>
+                                <p style='margin-bottom: 0px;'>کمپین ها:</p>
+                                ${htmlCampaigns}
+                                `,
+                                confirmButtonText: 'بستن',
+                                confirmButtonColor: '#5a8dee'
+                            });
+                            })
                         }
                     }
                 }
@@ -713,6 +1042,67 @@
             },
         ]
     });
+
+    let oneToAllContainerBarChart = Highcharts.chart('one-to-all-container-bar-chart', {
+        chart: {
+            type: 'column',
+            borderColor: '#e5e5e5',  
+            borderWidth: 1,           
+            borderRadius: 12,         
+            spacing: [30, 20, 30, 20],
+            backgroundColor: '#ffffff',
+            style: {
+                fontFamily: 'Vazirmatn, sans-serif',
+                fontSize: '20px'
+            }
+        },
+        title: {
+            text: "(BTS) سهم ترافیک شعبه",
+            style: {
+                fontSize: '25px',
+                color: '#333'
+            }
+        },
+        xAxis: {
+            categories: [],
+            title: {
+                text: "تاریخ",
+                style: {
+                    fontSize: '20px',
+                    fontWeight: 'bold'
+                }
+            },
+            labels: {
+                useHTML: true,  
+                formatter: function () {
+                        const value = this.value; 
+                        if (holidayDates.includes(value)) {
+                            return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                        }
+                        if (fridays.includes(value)) {
+                            return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                        }
+                        return value; 
+                    }
+                } 
+        },
+        yAxis: {
+            title: {
+                text: "نسبت (%)",
+                style: {
+                    fontSize: '20px',
+                    fontWeight: 'bold'
+                }
+            },
+        },
+        series: [
+            {
+                name: "نسبت (%)",
+                data: []
+            },
+        ]
+    });
+
     // This gets the end and the start dates of the last 7 days
     function getJalaliDateRange() {
         const today = new Date();
@@ -891,7 +1281,28 @@
             const oneToAllValues = result.map(row => row.third_ratio)
             const overallAmounts = result.map(row => row.entry_overall)
             const totalProductsAvg = result.map(row => row.total_products_avg)
+
             ratioChart.update({
+                xAxis: { 
+                    categories: ratioDates,
+                    labels: {
+                    useHTML: true,  
+                    formatter: function () {
+                            const value = this.value; 
+                            if (holidayDates.includes(value)) {
+                                return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                            }
+                            if (fridays.includes(value)) {
+                                return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                            }
+                            return value; 
+                        }
+                    } 
+                },
+                series: [{ data: ratioValues }]
+            });
+
+            ratioContainerBarChart.update({
                 xAxis: { 
                     categories: ratioDates,
                     labels: {
@@ -931,76 +1342,168 @@
                 series: [{ data: totalProductsAvg }]
             });
 
-        secondRatioChart.update({
-            xAxis: { 
-                categories: ratioDates, 
-                labels: {
-                useHTML: true,  
-                formatter: function () {
-                        const value = this.value; 
-                        if (holidayDates.includes(value)) {
-                            return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+            productCounterBarChart.update({
+                xAxis: { 
+                    categories: ratioDates,
+                    labels: {
+                    useHTML: true,  
+                    formatter: function () {
+                            const value = this.value; 
+                            if (holidayDates.includes(value)) {
+                                return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                            }
+                            if (fridays.includes(value)) {
+                                return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                            }
+                            return value; 
                         }
-                        if (fridays.includes(value)) {
-                            return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                    } 
+                },
+                series: [{ data: totalProductsAvg }]
+            });
+
+            secondRatioChart.update({
+                xAxis: { 
+                    categories: ratioDates, 
+                    labels: {
+                    useHTML: true,  
+                    formatter: function () {
+                            const value = this.value; 
+                            if (holidayDates.includes(value)) {
+                                return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                            }
+                            if (fridays.includes(value)) {
+                                return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                            }
+                            return value; 
                         }
-                        return value; 
-                    }
-                } 
-            },
-            series: [{ data: secondRatioValues }]
-        });
+                    } 
+                },
+                series: [{ data: secondRatioValues }]
+            });
+
+            secondRatioBarChart.update({
+                xAxis: { 
+                    categories: ratioDates, 
+                    labels: {
+                    useHTML: true,  
+                    formatter: function () {
+                            const value = this.value; 
+                            if (holidayDates.includes(value)) {
+                                return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                            }
+                            if (fridays.includes(value)) {
+                                return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                            }
+                            return value; 
+                        }
+                    } 
+                },
+                series: [{ data: secondRatioValues }]
+            });
 
         if (document.querySelectorAll('input[type="checkbox"]:checked').length === 2) {
             oneToAllContainer.update({
-            xAxis: { 
-                categories: ratioDates,
-                labels: {
-                useHTML: true,  
-                formatter: function () {
-                        const value = this.value; 
-                        if (holidayDates.includes(value)) {
-                            return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                xAxis: { 
+                    categories: ratioDates,
+                    labels: {
+                    useHTML: true,  
+                    formatter: function () {
+                            const value = this.value; 
+                            if (holidayDates.includes(value)) {
+                                return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                            }
+                            if (fridays.includes(value)) {
+                                return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                            }
+                            return value; 
                         }
-                        if (fridays.includes(value)) {
-                            return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
-                        }
-                        return value; 
+                    }  
+                },
+                series: [{
+                name: 'نسبت یک فروشگاه به کل', 
+                data: oneToAllValues,
+                tooltip: {
+                    pointFormatter: function () {
+                    const index = this.index;
+                    const overall = overallAmounts[index] || 0;
+                    return `<p>نسبت:</p> ٪${Math.round(this.y).toLocaleString('fa-IR')}<br><p>کل ورودی:</p> ${overall.toLocaleString('fa-IR')}`;
                     }
-                }  
-            },
-            series: [{
-            name: 'نسبت یک فروشگاه به کل', 
-            data: oneToAllValues,
-            tooltip: {
-                pointFormatter: function () {
-                const index = this.index;
-                const overall = overallAmounts[index] || 0;
-                return `<p>نسبت:</p> ٪${Math.round(this.y).toLocaleString('fa-IR')}<br><p>کل ورودی:</p> ${overall.toLocaleString('fa-IR')}`;
-                }
-            },
-            }]
-        });
+                },
+                }]
+            });
+
+            oneToAllContainerBarChart.update({
+                xAxis: { 
+                    categories: ratioDates,
+                    labels: {
+                    useHTML: true,  
+                    formatter: function () {
+                            const value = this.value; 
+                            if (holidayDates.includes(value)) {
+                                return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                            }
+                            if (fridays.includes(value)) {
+                                return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                            }
+                            return value; 
+                        }
+                    }  
+                },
+                series: [{
+                name: 'نسبت یک فروشگاه به کل', 
+                data: oneToAllValues,
+                tooltip: {
+                    pointFormatter: function () {
+                    const index = this.index;
+                    const overall = overallAmounts[index] || 0;
+                    return `<p>نسبت:</p> ٪${Math.round(this.y).toLocaleString('fa-IR')}<br><p>کل ورودی:</p> ${overall.toLocaleString('fa-IR')}`;
+                    }
+                },
+                }]
+            });
+
         } else {
             oneToAllContainer.update({
-            xAxis: { 
-                categories: [],
-                labels: {
-                useHTML: true,  
-                formatter: function () {
-                        const value = this.value; 
-                        if (holidayDates.includes(value)) {
-                            return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                xAxis: { 
+                    categories: [],
+                    labels: {
+                    useHTML: true,  
+                    formatter: function () {
+                            const value = this.value; 
+                            if (holidayDates.includes(value)) {
+                                return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                            }
+                            if (fridays.includes(value)) {
+                                return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                            }
+                            return value; 
                         }
-                        if (fridays.includes(value)) {
-                            return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                    } 
+                },
+                series: [{ data: [] }]
+            });
+            
+            oneToAllContainerBarChart.update({
+                xAxis: { 
+                    categories: [],
+                    labels: {
+                    useHTML: true,  
+                    formatter: function () {
+                            const value = this.value; 
+                            if (holidayDates.includes(value)) {
+                                return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                            }
+                            if (fridays.includes(value)) {
+                                return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                            }
+                            return value; 
                         }
-                        return value; 
-                    }
-                } 
-            },
-            series: [{ data: [] }]
-        });
+                    } 
+                },
+                series: [{ data: [] }]
+            });
+
         }
         document.querySelector(".table-border-bottom-0").innerHTML = "";
         data.campaigns.forEach(campaign => {
@@ -1086,6 +1589,10 @@
                     name: data.name,
                     data: data.ratio
                 }));
+                const pieData = series.map(branchItem => {
+                    const total = branchItem.data.reduce((sum, val) => sum + val, 0);
+                    return {name: branchItem.name, y: total}
+                });
                 Highcharts.chart("ratio-container-multi-branch", {
                     chart: { type: "line",
                         borderColor: '#e5e5e5',  
@@ -1126,7 +1633,7 @@
                             }
                         } 
                     },
-                    yAxis: { title: { text: "درصد تبدیل (%)",
+                    yAxis: { title: { text: "درصد نرخ تبدیل (%)",
                         style: {
                             fontSize: '20px',
                             fontWeight: 'bold'
@@ -1177,6 +1684,46 @@
                     }
                 }
                 });
+
+                Highcharts.chart('ratio-container-multi-branch-pie-chart', {
+                    chart: {
+                        type: 'pie',
+                        backgroundColor: '#ffffff',
+                        borderColor: '#e5e5e5',
+                        borderWidth: 1,
+                        borderRadius: 12,
+                        style: { fontFamily: 'Vazirmatn, sans-serif' }
+                    },
+                    title: {
+                        text: 'توزیع کل نرخ تبدیل شعب',
+                        style: { fontSize: '25px', fontFamily: 'Vazirmatn, sans-serif' }
+                    },
+                    subtitle: {
+                        text: `از ${categories[0]} تا ${categories[categories.length - 1]}`,
+                        style: { fontSize: '14px', fontFamily: 'Vazirmatn, sans-serif' }
+                    },
+                    tooltip: {
+                        pointFormat: '<b>{point.y}</b> ({point.percentage:.1f}%)'
+                    },
+                    plotOptions: {
+                        pie: {
+                            allowPointSelect: true,
+                            cursor: 'pointer',
+                            dataLabels: {
+                                enabled: true,
+                                format: '{point.name}: ({point.percentage:.1f}%)',
+                                style: { fontSize: '14px', fontFamily: 'Vazirmatn, sans-serif' }
+                            },
+                            showInLegend: true
+                        }
+                    },
+                    series: [{
+                        name: 'درصد نرخ تبدیل',
+                        colorByPoint: true,
+                        data: pieData   // aggregated data here
+                    }]
+                });
+
             },
             error: function (xhr) {
                 console.error("Error loading data");
@@ -1207,6 +1754,10 @@
                     name: data.name,
                     data: data.total_products_avg
                 }));
+                const pieData = series.map(branchItem => {
+                    const total = branchItem.data.reduce((sum, val) => sum + val, 0);
+                    return {name: branchItem.name, y: total}
+                });
                 Highcharts.chart("product-counter-branch", {
                     chart: { type: "line",
                         borderColor: '#e5e5e5',  
@@ -1298,6 +1849,46 @@
                     }
                 }
                 });
+
+               Highcharts.chart('product-counter-branch-pie-chart', {
+                    chart: {
+                        type: 'pie',
+                        backgroundColor: '#ffffff',
+                        borderColor: '#e5e5e5',
+                        borderWidth: 1,
+                        borderRadius: 12,
+                        style: { fontFamily: 'Vazirmatn, sans-serif' }
+                    },
+                    title: {
+                        text: 'توزیع کل محصولات فروخته شده شعب',
+                        style: { fontSize: '25px', fontFamily: 'Vazirmatn, sans-serif' }
+                    },
+                    subtitle: {
+                        text: `از ${categories[0]} تا ${categories[categories.length - 1]}`,
+                        style: { fontSize: '14px', fontFamily: 'Vazirmatn, sans-serif' }
+                    },
+                    tooltip: {
+                        pointFormat: '<b>{point.y}</b> ({point.percentage:.1f}%)'
+                    },
+                    plotOptions: {
+                        pie: {
+                            allowPointSelect: true,
+                            cursor: 'pointer',
+                            dataLabels: {
+                                enabled: true,
+                                format: '{point.name}: ({point.percentage:.1f}%)',
+                                style: { fontSize: '14px', fontFamily: 'Vazirmatn, sans-serif' }
+                            },
+                            showInLegend: true
+                        }
+                    },
+                    series: [{
+                        name: 'محصولات فروخته شده شعب',
+                        colorByPoint: true,
+                        data: pieData   // aggregated data here
+                    }]
+                }); 
+
             },
             error: function (xhr) {
                 console.error("Error loading data");
@@ -1326,7 +1917,10 @@
                     name: data.name,
                     data: data.second_ratio
                 }));
-
+                const pieData = series.map(branchItem => {
+                    const total = branchItem.data.reduce((sum, val) => sum + val, 0);
+                    return {name: branchItem.name, y: total}
+                });
                 Highcharts.chart("second-ratio-container-multi-branch", {
                     chart: { type: "line",
                         borderColor: '#e5e5e5',  
@@ -1421,6 +2015,46 @@
                     }
                 }
                 });
+
+                Highcharts.chart('second-ratio-container-multi-branch-pie-chart', {
+                    chart: {
+                        type: 'pie',
+                        backgroundColor: '#ffffff',
+                        borderColor: '#e5e5e5',
+                        borderWidth: 1,
+                        borderRadius: 12,
+                        style: { fontFamily: 'Vazirmatn, sans-serif' }
+                    },
+                    title: {
+                        text: 'توزیع کل ارزش ورودی شعب',
+                        style: { fontSize: '25px', fontFamily: 'Vazirmatn, sans-serif' }
+                    },
+                    subtitle: {
+                        text: `از ${categories[0]} تا ${categories[categories.length - 1]}`,
+                        style: { fontSize: '14px', fontFamily: 'Vazirmatn, sans-serif' }
+                    },
+                    tooltip: {
+                        pointFormat: '<b>{point.y}</b> ({point.percentage:.1f}%)'
+                    },
+                    plotOptions: {
+                        pie: {
+                            allowPointSelect: true,
+                            cursor: 'pointer',
+                            dataLabels: {
+                                enabled: true,
+                                format: '{point.name}: ({point.percentage:.1f}%)',
+                                style: { fontSize: '14px', fontFamily: 'Vazirmatn, sans-serif' }
+                            },
+                            showInLegend: true
+                        }
+                    },
+                    series: [{
+                        name: 'ارزش ورودی',
+                        colorByPoint: true,
+                        data: pieData   // aggregated data here
+                    }]
+                });
+
             },
             error: function (xhr) {
                 console.error("Error loading data");
@@ -1449,7 +2083,10 @@
                     name: data.name,
                     data: data.third_ratio
                 }));
-
+                const pieData = series.map(branchItem => {
+                    const total = branchItem.data.reduce((sum, val) => sum + val, 0);
+                    return {name: branchItem.name, y: total}
+                });
                 Highcharts.chart("second-one-to-all-container", {
                 chart: {
                     type: "column",
@@ -1555,6 +2192,45 @@
                     pointFormat: '<span style="color:{series.color}">\u25CF</span> {series.name}: <b>%{point.y:.0f}</b><br/>'
                 },
                 series: series,
+            });
+
+            Highcharts.chart('second-one-to-all-container-pie-chart', {
+                chart: {
+                    type: 'pie',
+                    backgroundColor: '#ffffff',
+                    borderColor: '#e5e5e5',
+                    borderWidth: 1,
+                    borderRadius: 12,
+                    style: { fontFamily: 'Vazirmatn, sans-serif' }
+                },
+                title: {
+                    text: 'توزیع کل ترافیک شعب',
+                    style: { fontSize: '25px', fontFamily: 'Vazirmatn, sans-serif' }
+                },
+                subtitle: {
+                    text: `از ${categories[0]} تا ${categories[categories.length - 1]}`,
+                    style: { fontSize: '14px', fontFamily: 'Vazirmatn, sans-serif' }
+                },
+                tooltip: {
+                    pointFormat: '<b>{point.y}</b> ({point.percentage:.1f}%)'
+                },
+                plotOptions: {
+                    pie: {
+                        allowPointSelect: true,
+                        cursor: 'pointer',
+                        dataLabels: {
+                            enabled: true,
+                            format: '{point.name}: ({point.percentage:.1f}%)',
+                            style: { fontSize: '14px', fontFamily: 'Vazirmatn, sans-serif' }
+                        },
+                        showInLegend: true
+                    }
+                },
+                series: [{
+                    name: 'ترافیک',
+                    colorByPoint: true,
+                    data: pieData   // aggregated data here
+                }]
             });
             },
             error: function (xhr) {
@@ -1680,7 +2356,47 @@
                     series: [{ data: ratioValues }]
                 });
 
+                ratioContainerBarChart.update({
+                    xAxis: { 
+                        categories: ratioDates,
+                        labels: {
+                        useHTML: true,  
+                        formatter: function () {
+                                const value = this.value; 
+                                if (holidayDates.includes(value)) {
+                                    return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                }
+                                if (fridays.includes(value)) {
+                                    return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                }
+                                return value; 
+                            }
+                        } 
+                    },
+                    series: [{ data: ratioValues }]
+                });
+
                 productCounter.update({
+                    xAxis: { 
+                        categories: ratioDates,
+                        labels: {
+                        useHTML: true,  
+                        formatter: function () {
+                                const value = this.value; 
+                                if (holidayDates.includes(value)) {
+                                    return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                }
+                                if (fridays.includes(value)) {
+                                    return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                }
+                                return value; 
+                            }
+                        } 
+                    },
+                    series: [{ data: totalProductsAvg }]
+                });
+
+                productCounterBarChart.update({
                     xAxis: { 
                         categories: ratioDates,
                         labels: {
@@ -1720,40 +2436,9 @@
                     series: [{ data: secondRatioValues }]
                 });
 
-                if (document.querySelectorAll('input[type="checkbox"]:checked').length === 2) {
-                    oneToAllContainer.update({
+                secondRatioBarChart.update({
                     xAxis: { 
-                        categories: ratioDates,
-                        labels: {
-                        useHTML: true,  
-                        formatter: function () {
-                                const value = this.value; 
-                                if (holidayDates.includes(value)) {
-                                    return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
-                                }
-                                if (fridays.includes(value)) {
-                                    return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
-                                }
-                                return value; 
-                            }
-                        }  
-                    },
-                    series: [{
-                    name: 'نسبت یک فروشگاه به کل', 
-                    data: oneToAllValues,
-                    tooltip: {
-                        pointFormatter: function () {
-                        const index = this.index;
-                        const overall = overallAmounts[index] || 0;
-                        return `<p>نسبت:</p> ٪${Math.round(this.y).toLocaleString('fa-IR')}<br><p>کل ورودی:</p> ${overall.toLocaleString('fa-IR')}`;
-                        }
-                    },
-                    }]
-                });
-                } else {
-                    oneToAllContainer.update({
-                    xAxis: { 
-                        categories: [],
+                        categories: ratioDates, 
                         labels: {
                         useHTML: true,  
                         formatter: function () {
@@ -1768,8 +2453,111 @@
                             }
                         } 
                     },
-                    series: [{ data: [] }]
+                    series: [{ data: secondRatioValues }]
                 });
+
+                if (document.querySelectorAll('input[type="checkbox"]:checked').length === 2) {
+                    oneToAllContainer.update({
+                        xAxis: { 
+                            categories: ratioDates,
+                            labels: {
+                            useHTML: true,  
+                            formatter: function () {
+                                    const value = this.value; 
+                                    if (holidayDates.includes(value)) {
+                                        return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                    }
+                                    if (fridays.includes(value)) {
+                                        return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                    }
+                                    return value; 
+                                }
+                            }  
+                        },
+                        series: [{
+                        name: 'نسبت یک فروشگاه به کل', 
+                        data: oneToAllValues,
+                        tooltip: {
+                            pointFormatter: function () {
+                            const index = this.index;
+                            const overall = overallAmounts[index] || 0;
+                            return `<p>نسبت:</p> ٪${Math.round(this.y).toLocaleString('fa-IR')}<br><p>کل ورودی:</p> ${overall.toLocaleString('fa-IR')}`;
+                            }
+                        },
+                        }]
+                    });
+
+                    oneToAllContainerBarChart.update({
+                        xAxis: { 
+                            categories: ratioDates,
+                            labels: {
+                            useHTML: true,  
+                            formatter: function () {
+                                    const value = this.value; 
+                                    if (holidayDates.includes(value)) {
+                                        return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                    }
+                                    if (fridays.includes(value)) {
+                                        return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                    }
+                                    return value; 
+                                }
+                            }  
+                        },
+                        series: [{
+                        name: 'نسبت یک فروشگاه به کل', 
+                        data: oneToAllValues,
+                        tooltip: {
+                            pointFormatter: function () {
+                            const index = this.index;
+                            const overall = overallAmounts[index] || 0;
+                            return `<p>نسبت:</p> ٪${Math.round(this.y).toLocaleString('fa-IR')}<br><p>کل ورودی:</p> ${overall.toLocaleString('fa-IR')}`;
+                            }
+                        },
+                        }]
+                    });
+
+                } else {
+                    oneToAllContainer.update({
+                        xAxis: { 
+                            categories: [],
+                            labels: {
+                            useHTML: true,  
+                            formatter: function () {
+                                    const value = this.value; 
+                                    if (holidayDates.includes(value)) {
+                                        return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                    }
+                                    if (fridays.includes(value)) {
+                                        return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                    }
+                                    return value; 
+                                }
+                            } 
+                        },
+                        series: [{ data: [] }]
+                    });
+
+                    oneToAllContainerBarChart.update({
+                        xAxis: { 
+                            categories: [],
+                            labels: {
+                            useHTML: true,  
+                            formatter: function () {
+                                    const value = this.value; 
+                                    if (holidayDates.includes(value)) {
+                                        return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                    }
+                                    if (fridays.includes(value)) {
+                                        return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                    }
+                                    return value; 
+                                }
+                            } 
+                        },
+                        series: [{ data: [] }]
+                    });
+
                 }
                 document.querySelector(".table-border-bottom-0").innerHTML = "";
                 data.campaigns.forEach(campaign => {
@@ -1887,7 +2675,7 @@
             });
             return;
         }
-        if (document.getElementById("second-one-to-all-container").style.display === "none" && selectedBranches.length === 0 && startDate && document.getElementById("ratio-container").style.display === "block" && document.getElementById("product-counter").style.display === "block") {
+        if (document.getElementById("second-one-to-all-container").style.display === "none" && document.getElementById("second-one-to-all-container-pie-chart").style.display === "none" && selectedBranches.length === 0 && startDate && document.getElementById("ratio-container").style.display === "block" && document.getElementById("ratio-container-bar-chart").style.display === "block" && document.getElementById("product-counter").style.display === "block" && document.getElementById("product-counter-bar-chart").style.display === "block") {
             toastr.options = {
                 positionClass: 'toast-top-center',
             }
@@ -1898,7 +2686,7 @@
                 el.checked = true; 
             });
         }
-        if (document.getElementById("second-one-to-all-container").style.display === "none" && selectedBranches.length === 0 && startDate && document.getElementById("second-ratio-container").style.display === "block") {
+        if (document.getElementById("second-one-to-all-container").style.display === "none" && document.getElementById("second-one-to-all-container-pie-chart").style.display === "none" && selectedBranches.length === 0 && startDate && document.getElementById("second-ratio-container").style.display === "block" && document.getElementById("second-ratio-container-bar-chart").style.display === "block") {
             toastr.options = {
                 positionClass: 'toast-top-center',
             }
@@ -1909,7 +2697,7 @@
                 el.checked = true; 
             });
         }
-        if (document.getElementById("one-to-all-container").style.display === "block" && branchUrl.length !== 1) {
+        if (document.getElementById("one-to-all-container").style.display === "block" && document.getElementById("one-to-all-container-bar-chart").style.display === "block" && branchUrl.length !== 1) {
             Swal.fire({
             icon: "error",
             title: "خطا",
@@ -1918,7 +2706,7 @@
             confirmButtonText: 'بستن' 
             });
         }
-        if (document.getElementById("ratio-container-multi-branch").style.display === "block" && branchUrl.length === 0) {
+        if (document.getElementById("ratio-container-multi-branch").style.display === "block" && branchUrl.length === 0 && document.getElementById("ratio-container-multi-branch-pie-chart").style.display === "block") {
             Swal.fire({
             icon: "error",
             title: "خطا",
@@ -1927,7 +2715,7 @@
             confirmButtonText: 'بستن' 
             });
         }
-        if (document.getElementById("product-counter-branch").style.display === "block" && branchUrl.length === 0) {
+        if (document.getElementById("product-counter-branch").style.display === "block" && branchUrl.length === 0 && document.getElementById("product-counter-branch-pie-chart").style.display === "block") {
             Swal.fire({
             icon: "error",
             title: "خطا",
@@ -1936,7 +2724,7 @@
             confirmButtonText: 'بستن' 
             });
         }
-        if (document.getElementById("second-ratio-container-multi-branch").style.display === "block" && branchUrl.length === 0) {
+        if (document.getElementById("second-ratio-container-multi-branch").style.display === "block" && document.getElementById("second-ratio-container-multi-branch-pie-chart").style.display === "block" && branchUrl.length === 0) {
             Swal.fire({
             icon: "error",
             title: "خطا",
@@ -1977,6 +2765,10 @@
                     name: data.name,
                     data: data.ratio
                 }));
+                const pieData = series.map(branchItem => {
+                    const total = branchItem.data.reduce((sum, val) => sum + val, 0);
+                    return {name: branchItem.name, y: total}
+                });
                 Highcharts.chart("ratio-container-multi-branch", {
                     chart: { type: "line",
                         borderColor: '#e5e5e5',  
@@ -2068,6 +2860,46 @@
                     }
                 }
                 });
+
+                Highcharts.chart('ratio-container-multi-branch-pie-chart', {
+                    chart: {
+                        type: 'pie',
+                        backgroundColor: '#ffffff',
+                        borderColor: '#e5e5e5',
+                        borderWidth: 1,
+                        borderRadius: 12,
+                        style: { fontFamily: 'Vazirmatn, sans-serif' }
+                    },
+                    title: {
+                        text: 'توزیع کل نرخ تبدیل شعب',
+                        style: { fontSize: '25px', fontFamily: 'Vazirmatn, sans-serif' }
+                    },
+                    subtitle: {
+                        text: `از ${categories[0]} تا ${categories[categories.length - 1]}`,
+                        style: { fontSize: '14px', fontFamily: 'Vazirmatn, sans-serif' }
+                    },
+                    tooltip: {
+                        pointFormat: '<b>{point.y}</b> ({point.percentage:.1f}%)'
+                    },
+                    plotOptions: {
+                        pie: {
+                            allowPointSelect: true,
+                            cursor: 'pointer',
+                            dataLabels: {
+                                enabled: true,
+                                format: '{point.name}: ({point.percentage:.1f}%)',
+                                style: { fontSize: '14px', fontFamily: 'Vazirmatn, sans-serif' }
+                            },
+                            showInLegend: true
+                        }
+                    },
+                    series: [{
+                        name: 'درصد نرخ تبدیل',
+                        colorByPoint: true,
+                        data: pieData   // aggregated data here
+                    }]
+                });
+
             },
             error: function (xhr) {
                 console.error("Error loading data");
@@ -2096,6 +2928,10 @@
                     name: data.name,
                     data: data.total_products_avg
                 }));
+                const pieData = series.map(branchItem => {
+                    const total = branchItem.data.reduce((sum, val) => sum + val, 0);
+                    return {name: branchItem.name, y: total}
+                });
                 Highcharts.chart("product-counter-branch", {
                     chart: { type: "line",
                         borderColor: '#e5e5e5',  
@@ -2188,6 +3024,46 @@
                     }
                 }
                 });
+
+                Highcharts.chart('product-counter-branch-pie-chart', {
+                    chart: {
+                        type: 'pie',
+                        backgroundColor: '#ffffff',
+                        borderColor: '#e5e5e5',
+                        borderWidth: 1,
+                        borderRadius: 12,
+                        style: { fontFamily: 'Vazirmatn, sans-serif' }
+                    },
+                    title: {
+                        text: 'توزیع کل محصولات فروخته شده شعب',
+                        style: { fontSize: '25px', fontFamily: 'Vazirmatn, sans-serif' }
+                    },
+                    subtitle: {
+                        text: `از ${categories[0]} تا ${categories[categories.length - 1]}`,
+                        style: { fontSize: '14px', fontFamily: 'Vazirmatn, sans-serif' }
+                    },
+                    tooltip: {
+                        pointFormat: '<b>{point.y}</b> ({point.percentage:.1f}%)'
+                    },
+                    plotOptions: {
+                        pie: {
+                            allowPointSelect: true,
+                            cursor: 'pointer',
+                            dataLabels: {
+                                enabled: true,
+                                format: '{point.name}: ({point.percentage:.1f}%)',
+                                style: { fontSize: '14px', fontFamily: 'Vazirmatn, sans-serif' }
+                            },
+                            showInLegend: true
+                        }
+                    },
+                    series: [{
+                        name: 'محصولات فروخته شده شعب',
+                        colorByPoint: true,
+                        data: pieData   // aggregated data here
+                    }]
+                }); 
+
             },
             error: function (xhr) {
                 console.error("Error loading data");
@@ -2216,6 +3092,10 @@
                     name: data.name,
                     data: data.second_ratio
                 }));
+                const pieData = series.map(branchItem => {
+                    const total = branchItem.data.reduce((sum, val) => sum + val, 0);
+                    return {name: branchItem.name, y: total}
+                });
                 Highcharts.chart("second-ratio-container-multi-branch", {
                     chart: { type: "line",
                         borderColor: '#e5e5e5',  
@@ -2303,13 +3183,52 @@
                                         confirmButtonColor: '#5a8dee'
                                     });
                                     })
-
                                 }
                             }
                         }
                     }
                 }
                 });
+
+                Highcharts.chart('second-ratio-container-multi-branch-pie-chart', {
+                    chart: {
+                        type: 'pie',
+                        backgroundColor: '#ffffff',
+                        borderColor: '#e5e5e5',
+                        borderWidth: 1,
+                        borderRadius: 12,
+                        style: { fontFamily: 'Vazirmatn, sans-serif' }
+                    },
+                    title: {
+                        text: 'توزیع کل ارزش ورودی شعب',
+                        style: { fontSize: '25px', fontFamily: 'Vazirmatn, sans-serif' }
+                    },
+                    subtitle: {
+                        text: `از ${categories[0]} تا ${categories[categories.length - 1]}`,
+                        style: { fontSize: '14px', fontFamily: 'Vazirmatn, sans-serif' }
+                    },
+                    tooltip: {
+                        pointFormat: '<b>{point.y}</b> ({point.percentage:.1f}%)'
+                    },
+                    plotOptions: {
+                        pie: {
+                            allowPointSelect: true,
+                            cursor: 'pointer',
+                            dataLabels: {
+                                enabled: true,
+                                format: '{point.name}: ({point.percentage:.1f}%)',
+                                style: { fontSize: '14px', fontFamily: 'Vazirmatn, sans-serif' }
+                            },
+                            showInLegend: true
+                        }
+                    },
+                    series: [{
+                        name: 'ارزش ورودی',
+                        colorByPoint: true,
+                        data: pieData   // aggregated data here
+                    }]
+                });
+
             },
             error: function (xhr) {
                 console.error("Error loading data");
@@ -2338,7 +3257,10 @@
                     name: data.name,
                     data: data.third_ratio
                 }));
-
+                const pieData = series.map(branchItem => {
+                    const total = branchItem.data.reduce((sum, val) => sum + val, 0);
+                    return {name: branchItem.name, y: total}
+                });
                 Highcharts.chart("second-one-to-all-container", {
                 chart: {
                     type: "column",
@@ -2444,6 +3366,46 @@
                 },
                 series: series,
             });
+
+            Highcharts.chart('second-one-to-all-container-pie-chart', {
+                chart: {
+                    type: 'pie',
+                    backgroundColor: '#ffffff',
+                    borderColor: '#e5e5e5',
+                    borderWidth: 1,
+                    borderRadius: 12,
+                    style: { fontFamily: 'Vazirmatn, sans-serif' }
+                },
+                title: {
+                    text: 'توزیع کل ترافیک شعب',
+                    style: { fontSize: '25px', fontFamily: 'Vazirmatn, sans-serif' }
+                },
+                subtitle: {
+                    text: `از ${categories[0]} تا ${categories[categories.length - 1]}`,
+                    style: { fontSize: '14px', fontFamily: 'Vazirmatn, sans-serif' }
+                },
+                tooltip: {
+                    pointFormat: '<b>{point.y}</b> ({point.percentage:.1f}%)'
+                },
+                plotOptions: {
+                    pie: {
+                        allowPointSelect: true,
+                        cursor: 'pointer',
+                        dataLabels: {
+                            enabled: true,
+                            format: '{point.name}: ({point.percentage:.1f}%)',
+                            style: { fontSize: '14px', fontFamily: 'Vazirmatn, sans-serif' }
+                        },
+                        showInLegend: true
+                    }
+                },
+                series: [{
+                    name: 'ترافیک',
+                    colorByPoint: true,
+                    data: pieData   // aggregated data here
+                }]
+            });
+
             },
             error: function (xhr) {
                 console.error("Error loading data");
@@ -2492,7 +3454,7 @@
 <!-- Sweet Alert CDN -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <!-- Display Toggles -->
-<script src="{% static 'assets/js/analysis-campaign-list-display-toggle.js' %}"></script>
+<!-- <script src="{% static 'assets/js/analysis-campaign-list-display-toggle.js' %}"></script> -->
  <!-- Date and Branch Modal Configuration -->
 <script>
     document.getElementById("confirmDateBtn").addEventListener("click", function () {

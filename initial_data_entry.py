@@ -44,7 +44,7 @@ for cam in cams:
 for ip in ips:
     if ping_ip(ip["ip"]):
         try:
-            data = get_custom_date_camera_data(ip["ip"], "2025-06-08", "2025-09-23") # change dates
+            data = get_custom_date_camera_data(ip["ip"], "2025-09-23", "2025-10-01") # change dates
             update_or_create_camera_data(
                 data, ip["cam_id"], ip["merchant_id"], ip["branch_id"]
             )
