@@ -58,6 +58,57 @@
         overflow-y: auto;
     }
 </style>
+<!-- Chart Tool Bar -->
+<style>
+    .icon-bar {
+        display: flex;
+        gap: 12px;
+        font-size: 24px;
+        margin-top: 25px;
+    }
+
+    .icon-wrapper {
+        position: relative;
+        cursor: pointer;
+        transition: color 0.3s ease;
+    }
+
+    /* Default color */
+    .icon-wrapper i {
+        color: #555;
+        transition: color 0.3s ease;
+    }
+
+    /* Hover colors for each one */
+    .bar-chart:hover i { color: #4caf50; } /* Green */
+    .pie-chart:hover i { color: #ff9800; } /* Orange */
+    .line-chart:hover i { color: #2196f3; } /* Blue */
+    .ai:hover i { color: #9c27b0; } /* Purple */
+
+    /* Tooltip styling */
+    .icon-wrapper::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        top: -32px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #333;
+        color: #fff;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 12px;
+        opacity: 0;
+        pointer-events: none;
+        white-space: nowrap;
+        transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    /* Show tooltip on hover */
+    .icon-wrapper:hover::after {
+        opacity: 1;
+        transform: translateX(-50%) translateY(4px);
+    }
+</style>
 {% endblock %}
 {% block content %}
 <div class="loading-overlay" id="loading-overlay">
@@ -172,45 +223,173 @@
     <div class="row">
         <div class="col-lg-12">
             <div class="demo-inline-spacing mt-3">
-            <div class="tab-content px-0 pt-2">
-                <!-- Conversion Rate Aggregation -->
-                <div id="ratio-container" style="width: 100%; height: 400px; margin-top: 45px;"></div>
-                <!-- Conversion Rate Bar Chart Aggregation -->
-                <div id="ratio-container-bar-chart" style="width: 100%; height: 400px; margin-top: 45px;"></div>
-                <!-- Value Entry Aggregation -->
-                <div id="second-ratio-container" style="width: 100%; height: 400px; margin-top: 45px;"></div>
-                <!-- Value Entry Bar Chart Aggregation -->
-                <div id="second-ratio-container-bar-chart" style="width: 100%; height: 400px; margin-top: 45px;"></div>
-                <!-- Entry Share -->
-                <div id="one-to-all-container" style="width: 100%; height: 400px; margin-top: 45px;"></div>
-                <!-- Entry Share Bar Chart -->
-                <div id="one-to-all-container-bar-chart" style="width: 100%; height: 400px; margin-top: 45px;"></div>
-                <!-- Conversion Rate Aggregation By Branch -->
-                <div id="ratio-container-multi-branch" style="width: 100%; height: 400px; margin-top: 45px;"></div>
-                <!-- Conversion Rate Aggregation Pie Chart By Branch -->
-                <div id="ratio-container-multi-branch-pie-chart" style="width: 100%; height: 400px; margin-top: 45px;"></div>
-                <!-- Value Entry Aggregation By Branch -->
-                <div id="second-ratio-container-multi-branch" style="width: 100%; height: 400px; margin-top: 45px;"></div>
-                <!-- Value Entry Aggregation Pie Chart By Branch -->
-                <div id="second-ratio-container-multi-branch-pie-chart" style="width: 100%; height: 400px; margin-top: 45px;"></div>
-                <!-- Entry Share By Branch -->
-                <div id="second-one-to-all-container" style="width: 100%; height: 400px; margin-top: 45px;"></div>
-                <!-- Entry Share Pie Chart By Branch -->
-                <div id="second-one-to-all-container-pie-chart" style="width: 100%; height: 400px; margin-top: 45px;"></div>
-                <!-- Product Count Average Aggregation -->
-                <div id="product-counter" style="width: 100%; height: 400px; margin-top: 45px;"></div>
-                <!-- Product Count Average Bar Chart Aggregation -->
-                <div id="product-counter-bar-chart" style="width: 100%; height: 400px; margin-top: 45px;"></div>
-                <!-- Product Count Average Aggregation By Branches -->
-                <div id="product-counter-branch" style="width: 100%; height: 400px; margin-top: 45px;"></div>
-                <!-- Product Count Average Aggregation Pie Chart By Branches -->
-                <div id="product-counter-branch-pie-chart" style="width: 100%; height: 400px; margin-top: 45px;"></div>
-            </div>
+                <div class="tab-content px-0 pt-2">
+                    <!-- Conversion Rate Aggregation -->
+                    <div id="ratio-container-tools" class="icon-bar">
+                        <div class="icon-wrapper bar-chart" data-tooltip="Bar Chart">
+                            <i class="bx bx-bar-chart"></i>
+                        </div>
+                        <div class="icon-wrapper ai" data-tooltip="AI">
+                            <i class="bx bx-brain"></i>
+                        </div>
+                    </div>
+                    <div id="ratio-container" style="width: 100%; height: 400px;"></div>
+                    <!-- Conversion Rate Bar Chart Aggregation -->
+                    <div id="ratio-container-bar-chart-tools" class="icon-bar">
+                        <div class="icon-wrapper line-chart" data-tooltip="Line Chart">
+                            <i class="bx bx-line-chart"></i>
+                        </div>
+                        <div class="icon-wrapper ai" data-tooltip="AI">
+                            <i class="bx bx-brain"></i>
+                        </div>
+                    </div>
+                    <div id="ratio-container-bar-chart" style="width: 100%; height: 400px;"></div>
+                    <!-- Value Entry Aggregation -->
+                    <div id="second-ratio-container-tools" class="icon-bar">
+                        <div class="icon-wrapper bar-chart" data-tooltip="Bar Chart">
+                            <i class="bx bx-bar-chart"></i>
+                        </div>
+                        <div class="icon-wrapper ai" data-tooltip="AI">
+                            <i class="bx bx-brain"></i>
+                        </div>
+                    </div>
+                    <div id="second-ratio-container" style="width: 100%; height: 400px;"></div>
+                    <!-- Value Entry Bar Chart Aggregation -->
+                    <div id="second-ratio-container-bar-chart-tools" class="icon-bar">
+                        <div class="icon-wrapper line-chart" data-tooltip="Line Chart">
+                            <i class="bx bx-line-chart"></i>
+                        </div>
+                        <div class="icon-wrapper ai" data-tooltip="AI">
+                            <i class="bx bx-brain"></i>
+                        </div>
+                    </div>
+                    <div id="second-ratio-container-bar-chart" style="width: 100%; height: 400px;"></div>
+                    <!-- Entry Share -->
+                    <div id="one-to-all-container-tools" class="icon-bar">
+                        <div class="icon-wrapper bar-chart" data-tooltip="Bar Chart">
+                            <i class="bx bx-bar-chart"></i>
+                        </div>
+                        <div class="icon-wrapper ai" data-tooltip="AI">
+                            <i class="bx bx-brain"></i>
+                        </div>
+                    </div>
+                    <div id="one-to-all-container" style="width: 100%; height: 400px;"></div>
+                    <!-- Entry Share Bar Chart -->
+                    <div id="one-to-all-container-bar-chart-tools" class="icon-bar">
+                        <div class="icon-wrapper line-chart" data-tooltip="Line Chart">
+                            <i class="bx bx-line-chart"></i>
+                        </div>
+                        <div class="icon-wrapper ai" data-tooltip="AI">
+                            <i class="bx bx-brain"></i>
+                        </div>
+                    </div>
+                    <div id="one-to-all-container-bar-chart" style="width: 100%; height: 400px;"></div>
+                    <!-- Conversion Rate Aggregation By Branch -->
+                    <div id="ratio-container-multi-branch-tools" class="icon-bar">
+                        <div class="icon-wrapper pie-chart" data-tooltip="Pie Chart">
+                            <i class="bx bx-pie-chart"></i>
+                        </div>
+                        <div class="icon-wrapper ai" data-tooltip="AI">
+                            <i class="bx bx-brain"></i>
+                        </div>
+                    </div>
+                    <div id="ratio-container-multi-branch" style="width: 100%; height: 400px;"></div>
+                    <!-- Conversion Rate Aggregation Pie Chart By Branch -->
+                    <div id="ratio-container-multi-branch-pie-chart-tools" class="icon-bar">
+                        <div class="icon-wrapper line-chart" data-tooltip="Line Chart">
+                            <i class="bx bx-line-chart"></i>
+                        </div>
+                        <div class="icon-wrapper ai" data-tooltip="AI">
+                            <i class="bx bx-brain"></i>
+                        </div>
+                    </div>
+                    <div id="ratio-container-multi-branch-pie-chart" style="width: 100%; height: 400px;"></div>
+                    <!-- Value Entry Aggregation By Branch -->
+                    <div id="second-ratio-container-multi-branch-tools" class="icon-bar">
+                        <div class="icon-wrapper pie-chart" data-tooltip="Pie Chart">
+                            <i class="bx bx-pie-chart"></i>
+                        </div>
+                        <div class="icon-wrapper ai" data-tooltip="AI">
+                            <i class="bx bx-brain"></i>
+                        </div>
+                    </div>
+                    <div id="second-ratio-container-multi-branch" style="width: 100%; height: 400px;"></div>
+                    <!-- Value Entry Aggregation Pie Chart By Branch -->
+                    <div id="second-ratio-container-multi-branch-pie-chart-tools" class="icon-bar">
+                        <div class="icon-wrapper line-chart" data-tooltip="Line Chart">
+                            <i class="bx bx-line-chart"></i>
+                        </div>
+                        <div class="icon-wrapper ai" data-tooltip="AI">
+                            <i class="bx bx-brain"></i>
+                        </div>
+                    </div>
+                    <div id="second-ratio-container-multi-branch-pie-chart" style="width: 100%; height: 400px;"></div>
+                    <!-- Entry Share By Branch -->
+                    <div id="second-one-to-all-container-tools" class="icon-bar">
+                        <div class="icon-wrapper pie-chart" data-tooltip="Pie Chart">
+                            <i class="bx bx-pie-chart"></i>
+                        </div>
+                        <div class="icon-wrapper ai" data-tooltip="AI">
+                            <i class="bx bx-brain"></i>
+                        </div>
+                    </div>
+                    <div id="second-one-to-all-container" style="width: 100%; height: 400px;"></div>
+                    <!-- Entry Share Pie Chart By Branch -->
+                    <div id="second-one-to-all-container-pie-chart-tools" class="icon-bar">
+                        <div class="icon-wrapper bar-chart" data-tooltip="Bar Chart">
+                            <i class="bx bx-bar-chart"></i>
+                        </div>
+                        <div class="icon-wrapper ai" data-tooltip="AI">
+                            <i class="bx bx-brain"></i>
+                        </div>
+                    </div>
+                    <div id="second-one-to-all-container-pie-chart" style="width: 100%; height: 400px;"></div>
+                    <!-- Product Count Average Aggregation -->
+                    <div id="product-counter-tools" class="icon-bar">
+                        <div class="icon-wrapper bar-chart" data-tooltip="Bar Chart">
+                            <i class="bx bx-bar-chart"></i>
+                        </div>
+                        <div class="icon-wrapper ai" data-tooltip="AI">
+                            <i class="bx bx-brain"></i>
+                        </div>
+                    </div>
+                    <div id="product-counter" style="width: 100%; height: 400px;"></div>
+                    <!-- Product Count Average Bar Chart Aggregation -->
+                    <div id="product-counter-bar-chart-tools" class="icon-bar">
+                        <div class="icon-wrapper line-chart" data-tooltip="Line Chart">
+                            <i class="bx bx-line-chart"></i>
+                        </div>
+                        <div class="icon-wrapper ai" data-tooltip="AI">
+                            <i class="bx bx-brain"></i>
+                        </div>
+                    </div>
+                    <div id="product-counter-bar-chart" style="width: 100%; height: 400px;"></div>
+                    <!-- Product Count Average Aggregation By Branches -->
+                    <div id="second-one-to-all-container-tools" class="icon-bar">
+                        <div class="icon-wrapper pie-chart" data-tooltip="Pie Chart">
+                            <i class="bx bx-pie-chart"></i>
+                        </div>
+                        <div class="icon-wrapper ai" data-tooltip="AI">
+                            <i class="bx bx-brain"></i>
+                        </div>
+                    </div>
+                    <div id="product-counter-branch" style="width: 100%; height: 400px;"></div>
+                    <!-- Product Count Average Aggregation Pie Chart By Branches -->
+                    <div id="product-counter-branch-pie-chart-tools" class="icon-bar">
+                        <div class="icon-wrapper line-chart" data-tooltip="Line Chart">
+                            <i class="bx bx-line-chart"></i>
+                        </div>
+                        <div class="icon-wrapper ai" data-tooltip="AI">
+                            <i class="bx bx-brain"></i>
+                        </div>
+                    </div>
+                    <div id="product-counter-branch-pie-chart" style="width: 100%; height: 400px;"></div>
+                </div>
             </div>
         </div>
     </div>
     <div class="row">
-        <div class="col-lg-3 box" style="margin-bottom: 10px;" id="holiday-container">
+        <div class="col-lg-3" style="margin-bottom: 10px;" id="holiday-container">
             <div class="card" id="holiday-card" style="background-clip: padding-box;
             border-style: solid;
             box-shadow: none;
@@ -225,24 +404,8 @@
                 </div>
             </div>
         </div>
-        <div class="col-lg-9 box">
-            <div class="card" style="border-radius: 12px; border-color: #e5e5e5; box-shadow: none !important; border-width: 1px;">
-                <h5 class="card-header heading-color">کمپین ها</h5>
-                <div class="table-responsive text-nowrap" style="margin-bottom: 100px;">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                            <th>نام کمپین</th>
-                            <th>تاریخ شروع</th>
-                            <th>تاریخ پایان</th>
-                            <th>نوع کمپین</th>
-                            <th>هزینه</th>
-                            </tr>
-                        </thead>
-                        <tbody class="table-border-bottom-0" id="grouped-campaigns-container">
-                        </tbody>
-                    </table>
-                </div>
+        <div class="col-lg-9">
+            <div class="row" id="grouped-campaigns-container">
             </div>
         </div>
     </div>
@@ -1211,7 +1374,8 @@
                         </li> 
                         `
                         document.querySelector(".list-group-timeline").insertAdjacentHTML("beforeend", rowhtml);
-                    } 
+                        
+                    }
                 });
             }
         });
@@ -1225,7 +1389,6 @@
             return response.json();
             })
         .then(data => {
-            console.log(data)
             const entryMap = {};
             data.dates_queryset.forEach((date, i) => {
             entryMap[date] = data.entry_totals[i];
@@ -1401,7 +1564,7 @@
                 },
                 series: [{ data: secondRatioValues }]
             });
-
+            
         if (document.querySelectorAll('input[type="checkbox"]:checked').length === 2) {
             oneToAllContainer.update({
                 xAxis: { 
@@ -1503,31 +1666,8 @@
                 },
                 series: [{ data: [] }]
             });
-
         }
-        document.querySelector(".table-border-bottom-0").innerHTML = "";
-        data.campaigns.forEach(campaign => {
-        const rowhtml = `
-            <tr>
-                <td>
-                    ${campaign.campaign_name} 
-                </td>
-                <td class="greg-date">
-                    ${campaign.campaign_start_date}
-                </td>
-                <td class="greg-date">
-                    ${campaign.campaign_end_date}
-                </td>
-                <td>
-                    ${campaign.campaign_type}
-                </td>
-                <td class="campaign-cost">
-                    ${campaign.campaign_cost}
-                </td>
-            </tr>
-            `
-        document.querySelector(".table-border-bottom-0").insertAdjacentHTML("beforeend", rowhtml);
-        // This sends an ajax request to get campaigns in groups
+        // This sends ajax requests to get the data needed for charts 
         $.ajax({
             url: "/api/grouped-campaigns",
             data: {
@@ -1536,29 +1676,97 @@
             },
             traditional: true, 
             success: function (data) {
+               document.querySelector("#grouped-campaigns-container").innerHTML = "";
+            if (data.length === 0) {
+                const card = document.createElement("div");
+                card.classList.add("card");
+                card.classList.add("h-100");
+                card.setAttribute("style", "border-radius: 12px; border-color: #e5e5e5; box-shadow: none !important; border-width: 1px; display: flex; justify-content: center; align-items: center; font-weight: bold;");
+                const i = document.createElement("i");
+                i.classList.add("bx");
+                i.classList.add("bx-box");
+                i.style.fontSize = "48px";
+                const p = document.createElement("p");
+                p.innerText = "هیچ کمپینی یافت نشد";
+                card.appendChild(i);
+                card.appendChild(p);
+                document.querySelector("#grouped-campaigns-container").appendChild(card);
+            } else {
                 document.querySelector("#grouped-campaigns-container").innerHTML = "";
                 data.forEach(campaign => {
-                const rowhtml = `
-                    <tr>
-                        <td>
-                            ${campaign.campaign_name} 
-                        </td>
-                        <td class="greg-date">
-                            ${campaign.campaign_start_date}
-                        </td>
-                        <td class="greg-date">
-                            ${campaign.campaign_end_date}
-                        </td>
-                        <td>
-                            ${campaign.campaign_type}
-                        </td>
-                        <td class="campaign-cost">
-                            ${campaign.campaign_cost}
-                        </td>
-                    </tr>
-                    `
-                document.querySelector("#grouped-campaigns-container").insertAdjacentHTML("beforeend", rowhtml);
+                    const rowhtml = `
+                            <div class="col-lg-4" style="margin-top: 10px; margin-bottom: 10px;">
+                            <div class="card" style="
+                            background-clip: padding-box;
+                            border-style: solid;
+                            box-shadow: none;
+                            border-width: 1px;
+                            border-color: #e5e5e5;
+                            background-color: #F9F9F9;
+                            border-radius: 12px;
+                            height: 100%;
+                            padding: 10px;">
+                                <div class="card-header d-flex align-items-center justify-content-between">
+                                    <h5 class="card-title mb-0">${campaign.campaign_name}</h5>
+                                </div>
+                                <div class="card-body pb-3">
+                                    <ul class="p-0 m-0">
+                                    <li class="d-flex align-items-center mb-3">
+                                        <div class="avatar avatar-sm flex-shrink-0 me-3">
+                                        <span class="avatar-initial rounded-circle bg-label-primary"><i class="bx bx-time"></i></span>
+                                        </div>
+                                        <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                        <div class="me-2">
+                                            <p class="mb-0">شروع</p>
+                                            <small class="text-muted">تاریخ شروع کمپین</small>
+                                        </div>
+                                        <div class="item-progress greg-date">${campaign.campaign_start_date}</div>
+                                        </div>
+                                    </li>
+                                    <li class="d-flex align-items-center mb-3">
+                                        <div class="avatar avatar-sm flex-shrink-0 me-3">
+                                        <span class="avatar-initial rounded-circle bg-label-info"><i class="bx bx-stopwatch"></i></span>
+                                        </div>
+                                        <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                        <div class="me-2">
+                                            <p class="mb-0">پایان</p>
+                                            <small class="text-muted">تاریخ پایان کمپین</small>
+                                        </div>
+                                        <div class="item-progress greg-date">${campaign.campaign_end_date}</div>
+                                        </div>
+                                    </li>
+                                    <li class="d-flex align-items-center mb-3">
+                                        <div class="avatar avatar-sm flex-shrink-0 me-3">
+                                        <span class="avatar-initial rounded-circle bg-label-danger"><i class="bx bx-tag"></i></span>
+                                        </div>
+                                        <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                        <div class="me-2">
+                                            <p class="mb-0">نوع</p>
+                                            <small class="text-muted">مثال: فروش و ...</small>
+                                        </div>
+                                        <div class="item-progress">${campaign.campaign_type}</div>
+                                        </div>
+                                    </li>
+                                    <li class="d-flex align-items-center">
+                                        <div class="avatar avatar-sm flex-shrink-0 me-3">
+                                        <span class="avatar-initial rounded-circle bg-label-success"><i class="bx bx-dollar"></i></span>
+                                        </div>
+                                        <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                        <div class="me-2">
+                                            <p class="mb-0">هزینه</p>
+                                            <small class="text-muted">مجموع هزینه‌ها</small>
+                                        </div>
+                                        <div class="item-progress campaign-cost">${campaign.campaign_cost}</div>
+                                        </div>
+                                    </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        `
+                    document.querySelector("#grouped-campaigns-container").insertAdjacentHTML("beforeend", rowhtml);
                 });
+            }
             },
             error: function (xhr) {
                 console.error("Error loading data");
@@ -1573,9 +1781,7 @@
             },
             traditional: true, 
             success: function (data) {
-                console.log(data)
                 final_data = formatData(data.invoice_dates, data.people_counting_dates, data.invoice_data, data.people_counting_data)
-                console.log(final_data)
                 const rawCategories = final_data.dates;
                 const categories = rawCategories.map(dateStr => {
                 const date = new Date(dateStr);
@@ -1738,9 +1944,9 @@
             },
             traditional: true, 
             success: function (data) {
-                console.log(data)
                 final_data = formatData(data.invoice_dates, data.people_counting_dates, data.invoice_data, data.people_counting_data)
-                console.log(final_data)
+                console.log("hi")
+                console.log(startDate, endDate, data);
                 const rawCategories = final_data.dates;
                 const categories = rawCategories.map(dateStr => {
                 const date = new Date(dateStr);
@@ -2237,7 +2443,6 @@
                 console.error("Error loading data");
             }
         });
-        });
         function jalaliDateConvertor() {
         document.querySelectorAll(".greg-date").forEach(el => {
             const gregorian = el.innerHTML.split("-");
@@ -2559,29 +2764,6 @@
                     });
 
                 }
-                document.querySelector(".table-border-bottom-0").innerHTML = "";
-                data.campaigns.forEach(campaign => {
-                const rowhtml = `
-                    <tr>
-                        <td>
-                            ${campaign.campaign_name} 
-                        </td>
-                        <td class="greg-date">
-                            ${campaign.campaign_start_date}
-                        </td>
-                        <td class="greg-date">
-                            ${campaign.campaign_end_date}
-                        </td>
-                        <td>
-                            ${campaign.campaign_type}
-                        </td>
-                        <td class="campaign-cost">
-                            ${campaign.campaign_cost}
-                        </td>
-                    </tr>
-                    `
-                document.querySelector(".table-border-bottom-0").insertAdjacentHTML("beforeend", rowhtml);
-                });
                 loadingOverlay.style.display = 'none';
                 function jalaliDateConvertor() {
                 document.querySelectorAll(".greg-date").forEach(el => {
@@ -3420,28 +3602,96 @@
             traditional: true, 
             success: function (data) {
                 document.querySelector("#grouped-campaigns-container").innerHTML = "";
+            if (data.length === 0) {
+                const card = document.createElement("div");
+                card.classList.add("card");
+                card.classList.add("h-100");
+                card.setAttribute("style", "border-radius: 12px; border-color: #e5e5e5; box-shadow: none !important; border-width: 1px; display: flex; justify-content: center; align-items: center; font-weight: bold;");
+                const i = document.createElement("i");
+                i.classList.add("bx");
+                i.classList.add("bx-box");
+                i.style.fontSize = "48px";
+                const p = document.createElement("p");
+                p.innerText = "هیچ کمپینی یافت نشد";
+                card.appendChild(i);
+                card.appendChild(p);
+                document.querySelector("#grouped-campaigns-container").appendChild(card);
+            } else {
+                document.querySelector("#grouped-campaigns-container").innerHTML = "";
                 data.forEach(campaign => {
-                const rowhtml = `
-                    <tr>
-                        <td>
-                            ${campaign.campaign_name} 
-                        </td>
-                        <td class="greg-date">
-                            ${campaign.campaign_start_date}
-                        </td>
-                        <td class="greg-date">
-                            ${campaign.campaign_end_date}
-                        </td>
-                        <td>
-                            ${campaign.campaign_type}
-                        </td>
-                        <td class="campaign-cost">
-                            ${campaign.campaign_cost}
-                        </td>
-                    </tr>
-                    `
-                document.querySelector("#grouped-campaigns-container").insertAdjacentHTML("beforeend", rowhtml);
+                    const rowhtml = `
+                            <div class="col-lg-4" style="margin-top: 10px; margin-bottom: 10px;">
+                            <div class="card" style="
+                            background-clip: padding-box;
+                            border-style: solid;
+                            box-shadow: none;
+                            border-width: 1px;
+                            border-color: #e5e5e5;
+                            background-color: #F9F9F9;
+                            border-radius: 12px;
+                            height: 100%;
+                            padding: 10px;">
+                                <div class="card-header d-flex align-items-center justify-content-between">
+                                    <h5 class="card-title mb-0">${campaign.campaign_name}</h5>
+                                </div>
+                                <div class="card-body pb-3">
+                                    <ul class="p-0 m-0">
+                                    <li class="d-flex align-items-center mb-3">
+                                        <div class="avatar avatar-sm flex-shrink-0 me-3">
+                                        <span class="avatar-initial rounded-circle bg-label-primary"><i class="bx bx-time"></i></span>
+                                        </div>
+                                        <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                        <div class="me-2">
+                                            <p class="mb-0">شروع</p>
+                                            <small class="text-muted">تاریخ شروع کمپین</small>
+                                        </div>
+                                        <div class="item-progress greg-date">${campaign.campaign_start_date}</div>
+                                        </div>
+                                    </li>
+                                    <li class="d-flex align-items-center mb-3">
+                                        <div class="avatar avatar-sm flex-shrink-0 me-3">
+                                        <span class="avatar-initial rounded-circle bg-label-info"><i class="bx bx-stopwatch"></i></span>
+                                        </div>
+                                        <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                        <div class="me-2">
+                                            <p class="mb-0">پایان</p>
+                                            <small class="text-muted">تاریخ پایان کمپین</small>
+                                        </div>
+                                        <div class="item-progress greg-date">${campaign.campaign_end_date}</div>
+                                        </div>
+                                    </li>
+                                    <li class="d-flex align-items-center mb-3">
+                                        <div class="avatar avatar-sm flex-shrink-0 me-3">
+                                        <span class="avatar-initial rounded-circle bg-label-danger"><i class="bx bx-tag"></i></span>
+                                        </div>
+                                        <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                        <div class="me-2">
+                                            <p class="mb-0">نوع</p>
+                                            <small class="text-muted">مثال: فروش و ...</small>
+                                        </div>
+                                        <div class="item-progress">${campaign.campaign_type}</div>
+                                        </div>
+                                    </li>
+                                    <li class="d-flex align-items-center">
+                                        <div class="avatar avatar-sm flex-shrink-0 me-3">
+                                        <span class="avatar-initial rounded-circle bg-label-success"><i class="bx bx-dollar"></i></span>
+                                        </div>
+                                        <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                        <div class="me-2">
+                                            <p class="mb-0">هزینه</p>
+                                            <small class="text-muted">مجموع هزینه‌ها</small>
+                                        </div>
+                                        <div class="item-progress campaign-cost">${campaign.campaign_cost}</div>
+                                        </div>
+                                    </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        `
+                    document.querySelector("#grouped-campaigns-container").insertAdjacentHTML("beforeend", rowhtml);
                 });
+            }
             },
             error: function (xhr) {
                 console.error("Error loading data");

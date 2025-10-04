@@ -109,6 +109,20 @@
         transform: translateX(-50%) translateY(4px);
     }
 </style>
+<!-- Campaign Card Style -->
+<style>
+    #campaign-fill {
+        background-clip: padding-box;
+        border-style: solid;
+        box-shadow: none;
+        border-width: 1px;
+        border-color: #e5e5e5;
+        border-radius: 12px;
+        height: 100%;
+        padding: 5px;
+        background-color: white;
+    }
+</style>
 {% endblock %}
 {% block content %}
 <div class="loading-overlay" id="loading-overlay">
@@ -261,7 +275,7 @@
             </div>
         </div>
         <div class="row">
-            <div class="col-lg-3 box" style="margin-bottom: 10px;" id="holiday-container">
+            <div class="col-lg-3" style="margin-bottom: 10px;" id="holiday-container">
                 <div class="card" id="holiday-card" style="background-clip: padding-box;
                 border-style: solid;
                 box-shadow: none;
@@ -276,24 +290,8 @@
                     </div>
                 </div>
             </div>
-            <div class="col-lg-9 box">
-                <div class="card" style="border-radius: 12px; border-color: #e5e5e5; box-shadow: none !important; border-width: 1px;">
-                    <h5 class="card-header heading-color">کمپین ها</h5>
-                    <div class="table-responsive text-nowrap" style="margin-bottom: 100px;">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                <th>نام کمپین</th>
-                                <th>تاریخ شروع</th>
-                                <th>تاریخ پایان</th>
-                                <th>نوع کمپین</th>
-                                <th>هزینه</th>
-                                </tr>
-                            </thead>
-                            <tbody class="table-border-bottom-0">
-                            </tbody>
-                        </table>
-                    </div>
+            <div class="col-lg-9">
+                <div class="row" id="campaign-fill">
                 </div>
             </div>
         </div>
@@ -431,29 +429,98 @@
             return response.json();
         })
         .then(data => {
-            document.querySelector(".table-border-bottom-0").innerHTML = "";
-            data.campaigns.forEach(campaign => {
-            const rowhtml = `
-                <tr>
-                    <td>
-                        ${campaign.campaign_name} 
-                    </td>
-                    <td class="greg-date">
-                        ${campaign.campaign_start_date}
-                    </td>
-                    <td class="greg-date">
-                        ${campaign.campaign_end_date}
-                    </td>
-                    <td>
-                        ${campaign.campaign_type}
-                    </td>
-                    <td class="campaign-cost">
-                        ${campaign.campaign_cost}
-                    </td>
-                </tr>
-                `
-            document.querySelector(".table-border-bottom-0").insertAdjacentHTML("beforeend", rowhtml);
-            });
+            document.querySelector("#campaign-fill").innerHTML = "";
+            if (data.campaigns.length === 0) {
+                const card = document.createElement("div");
+                card.classList.add("card");
+                card.classList.add("h-100");
+                card.setAttribute("style", "border-radius: 12px; border-color: #e5e5e5; box-shadow: none !important; border-width: 1px; display: flex; justify-content: center; align-items: center; font-weight: bold;");
+                const i = document.createElement("i");
+                i.classList.add("bx");
+                i.classList.add("bx-box");
+                i.style.fontSize = "48px";
+                const p = document.createElement("p");
+                p.innerText = "هیچ کمپینی یافت نشد";
+                card.appendChild(i);
+                card.appendChild(p);
+                document.querySelector("#campaign-fill").appendChild(card);
+            } else {
+                document.querySelector("#campaign-fill").innerHTML = "";
+                data.campaigns.forEach(campaign => {
+                    const rowhtml = `
+                            <div class="col-lg-4" style="margin-top: 10px; margin-bottom: 10px;">
+                            <div class="card" style="
+                            background-clip: padding-box;
+                            border-style: solid;
+                            box-shadow: none;
+                            border-width: 1px;
+                            border-color: #e5e5e5;
+                            background-color: #F9F9F9;
+                            border-radius: 12px;
+                            height: 100%;
+                            padding: 10px;">
+                                <div class="card-header d-flex align-items-center justify-content-between">
+                                    <h5 class="card-title mb-0">${campaign.campaign_name}</h5>
+                                </div>
+                                <div class="card-body pb-3">
+                                    <ul class="p-0 m-0">
+                                    <li class="d-flex align-items-center mb-3">
+                                        <div class="avatar avatar-sm flex-shrink-0 me-3">
+                                        <span class="avatar-initial rounded-circle bg-label-primary"><i class="bx bx-time"></i></span>
+                                        </div>
+                                        <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                        <div class="me-2">
+                                            <p class="mb-0">شروع</p>
+                                            <small class="text-muted">تاریخ شروع کمپین</small>
+                                        </div>
+                                        <div class="item-progress greg-date">${campaign.campaign_start_date}</div>
+                                        </div>
+                                    </li>
+                                    <li class="d-flex align-items-center mb-3">
+                                        <div class="avatar avatar-sm flex-shrink-0 me-3">
+                                        <span class="avatar-initial rounded-circle bg-label-info"><i class="bx bx-stopwatch"></i></span>
+                                        </div>
+                                        <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                        <div class="me-2">
+                                            <p class="mb-0">پایان</p>
+                                            <small class="text-muted">تاریخ پایان کمپین</small>
+                                        </div>
+                                        <div class="item-progress greg-date">${campaign.campaign_end_date}</div>
+                                        </div>
+                                    </li>
+                                    <li class="d-flex align-items-center mb-3">
+                                        <div class="avatar avatar-sm flex-shrink-0 me-3">
+                                        <span class="avatar-initial rounded-circle bg-label-danger"><i class="bx bx-tag"></i></span>
+                                        </div>
+                                        <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                        <div class="me-2">
+                                            <p class="mb-0">نوع</p>
+                                            <small class="text-muted">مثال: فروش و ...</small>
+                                        </div>
+                                        <div class="item-progress">${campaign.campaign_type}</div>
+                                        </div>
+                                    </li>
+                                    <li class="d-flex align-items-center">
+                                        <div class="avatar avatar-sm flex-shrink-0 me-3">
+                                        <span class="avatar-initial rounded-circle bg-label-success"><i class="bx bx-dollar"></i></span>
+                                        </div>
+                                        <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                        <div class="me-2">
+                                            <p class="mb-0">هزینه</p>
+                                            <small class="text-muted">مجموع هزینه‌ها</small>
+                                        </div>
+                                        <div class="item-progress campaign-cost">${campaign.campaign_cost}</div>
+                                        </div>
+                                    </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        `
+                    document.querySelector("#campaign-fill").insertAdjacentHTML("beforeend", rowhtml);
+                });
+            }
+            
             function jalaliDateConvertor() {
             document.querySelectorAll(".greg-date").forEach(el => {
                 const gregorian = el.innerHTML.split("-");
@@ -469,7 +536,7 @@
                 const separatedCost = cost.toLocaleString('fa-IR');
                 el.innerText = separatedCost;
             })
-            setTimeout(jalaliDateConvertor, 500)
+            setTimeout(jalaliDateConvertor, 500);
             })
             .catch(error => {
                 console.error('Error:', error);
@@ -1112,29 +1179,97 @@
                     {data: data.exit_totals}
                     ],
                 });
-                document.querySelector(".table-border-bottom-0").innerHTML = "";
-                data.campaigns.forEach(campaign => {
-                const rowhtml = `
-                    <tr>
-                        <td>
-                            ${campaign.campaign_name} 
-                        </td>
-                        <td class="greg-date">
-                            ${campaign.campaign_start_date}
-                        </td>
-                        <td class="greg-date">
-                            ${campaign.campaign_end_date}
-                        </td>
-                        <td>
-                            ${campaign.campaign_type}
-                        </td>
-                        <td class="campaign-cost">
-                            ${campaign.campaign_cost}
-                        </td>
-                    </tr>
-                    `
-                document.querySelector(".table-border-bottom-0").insertAdjacentHTML("beforeend", rowhtml);
-                });
+                document.querySelector("#campaign-fill").innerHTML = "";
+                if (data.campaigns.length === 0) {
+                    const card = document.createElement("div");
+                    card.classList.add("card");
+                    card.classList.add("h-100");
+                    card.setAttribute("style", "border-radius: 12px; border-color: #e5e5e5; box-shadow: none !important; border-width: 1px; display: flex; justify-content: center; align-items: center; font-weight: bold;");
+                    const i = document.createElement("i");
+                    i.classList.add("bx");
+                    i.classList.add("bx-box");
+                    i.style.fontSize = "48px";
+                    const p = document.createElement("p");
+                    p.innerText = "هیچ کمپینی یافت نشد";
+                    card.appendChild(i);
+                    card.appendChild(p);
+                    document.querySelector("#campaign-fill").appendChild(card);
+                } else {
+                    document.querySelector("#campaign-fill").innerHTML = "";
+                    data.campaigns.forEach(campaign => {
+                        const rowhtml = `
+                                <div class="col-lg-4" style="margin-top: 10px; margin-bottom: 10px;">
+                                <div class="card" style="
+                                background-clip: padding-box;
+                                border-style: solid;
+                                box-shadow: none;
+                                border-width: 1px;
+                                border-color: #e5e5e5;
+                                background-color: #F9F9F9;
+                                border-radius: 12px;
+                                height: 100%;
+                                padding: 10px;">
+                                    <div class="card-header d-flex align-items-center justify-content-between">
+                                        <h5 class="card-title mb-0">${campaign.campaign_name}</h5>
+                                    </div>
+                                    <div class="card-body pb-3">
+                                        <ul class="p-0 m-0">
+                                        <li class="d-flex align-items-center mb-3">
+                                            <div class="avatar avatar-sm flex-shrink-0 me-3">
+                                            <span class="avatar-initial rounded-circle bg-label-primary"><i class="bx bx-time"></i></span>
+                                            </div>
+                                            <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                            <div class="me-2">
+                                                <p class="mb-0">شروع</p>
+                                                <small class="text-muted">تاریخ شروع کمپین</small>
+                                            </div>
+                                            <div class="item-progress greg-date">${campaign.campaign_start_date}</div>
+                                            </div>
+                                        </li>
+                                        <li class="d-flex align-items-center mb-3">
+                                            <div class="avatar avatar-sm flex-shrink-0 me-3">
+                                            <span class="avatar-initial rounded-circle bg-label-info"><i class="bx bx-stopwatch"></i></span>
+                                            </div>
+                                            <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                            <div class="me-2">
+                                                <p class="mb-0">پایان</p>
+                                                <small class="text-muted">تاریخ پایان کمپین</small>
+                                            </div>
+                                            <div class="item-progress greg-date">${campaign.campaign_end_date}</div>
+                                            </div>
+                                        </li>
+                                        <li class="d-flex align-items-center mb-3">
+                                            <div class="avatar avatar-sm flex-shrink-0 me-3">
+                                            <span class="avatar-initial rounded-circle bg-label-danger"><i class="bx bx-tag"></i></span>
+                                            </div>
+                                            <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                            <div class="me-2">
+                                                <p class="mb-0">نوع</p>
+                                                <small class="text-muted">مثال: فروش و ...</small>
+                                            </div>
+                                            <div class="item-progress">${campaign.campaign_type}</div>
+                                            </div>
+                                        </li>
+                                        <li class="d-flex align-items-center">
+                                            <div class="avatar avatar-sm flex-shrink-0 me-3">
+                                            <span class="avatar-initial rounded-circle bg-label-success"><i class="bx bx-dollar"></i></span>
+                                            </div>
+                                            <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                            <div class="me-2">
+                                                <p class="mb-0">هزینه</p>
+                                                <small class="text-muted">مجموع هزینه‌ها</small>
+                                            </div>
+                                            <div class="item-progress campaign-cost">${campaign.campaign_cost}</div>
+                                            </div>
+                                        </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            `
+                        document.querySelector("#campaign-fill").insertAdjacentHTML("beforeend", rowhtml);
+                    });
+                }
                 loadingOverlay.style.display = 'none';
                 function jalaliDateConvertor() {
                 document.querySelectorAll(".greg-date").forEach(el => {
@@ -1151,7 +1286,7 @@
                     const separatedCost = cost.toLocaleString('fa-IR');
                     el.innerText = separatedCost;
                 })
-                setTimeout(jalaliDateConvertor, 500)
+                setTimeout(jalaliDateConvertor, 500);
             })
             .catch(error => {
                 console.error('Error:', error);

@@ -58,6 +58,71 @@
         overflow-y: auto;
     }
 </style>
+<!-- Chart Tool Bar -->
+<style>
+    .icon-bar {
+        display: flex;
+        gap: 12px;
+        font-size: 24px;
+        margin-top: 25px;
+    }
+
+    .icon-wrapper {
+        position: relative;
+        cursor: pointer;
+        transition: color 0.3s ease;
+    }
+
+    /* Default color */
+    .icon-wrapper i {
+        color: #555;
+        transition: color 0.3s ease;
+    }
+
+    /* Hover colors for each one */
+    .bar-chart:hover i { color: #4caf50; } /* Green */
+    .pie-chart:hover i { color: #ff9800; } /* Orange */
+    .line-chart:hover i { color: #2196f3; } /* Blue */
+    .ai:hover i { color: #9c27b0; } /* Purple */
+
+    /* Tooltip styling */
+    .icon-wrapper::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        top: -32px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #333;
+        color: #fff;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 12px;
+        opacity: 0;
+        pointer-events: none;
+        white-space: nowrap;
+        transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    /* Show tooltip on hover */
+    .icon-wrapper:hover::after {
+        opacity: 1;
+        transform: translateX(-50%) translateY(4px);
+    }
+</style>
+<!-- Campaign Card Style -->
+<style>
+    #campaign-fill {
+        background-clip: padding-box;
+        border-style: solid;
+        box-shadow: none;
+        border-width: 1px;
+        border-color: #e5e5e5;
+        border-radius: 12px;
+        height: 100%;
+        padding: 5px;
+        background-color: white;
+    }
+</style>
 {% endblock %}
 {% block content %}
 <div class="loading-overlay" id="loading-overlay">
@@ -165,35 +230,131 @@
             <div class="demo-inline-spacing mt-3">
                 <div class="tab-content px-0 pt-2">
                     <!-- total amount aggregation line chart -->
-                    <div id="container" style="width: 100%; height: 400px; margin-top: 45px;"></div>
+                    <div id="container-tools" class="icon-bar">
+                        <div class="icon-wrapper bar-chart" data-tooltip="Bar Chart">
+                            <i class="bx bx-bar-chart"></i>
+                        </div>
+                        <div class="icon-wrapper ai" data-tooltip="AI">
+                            <i class="bx bx-brain"></i>
+                        </div>
+                    </div>
+                    <div id="container" style="width: 100%; height: 400px;"></div>
                     <!-- total amount aggregation bar chart -->
-                    <div id="container-bar-chart" style="width: 100%; height: 400px; margin-top: 45px;"></div>
+                    <div id="container-bar-chart-tools" class="icon-bar">
+                        <div class="icon-wrapper line-chart" data-tooltip="Line Chart">
+                            <i class="bx bx-line-chart"></i>
+                        </div>
+                        <div class="icon-wrapper ai" data-tooltip="AI">
+                            <i class="bx bx-brain"></i>
+                        </div>
+                    </div>
+                    <div id="container-bar-chart" style="width: 100%; height: 400px;"></div>
                     <!-- total amount aggregation by branches -->
-                    <div id="second-container" style="width: 100%; height: 400px; margin-top: 45px; display: none;"></div>
+                    <div id="second-container-tools" class="icon-bar">
+                        <div class="icon-wrapper pie-chart" data-tooltip="Pie Chart">
+                            <i class="bx bx-pie-chart"></i>
+                        </div>
+                        <div class="icon-wrapper ai" data-tooltip="AI">
+                            <i class="bx bx-brain"></i>
+                        </div>
+                    </div>
+                    <div id="second-container" style="width: 100%; height: 400px; display: none;"></div>
                     <!-- total amount aggregation pie chart by branches -->
-                    <div id="second-container-pie-chart" style="width: 100%; height: 400px; margin-top: 45px; display: none;"></div>
+                    <div id="second-container-pie-chart-tools" class="icon-bar">
+                        <div class="icon-wrapper line-chart" data-tooltip="Line Chart">
+                            <i class="bx bx-line-chart"></i>
+                        </div>
+                        <div class="icon-wrapper ai" data-tooltip="AI">
+                            <i class="bx bx-brain"></i>
+                        </div>
+                    </div>
+                    <div id="second-container-pie-chart" style="width: 100%; height: 400px; display: none;"></div>
                     <!-- total count aggregation -->
-                    <div id="third-container" style="width: 100%; height: 400px; margin-top: 45px;"></div>
+                    <div id="third-container-tools" class="icon-bar">
+                        <div class="icon-wrapper bar-chart" data-tooltip="Bar Chart">
+                            <i class="bx bx-bar-chart"></i>
+                        </div>
+                        <div class="icon-wrapper ai" data-tooltip="AI">
+                            <i class="bx bx-brain"></i>
+                        </div>
+                    </div>
+                    <div id="third-container" style="width: 100%; height: 400px;"></div>
                     <!-- total count aggregation bar chart -->
-                    <div id="third-container-bar-chart" style="width: 100%; height: 400px; margin-top: 45px;"></div>
+                    <div id="third-container-bar-chart-tools" class="icon-bar">
+                        <div class="icon-wrapper line-chart" data-tooltip="Line Chart">
+                            <i class="bx bx-line-chart"></i>
+                        </div>
+                        <div class="icon-wrapper ai" data-tooltip="AI">
+                            <i class="bx bx-brain"></i>
+                        </div>
+                    </div>
+                    <div id="third-container-bar-chart" style="width: 100%; height: 400px;"></div>
                     <!-- total count aggregation by branches -->
-                    <div id="forth-container" style="width: 100%; height: 400px; margin-top: 45px; display: none;"></div>
+                    <div id="forth-container-tools" class="icon-bar">
+                        <div class="icon-wrapper pie-chart" data-tooltip="Pie Chart">
+                            <i class="bx bx-pie-chart"></i>
+                        </div>
+                        <div class="icon-wrapper ai" data-tooltip="AI">
+                            <i class="bx bx-brain"></i>
+                        </div>
+                    </div>
+                    <div id="forth-container" style="width: 100%; height: 400px; display: none;"></div>
                     <!-- total count aggregation pie chart by branches -->
-                    <div id="forth-container-pie-chart" style="width: 100%; height: 400px; margin-top: 45px; display: none;"></div>
+                    <div id="forth-container-pie-chart-tools" class="icon-bar">
+                        <div class="icon-wrapper line-chart" data-tooltip="Line Chart">
+                            <i class="bx bx-line-chart"></i>
+                        </div>
+                        <div class="icon-wrapper ai" data-tooltip="AI">
+                            <i class="bx bx-brain"></i>
+                        </div>
+                    </div>
+                    <div id="forth-container-pie-chart" style="width: 100%; height: 400px; display: none;"></div>
                     <!-- total product count aggregation -->
-                    <div id="fifth-container" style="width: 100%; height: 400px; margin-top: 45px;"></div>
+                    <div id="fifth-container-tools" class="icon-bar">
+                        <div class="icon-wrapper bar-chart" data-tooltip="Bar Chart">
+                            <i class="bx bx-bar-chart"></i>
+                        </div>
+                        <div class="icon-wrapper ai" data-tooltip="AI">
+                            <i class="bx bx-brain"></i>
+                        </div>
+                    </div>
+                    <div id="fifth-container" style="width: 100%; height: 400px;"></div>
                     <!-- total product count aggregation bar chart -->
-                    <div id="fifth-container-bar-chart" style="width: 100%; height: 400px; margin-top: 45px;"></div>
+                    <div id="fifth-container-bar-chart-tools" class="icon-bar">
+                        <div class="icon-wrapper line-chart" data-tooltip="Line Chart">
+                            <i class="bx bx-line-chart"></i>
+                        </div>
+                        <div class="icon-wrapper ai" data-tooltip="AI">
+                            <i class="bx bx-brain"></i>
+                        </div>
+                    </div>
+                    <div id="fifth-container-bar-chart" style="width: 100%; height: 400px;"></div>
                     <!-- total product count aggregation by branches -->
-                    <div id="sixth-container" style="width: 100%; height: 400px; margin-top: 45px; display: none;"></div>
+                    <div id="sixth-container-tools" class="icon-bar">
+                        <div class="icon-wrapper pie-chart" data-tooltip="Pie Chart">
+                            <i class="bx bx-pie-chart"></i>
+                        </div>
+                        <div class="icon-wrapper ai" data-tooltip="AI">
+                            <i class="bx bx-brain"></i>
+                        </div>
+                    </div>
+                    <div id="sixth-container" style="width: 100%; height: 400px; display: none;"></div>
                     <!-- total product count aggregation pie chart by branches -->
-                    <div id="sixth-container-pie-chart" style="width: 100%; height: 400px; margin-top: 45px; display: none;"></div>
+                    <div id="sixth-container-pie-chart-tools" class="icon-bar">
+                        <div class="icon-wrapper line-chart" data-tooltip="Line Chart">
+                            <i class="bx bx-line-chart"></i>
+                        </div>
+                        <div class="icon-wrapper ai" data-tooltip="AI">
+                            <i class="bx bx-brain"></i>
+                        </div>
+                    </div>
+                    <div id="sixth-container-pie-chart" style="width: 100%; height: 400px; display: none;"></div>
                 </div>
             </div>
         </div>
     </div>
     <div class="row">
-        <div class="col-lg-3 box" style="margin-bottom: 10px;" id="holiday-container">
+        <div class="col-lg-3" style="margin-bottom: 10px;" id="holiday-container">
             <div class="card" id="holiday-card" style="background-clip: padding-box;
             border-style: solid;
             box-shadow: none;
@@ -208,24 +369,8 @@
                 </div>
             </div>
         </div>
-        <div class="col-lg-9 box">
-            <div class="card" style="border-radius: 12px; border-color: #e5e5e5; box-shadow: none !important; border-width: 1px;">
-                <h5 class="card-header heading-color">کمپین ها</h5>
-                <div class="table-responsive text-nowrap" style="margin-bottom: 100px;">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                            <th>نام کمپین</th>
-                            <th>تاریخ شروع</th>
-                            <th>تاریخ پایان</th>
-                            <th>نوع کمپین</th>
-                            <th>هزینه</th>
-                            </tr>
-                        </thead>
-                        <tbody class="table-border-bottom-0">
-                        </tbody>
-                    </table>
-                </div>
+        <div class="col-lg-9">
+            <div class="row" id="campaign-fill">
             </div>
         </div>
     </div>
@@ -647,29 +792,97 @@
             return response.json();
         })
         .then(data => {
-            document.querySelector(".table-border-bottom-0").innerHTML = "";
-            data.campaigns.forEach(campaign => {
-            const rowhtml = `
-                <tr>
-                    <td>
-                        ${campaign.campaign_name} 
-                    </td>
-                    <td class="greg-date">
-                        ${campaign.campaign_start_date}
-                    </td>
-                    <td class="greg-date">
-                        ${campaign.campaign_end_date}
-                    </td>
-                    <td>
-                        ${campaign.campaign_type}
-                    </td>
-                    <td class="campaign-cost">
-                        ${campaign.campaign_cost}
-                    </td>
-                </tr>
-                `
-            document.querySelector(".table-border-bottom-0").insertAdjacentHTML("beforeend", rowhtml);
-            });
+            document.querySelector("#campaign-fill").innerHTML = "";
+            if (data.campaigns.length === 0) {
+                const card = document.createElement("div");
+                card.classList.add("card");
+                card.classList.add("h-100");
+                card.setAttribute("style", "border-radius: 12px; border-color: #e5e5e5; box-shadow: none !important; border-width: 1px; display: flex; justify-content: center; align-items: center; font-weight: bold;");
+                const i = document.createElement("i");
+                i.classList.add("bx");
+                i.classList.add("bx-box");
+                i.style.fontSize = "48px";
+                const p = document.createElement("p");
+                p.innerText = "هیچ کمپینی یافت نشد";
+                card.appendChild(i);
+                card.appendChild(p);
+                document.querySelector("#campaign-fill").appendChild(card);
+            } else {
+                document.querySelector("#campaign-fill").innerHTML = "";
+                data.campaigns.forEach(campaign => {
+                    const rowhtml = `
+                            <div class="col-lg-4" style="margin-top: 10px; margin-bottom: 10px;">
+                            <div class="card" style="
+                            background-clip: padding-box;
+                            border-style: solid;
+                            box-shadow: none;
+                            border-width: 1px;
+                            border-color: #e5e5e5;
+                            background-color: #F9F9F9;
+                            border-radius: 12px;
+                            height: 100%;
+                            padding: 10px;">
+                                <div class="card-header d-flex align-items-center justify-content-between">
+                                    <h5 class="card-title mb-0">${campaign.campaign_name}</h5>
+                                </div>
+                                <div class="card-body pb-3">
+                                    <ul class="p-0 m-0">
+                                    <li class="d-flex align-items-center mb-3">
+                                        <div class="avatar avatar-sm flex-shrink-0 me-3">
+                                        <span class="avatar-initial rounded-circle bg-label-primary"><i class="bx bx-time"></i></span>
+                                        </div>
+                                        <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                        <div class="me-2">
+                                            <p class="mb-0">شروع</p>
+                                            <small class="text-muted">تاریخ شروع کمپین</small>
+                                        </div>
+                                        <div class="item-progress greg-date">${campaign.campaign_start_date}</div>
+                                        </div>
+                                    </li>
+                                    <li class="d-flex align-items-center mb-3">
+                                        <div class="avatar avatar-sm flex-shrink-0 me-3">
+                                        <span class="avatar-initial rounded-circle bg-label-info"><i class="bx bx-stopwatch"></i></span>
+                                        </div>
+                                        <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                        <div class="me-2">
+                                            <p class="mb-0">پایان</p>
+                                            <small class="text-muted">تاریخ پایان کمپین</small>
+                                        </div>
+                                        <div class="item-progress greg-date">${campaign.campaign_end_date}</div>
+                                        </div>
+                                    </li>
+                                    <li class="d-flex align-items-center mb-3">
+                                        <div class="avatar avatar-sm flex-shrink-0 me-3">
+                                        <span class="avatar-initial rounded-circle bg-label-danger"><i class="bx bx-tag"></i></span>
+                                        </div>
+                                        <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                        <div class="me-2">
+                                            <p class="mb-0">نوع</p>
+                                            <small class="text-muted">مثال: فروش و ...</small>
+                                        </div>
+                                        <div class="item-progress">${campaign.campaign_type}</div>
+                                        </div>
+                                    </li>
+                                    <li class="d-flex align-items-center">
+                                        <div class="avatar avatar-sm flex-shrink-0 me-3">
+                                        <span class="avatar-initial rounded-circle bg-label-success"><i class="bx bx-dollar"></i></span>
+                                        </div>
+                                        <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                        <div class="me-2">
+                                            <p class="mb-0">هزینه</p>
+                                            <small class="text-muted">مجموع هزینه‌ها</small>
+                                        </div>
+                                        <div class="item-progress campaign-cost">${campaign.campaign_cost}</div>
+                                        </div>
+                                    </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        `
+                    document.querySelector("#campaign-fill").insertAdjacentHTML("beforeend", rowhtml);
+                });
+            }
 
             function jalaliDateConvertor() {
             document.querySelectorAll(".greg-date").forEach(el => {
@@ -686,7 +899,7 @@
                 const separatedCost = cost.toLocaleString('fa-IR');
                 el.innerText = separatedCost;
             })
-            setTimeout(jalaliDateConvertor, 500)
+            setTimeout(jalaliDateConvertor, 500);
         })
         .catch(error => {
             console.error('Error:', error);
@@ -2042,29 +2255,101 @@
                     series: [{ data: data.total_products }]
                 });
                 
-                document.querySelector(".table-border-bottom-0").innerHTML = "";
-                data.campaigns.forEach(campaign => {
-                const rowhtml = `
-                    <tr>
-                        <td>
-                            ${campaign.campaign_name} 
-                        </td>
-                        <td class="greg-date">
-                            ${campaign.campaign_start_date}
-                        </td>
-                        <td class="greg-date">
-                            ${campaign.campaign_end_date}
-                        </td>
-                        <td>
-                            ${campaign.campaign_type}
-                        </td>
-                        <td class="campaign-cost">
-                            ${campaign.campaign_cost}
-                        </td>
-                    </tr>
-                    `
-                document.querySelector(".table-border-bottom-0").insertAdjacentHTML("beforeend", rowhtml);
+                document.querySelector("#campaign-fill").innerHTML = "";
+                document.querySelector("#campaign-fill").classList.add("box");
+                if (data.campaigns.length === 0) {
+                    const card = document.createElement("div");
+                    card.classList.add("card");
+                    card.classList.add("h-100");
+                    card.setAttribute("style", "border-radius: 12px; border-color: #e5e5e5; box-shadow: none !important; border-width: 1px; display: flex; justify-content: center; align-items: center; font-weight: bold;");
+                    const i = document.createElement("i");
+                    i.classList.add("bx");
+                    i.classList.add("bx-box");
+                    i.style.fontSize = "48px";
+                    const p = document.createElement("p");
+                    p.innerText = "هیچ کمپینی یافت نشد";
+                    card.appendChild(i);
+                    card.appendChild(p);
+                    document.querySelector("#campaign-fill").appendChild(card);
+                } else {
+                    if (document.querySelector("#campaign-fill").classList.contains("box")) {
+                        document.querySelector("#campaign-fill").classList.remove("box");
+                    }
+                    document.querySelector("#campaign-fill").innerHTML = "";
+                    data.campaigns.forEach(campaign => {
+                    const rowhtml = `
+                            <div class="col-lg-4" style="margin-top: 10px; margin-bottom: 10px;">
+                            <div class="card" style="
+                            background-clip: padding-box;
+                            border-style: solid;
+                            box-shadow: none;
+                            border-width: 1px;
+                            border-color: #e5e5e5;
+                            background-color: #F9F9F9;
+                            border-radius: 12px;
+                            height: 100%;
+                            padding: 10px;">
+                                <div class="card-header d-flex align-items-center justify-content-between">
+                                    <h5 class="card-title mb-0">${campaign.campaign_name}</h5>
+                                </div>
+                                <div class="card-body pb-3">
+                                    <ul class="p-0 m-0">
+                                    <li class="d-flex align-items-center mb-3">
+                                        <div class="avatar avatar-sm flex-shrink-0 me-3">
+                                        <span class="avatar-initial rounded-circle bg-label-primary"><i class="bx bx-time"></i></span>
+                                        </div>
+                                        <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                        <div class="me-2">
+                                            <p class="mb-0">شروع</p>
+                                            <small class="text-muted">تاریخ شروع کمپین</small>
+                                        </div>
+                                        <div class="item-progress greg-date">${campaign.campaign_start_date}</div>
+                                        </div>
+                                    </li>
+                                    <li class="d-flex align-items-center mb-3">
+                                        <div class="avatar avatar-sm flex-shrink-0 me-3">
+                                        <span class="avatar-initial rounded-circle bg-label-info"><i class="bx bx-stopwatch"></i></span>
+                                        </div>
+                                        <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                        <div class="me-2">
+                                            <p class="mb-0">پایان</p>
+                                            <small class="text-muted">تاریخ پایان کمپین</small>
+                                        </div>
+                                        <div class="item-progress greg-date">${campaign.campaign_end_date}</div>
+                                        </div>
+                                    </li>
+                                    <li class="d-flex align-items-center mb-3">
+                                        <div class="avatar avatar-sm flex-shrink-0 me-3">
+                                        <span class="avatar-initial rounded-circle bg-label-danger"><i class="bx bx-tag"></i></span>
+                                        </div>
+                                        <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                        <div class="me-2">
+                                            <p class="mb-0">نوع</p>
+                                            <small class="text-muted">مثال: فروش و ...</small>
+                                        </div>
+                                        <div class="item-progress">${campaign.campaign_type}</div>
+                                        </div>
+                                    </li>
+                                    <li class="d-flex align-items-center">
+                                        <div class="avatar avatar-sm flex-shrink-0 me-3">
+                                        <span class="avatar-initial rounded-circle bg-label-success"><i class="bx bx-dollar"></i></span>
+                                        </div>
+                                        <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                        <div class="me-2">
+                                            <p class="mb-0">هزینه</p>
+                                            <small class="text-muted">مجموع هزینه‌ها</small>
+                                        </div>
+                                        <div class="item-progress campaign-cost">${campaign.campaign_cost}</div>
+                                        </div>
+                                    </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        `
+                    document.querySelector("#campaign-fill").insertAdjacentHTML("beforeend", rowhtml);
                 });
+                }
 
                 loadingOverlay.style.display = 'none';
                 function jalaliDateConvertor() {
