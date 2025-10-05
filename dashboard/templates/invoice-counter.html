@@ -230,7 +230,7 @@
             <div class="demo-inline-spacing mt-3">
                 <div class="tab-content px-0 pt-2">
                     <!-- total amount aggregation line chart -->
-                    <div id="container-tools" class="icon-bar">
+                    <div id="container-tools" class="icon-bar" style="display: none;">
                         <div class="icon-wrapper bar-chart" data-tooltip="Bar Chart">
                             <i class="bx bx-bar-chart"></i>
                         </div>
@@ -238,7 +238,7 @@
                             <i class="bx bx-brain"></i>
                         </div>
                     </div>
-                    <div id="container" style="width: 100%; height: 400px;"></div>
+                    <div id="container" style="width: 100%; height: 400px; display: none;"></div>
                     <!-- total amount aggregation bar chart -->
                     <div id="container-bar-chart-tools" class="icon-bar">
                         <div class="icon-wrapper line-chart" data-tooltip="Line Chart">
@@ -250,7 +250,7 @@
                     </div>
                     <div id="container-bar-chart" style="width: 100%; height: 400px;"></div>
                     <!-- total amount aggregation by branches -->
-                    <div id="second-container-tools" class="icon-bar">
+                    <div id="second-container-tools" class="icon-bar" style="display: none;">
                         <div class="icon-wrapper pie-chart" data-tooltip="Pie Chart">
                             <i class="bx bx-pie-chart"></i>
                         </div>
@@ -260,7 +260,7 @@
                     </div>
                     <div id="second-container" style="width: 100%; height: 400px; display: none;"></div>
                     <!-- total amount aggregation pie chart by branches -->
-                    <div id="second-container-pie-chart-tools" class="icon-bar">
+                    <div id="second-container-pie-chart-tools" class="icon-bar" style="display: none;">
                         <div class="icon-wrapper line-chart" data-tooltip="Line Chart">
                             <i class="bx bx-line-chart"></i>
                         </div>
@@ -270,7 +270,7 @@
                     </div>
                     <div id="second-container-pie-chart" style="width: 100%; height: 400px; display: none;"></div>
                     <!-- total count aggregation -->
-                    <div id="third-container-tools" class="icon-bar">
+                    <div id="third-container-tools" class="icon-bar" style="display: none;">
                         <div class="icon-wrapper bar-chart" data-tooltip="Bar Chart">
                             <i class="bx bx-bar-chart"></i>
                         </div>
@@ -278,7 +278,7 @@
                             <i class="bx bx-brain"></i>
                         </div>
                     </div>
-                    <div id="third-container" style="width: 100%; height: 400px;"></div>
+                    <div id="third-container" style="width: 100%; height: 400px; display: none;"></div>
                     <!-- total count aggregation bar chart -->
                     <div id="third-container-bar-chart-tools" class="icon-bar">
                         <div class="icon-wrapper line-chart" data-tooltip="Line Chart">
@@ -290,7 +290,7 @@
                     </div>
                     <div id="third-container-bar-chart" style="width: 100%; height: 400px;"></div>
                     <!-- total count aggregation by branches -->
-                    <div id="forth-container-tools" class="icon-bar">
+                    <div id="forth-container-tools" class="icon-bar" style="display: none;">
                         <div class="icon-wrapper pie-chart" data-tooltip="Pie Chart">
                             <i class="bx bx-pie-chart"></i>
                         </div>
@@ -300,7 +300,7 @@
                     </div>
                     <div id="forth-container" style="width: 100%; height: 400px; display: none;"></div>
                     <!-- total count aggregation pie chart by branches -->
-                    <div id="forth-container-pie-chart-tools" class="icon-bar">
+                    <div id="forth-container-pie-chart-tools" class="icon-bar" style="display: none;">
                         <div class="icon-wrapper line-chart" data-tooltip="Line Chart">
                             <i class="bx bx-line-chart"></i>
                         </div>
@@ -310,7 +310,7 @@
                     </div>
                     <div id="forth-container-pie-chart" style="width: 100%; height: 400px; display: none;"></div>
                     <!-- total product count aggregation -->
-                    <div id="fifth-container-tools" class="icon-bar">
+                    <div id="fifth-container-tools" class="icon-bar" style="display: none;">
                         <div class="icon-wrapper bar-chart" data-tooltip="Bar Chart">
                             <i class="bx bx-bar-chart"></i>
                         </div>
@@ -318,7 +318,7 @@
                             <i class="bx bx-brain"></i>
                         </div>
                     </div>
-                    <div id="fifth-container" style="width: 100%; height: 400px;"></div>
+                    <div id="fifth-container" style="width: 100%; height: 400px; display: none;"></div>
                     <!-- total product count aggregation bar chart -->
                     <div id="fifth-container-bar-chart-tools" class="icon-bar">
                         <div class="icon-wrapper line-chart" data-tooltip="Line Chart">
@@ -330,7 +330,7 @@
                     </div>
                     <div id="fifth-container-bar-chart" style="width: 100%; height: 400px;"></div>
                     <!-- total product count aggregation by branches -->
-                    <div id="sixth-container-tools" class="icon-bar">
+                    <div id="sixth-container-tools" class="icon-bar" style="display: none;">
                         <div class="icon-wrapper pie-chart" data-tooltip="Pie Chart">
                             <i class="bx bx-pie-chart"></i>
                         </div>
@@ -340,7 +340,7 @@
                     </div>
                     <div id="sixth-container" style="width: 100%; height: 400px; display: none;"></div>
                     <!-- total product count aggregation pie chart by branches -->
-                    <div id="sixth-container-pie-chart-tools" class="icon-bar">
+                    <div id="sixth-container-pie-chart-tools" class="icon-bar" style="display: none;">
                         <div class="icon-wrapper line-chart" data-tooltip="Line Chart">
                             <i class="bx bx-line-chart"></i>
                         </div>
@@ -2896,34 +2896,177 @@
 </script>
 <!-- Display Toggles -->
 <script>
+    // Chart Button Functionalities
+    const secondContainerToolsPie = document.querySelector("#second-container-tools .pie-chart");
+    secondContainerToolsPie.addEventListener("click", () => {
+        document.querySelector("#second-container").style.display = "none";
+        document.querySelector("#second-container-tools").style.display = "none";
+        document.querySelector("#second-container-pie-chart").style.display = "";
+        document.querySelector("#second-container-pie-chart-tools").style.display = "";
+    });
+    const secondContainerPieChartToolsLine = document.querySelector("#second-container-pie-chart-tools .line-chart");
+    secondContainerPieChartToolsLine.addEventListener("click", () => {
+        document.querySelector("#second-container-pie-chart").style.display = "none";
+        document.querySelector("#second-container-pie-chart-tools").style.display = "none";
+        document.querySelector("#second-container").style.display = "";
+        document.querySelector("#second-container-tools").style.display = "";
+    });
+    const forthContainerToolsPie = document.querySelector("#forth-container-tools .pie-chart");
+    forthContainerToolsPie.addEventListener("click", () => {
+        document.querySelector("#forth-container-tools").style.display = "none";
+        document.querySelector("#forth-container").style.display = "none";
+        document.querySelector("#forth-container-pie-chart-tools").style.display = "";
+        document.querySelector("#forth-container-pie-chart").style.display = "";
+    });
+    const forthContainerPieChartToolsLine = document.querySelector("#forth-container-pie-chart-tools .line-chart");
+    forthContainerPieChartToolsLine.addEventListener("click", () => {
+        document.querySelector("#forth-container-pie-chart-tools").style.display = "none";
+        document.querySelector("#forth-container-pie-chart").style.display = "none";
+        document.querySelector("#forth-container-tools").style.display = "";
+        document.querySelector("#forth-container").style.display = "";
+    });
+    const sixthContainerToolsPie = document.querySelector("#sixth-container-tools .pie-chart");
+    sixthContainerToolsPie.addEventListener("click", () => {
+        document.querySelector("#sixth-container-tools").style.display = "none";
+        document.querySelector("#sixth-container").style.display = "none";
+        document.querySelector("#sixth-container-pie-chart-tools").style.display = "";
+        document.querySelector("#sixth-container-pie-chart").style.display = "";
+    });
+    const sixthContainerPieChartToolsLine = document.querySelector("#sixth-container-pie-chart-tools .line-chart");
+    sixthContainerPieChartToolsLine.addEventListener("click", () => {
+        document.querySelector("#sixth-container-pie-chart-tools").style.display = "none";
+        document.querySelector("#sixth-container-pie-chart").style.display = "none";
+        document.querySelector("#sixth-container-tools").style.display = "";
+        document.querySelector("#sixth-container").style.display = "";        
+    });
+    const containerToolsBar = document.querySelector("#container-tools .bar-chart");
+    containerToolsBar.addEventListener("click", () => {
+        document.querySelector("#container-tools").style.display = "none";
+        document.querySelector("#container").style.display = "none";
+        document.querySelector("#container-bar-chart-tools").style.display = "";
+        document.querySelector("#container-bar-chart").style.display = "";
+    });
+    const containerBarChartToolsLine = document.querySelector("#container-bar-chart-tools .line-chart");
+    containerBarChartToolsLine.addEventListener("click", () => {
+        document.querySelector("#container-bar-chart-tools").style.display = "none";
+        document.querySelector("#container-bar-chart").style.display = "none";
+        document.querySelector("#container-tools").style.display = "";
+        document.querySelector("#container").style.display = "";
+    });
+    const thirdContainerToolsBar = document.querySelector("#third-container-tools .bar-chart");
+    thirdContainerToolsBar.addEventListener("click", () => {
+        document.querySelector("#third-container-tools").style.display = "none";
+        document.querySelector("#third-container").style.display = "none";
+        document.querySelector("#third-container-bar-chart-tools").style.display = "";
+        document.querySelector("#third-container-bar-chart").style.display = "";
+    });
+    const thirdContainerBarChartToolsLine = document.querySelector("#third-container-bar-chart-tools .line-chart");
+    thirdContainerBarChartToolsLine.addEventListener("click", () => {
+        document.querySelector("#third-container-tools").style.display = "";
+        document.querySelector("#third-container").style.display = "";
+        document.querySelector("#third-container-bar-chart-tools").style.display = "none";
+        document.querySelector("#third-container-bar-chart").style.display = "none";
+    });
+    const fifthContainerToolsBar = document.querySelector("#fifth-container-tools .bar-chart");
+    fifthContainerToolsBar.addEventListener("click", () => {
+        document.querySelector("#fifth-container-tools").style.display = "none";
+        document.querySelector("#fifth-container").style.display = "none";
+        document.querySelector("#fifth-container-bar-chart-tools").style.display = "";
+        document.querySelector("#fifth-container-bar-chart").style.display = "";
+    });
+    const fifthContainerBarChartToolsLine = document.querySelector("#fifth-container-bar-chart-tools .line-chart");
+    fifthContainerBarChartToolsLine.addEventListener("click", () => {
+        document.querySelector("#fifth-container-bar-chart-tools").style.display = "none";
+        document.querySelector("#fifth-container-bar-chart").style.display = "none";
+        document.querySelector("#fifth-container-tools").style.display = "";
+        document.querySelector("#fifth-container").style.display = "";
+    });
+    // Overall vs Branch By Branch Toggle
+    const groupOne = [
+        // "container",
+        // "container-tools",
+        "container-bar-chart",
+        "container-bar-chart-tools",
+        // "third-container",
+        // "third-container-tools",
+        "third-container-bar-chart",
+        "third-container-bar-chart-tools",
+        // "fifth-container",
+        // "fifth-container-tools",
+        "fifth-container-bar-chart",
+        "fifth-container-bar-chart-tools"
+    ]; 
+
+    const groupTwo = [
+        // "second-container",
+        // "second-container-tools",
+        "second-container-pie-chart",
+        "second-container-pie-chart-tools",
+        // "forth-container",
+        // "forth-container-tools",
+        "forth-container-pie-chart",
+        "forth-container-pie-chart-tools",
+        // "sixth-container",
+        // "sixth-container-tools",
+        "sixth-container-pie-chart",
+        "sixth-container-pie-chart-tools"
+    ]; 
+
+    const groupThree = [
+        "container",
+        "container-tools",
+        "third-container",
+        "third-container-tools",
+        "fifth-container",
+        "fifth-container-tools",
+    ]
+
+    const groupFour = [
+        "second-container",
+        "second-container-tools",
+        "forth-container",
+        "forth-container-tools",
+        "sixth-container",
+        "sixth-container-tools",
+    ]
+
+    function showGroupOne() {
+        groupOne.forEach(id => {
+            document.getElementById(id).style.display = "";
+        });
+        groupTwo.forEach(id => {
+            document.getElementById(id).style.display = "none";
+        });
+    }
+
+    function showGroupTwo() {
+        groupOne.forEach(id => {
+            document.getElementById(id).style.display = "none";
+        });
+        groupTwo.forEach(id => {
+            document.getElementById(id).style.display = "";
+        });
+    }
+
+    function hideGroupThree() {
+        groupThree.forEach(id => {
+            document.getElementById(id).style.display = "none";
+        });
+    }
+
+    function hideGroupFour() {
+        groupFour.forEach(id => {
+            document.getElementById(id).style.display = "none";
+        });
+    }
     const chartDisplayToggle = document.getElementById("chart-display-toggle");
     chartDisplayToggle.addEventListener("change", () => {
         if (chartDisplayToggle.value === '1') {
-            document.getElementById("container").style.display = '';
-            document.getElementById("container-bar-chart").style.display = '';
-            document.getElementById("third-container").style.display = '';
-            document.getElementById("third-container-bar-chart").style.display = '';
-            document.getElementById("fifth-container").style.display = '';
-            document.getElementById("fifth-container-bar-chart").style.display = '';
-            document.getElementById("second-container").style.display = 'none';
-            document.getElementById("second-container-pie-chart").style.display = 'none';
-            document.getElementById("forth-container").style.display = 'none';
-            document.getElementById("forth-container-pie-chart").style.display = 'none';
-            document.getElementById("sixth-container").style.display = 'none';
-            document.getElementById("sixth-container-pie-chart").style.display = 'none';
+            showGroupOne();
+            hideGroupFour();
         } else {
-            document.getElementById("container").style.display = 'none';
-            document.getElementById("container-bar-chart").style.display = 'none';
-            document.getElementById("third-container").style.display = 'none';
-            document.getElementById("third-container-bar-chart").style.display = 'none';
-            document.getElementById("fifth-container").style.display = 'none';
-            document.getElementById("fifth-container-bar-chart").style.display = 'none';
-            document.getElementById("second-container").style.display = '';
-            document.getElementById("second-container-pie-chart").style.display = '';
-            document.getElementById("forth-container").style.display = '';
-            document.getElementById("forth-container-pie-chart").style.display = '';
-            document.getElementById("sixth-container").style.display = '';
-            document.getElementById("sixth-container-pie-chart").style.display = '';
+            showGroupTwo();
+            hideGroupThree();
         }
     });
 </script>

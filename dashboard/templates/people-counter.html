@@ -231,7 +231,7 @@
                 <div class="demo-inline-spacing mt-3">
                     <div class="tab-content px-0 pt-2">
                         <!-- total traffic aggregation line chart -->
-                        <div id="container-tools" class="icon-bar">
+                        <div id="container-tools" class="icon-bar" style="display: none;">
                             <div class="icon-wrapper bar-chart" data-tooltip="Bar Chart">
                                 <i class="bx bx-bar-chart"></i>
                             </div>
@@ -239,7 +239,7 @@
                                 <i class="bx bx-brain"></i>
                             </div>
                         </div>
-                        <div id="container" style="width: 100%; height: 400px;"></div>
+                        <div id="container" style="width: 100%; height: 400px; display: none;"></div>
                         <!-- total traffic aggregation bar chart -->
                         <div id="container-bar-chart-tools" class="icon-bar">
                             <div class="icon-wrapper line-chart" data-tooltip="Line Chart">
@@ -1525,24 +1525,46 @@
 </script>
 <!-- Display Toggles -->
 <script>
+    // Chart Button Functionalities
+    const containerBarChartToolsLine = document.querySelector("#container-bar-chart-tools .line-chart");
+    containerBarChartToolsLine.addEventListener("click", () => {
+        document.getElementById("container").style.display = '';
+        document.getElementById("container-tools").style.display = '';
+        document.getElementById("container-bar-chart").style.display = 'none';
+        document.getElementById("container-bar-chart-tools").style.display = 'none';
+    });
+    const containerToolsBar = document.querySelector("#container-tools .bar-chart");
+    containerToolsBar.addEventListener("click", () => {
+        document.getElementById("container").style.display = 'none';
+        document.getElementById("container-tools").style.display = 'none';
+        document.getElementById("container-bar-chart").style.display = '';
+        document.getElementById("container-bar-chart-tools").style.display = '';
+    });
+    const secondContainerToolsPie = document.querySelector("#second-container-tools .pie-chart");
+    secondContainerToolsPie.addEventListener("click", () => {
+        document.getElementById("second-container-pie-chart").style.display = '';
+        document.getElementById("second-container-pie-chart-tools").style.display = '';
+        document.getElementById("second-container").style.display = 'none';
+        document.getElementById("second-container-tools").style.display = 'none';
+    });
+    const secondContainerPieChartTool = document.querySelector("#second-container-pie-chart-tools .line-chart");
+    secondContainerPieChartTool.addEventListener("click", () => {
+        document.getElementById("second-container-pie-chart").style.display = 'none';
+        document.getElementById("second-container-pie-chart-tools").style.display = 'none';
+        document.getElementById("second-container").style.display = '';
+        document.getElementById("second-container-tools").style.display = '';
+    });
+    // Overall vs Branch By Branch Toggle
     const chartDisplayToggle = document.getElementById("chart-display-toggle");
     chartDisplayToggle.addEventListener("change", () => {
         if (chartDisplayToggle.value === '1') {
-            document.getElementById("container").style.display = '';
-            document.getElementById("container-tools").style.display = '';
             document.getElementById("container-bar-chart").style.display = '';
             document.getElementById("container-bar-chart-tools").style.display = '';
-            document.getElementById("second-container").style.display = 'none';
-            document.getElementById("second-container-tools").style.display = 'none';
             document.getElementById("second-container-pie-chart").style.display = 'none';
             document.getElementById("second-container-pie-chart-tools").style.display = 'none';
         } else {
-            document.getElementById("container").style.display = 'none';
-            document.getElementById("container-tools").style.display = 'none';
             document.getElementById("container-bar-chart").style.display = 'none';
             document.getElementById("container-bar-chart-tools").style.display = 'none';
-            document.getElementById("second-container").style.display = '';
-            document.getElementById("second-container-tools").style.display = '';
             document.getElementById("second-container-pie-chart").style.display = '';
             document.getElementById("second-container-pie-chart-tools").style.display = '';
         }
