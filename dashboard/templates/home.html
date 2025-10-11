@@ -7,117 +7,137 @@
 	خانه
 {% endblock %}
 {% block content %}
+{% block extra_css %}
+<style>
+    .card {
+        border-style: solid;
+        box-shadow: none;
+        border-width: 1px;
+        border-color: #e5e5e5;
+        border-radius: 8px;
+        box-shadow: none !important;
+    }
+    .card-stat-num {
+        text-align: left !important;
+        font-size: 20px !important;
+        margin-bottom: 12.5px !important;
+    }
+    .card-sub-text {
+        margin-top: 10px !important;
+        font-weight: bold !important;
+        text-align: left !important;
+    }
+</style>
+{% endblock %}
 {% if request.user.profile.is_manager %}
 <div class="row">
-    <!-- Gamification Card -->
-    <div class="col-lg-4 col-md-6 col-12 mb-4">
+    <div class="col-sm-6 col-md-6 col-lg-3 col-xl-3 mb-4">
         <div class="card h-100">
-        <div class="card-header">
-            <h3 class="card-title mb-2">بیشترین ترافیک</h3>
-            <span class="d-block mb-4 text-nowrap primary-font">بیشترین ترافیک در بین تمامی شعب در ماه اخیر</span>
+            <div class="card-body text-center">
+                <h2 class="mb-n3 num card-stat-num">{{ last_7_days_invoice_product }}</h2>
+                <span class="d-block text-nowrap pt-1 card-sub-text">محصول 7 روز اخیر</span>
+                {% if rounded_diff_7_invoice_product > 0 %}
+                <span class="d-block text-nowrap pt-1 card-sub-text">7 روز گذشته <i class='bx bx-up-arrow-alt text-success'></i><span style="color: #30bd87;">{{ rounded_diff_7_invoice_product }}%</span></span>
+                {% else %}
+                <span class="d-block text-nowrap pt-1 card-sub-text">7 روز گذشته <i class='bx bx-down-arrow-alt text-danger'></i><span style="color: rgb(250 86 87) !important;">{{ rounded_diff_7_invoice_product }}%</span></span>
+                {% endif %}
+            </div>
         </div>
-        <div class="card-body">
-            <div class="row align-items-end">
-            <div class="col-6">
-                <h1 class="display-6 text-primary mb-2 pt-3 pb-2">{{ last_30_days_best_branch_name.branch__name }}</h1>
+    </div>
+    <div class="col-sm-6 col-md-6 col-lg-3 col-xl-3 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <h2 class="mb-n3 num card-stat-num">{{ last_30_days_invoice_product }}</h2>
+                <span class="d-block text-nowrap pt-1 card-sub-text">محصول 30 روز اخیر</span>
+                {% if rounded_diff_30_invoice_product > 0 %}
+                <span class="d-block text-nowrap pt-1 card-sub-text">30 روز گذشته <i class='bx bx-up-arrow-alt text-success'></i><span style="color: #30bd87;">{{ rounded_diff_30_invoice_product }}%</span></span>
+                {% else %}
+                <span class="d-block text-nowrap pt-1 card-sub-text">30 روز گذشته <i class='bx bx-down-arrow-alt text-danger'></i><span style="color: rgb(250 86 87) !important;">{{ rounded_diff_30_invoice_product }}%</span></span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-md-6 col-lg-3 col-xl-3 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <h2 class="mb-n3 num card-stat-num">{{ last_7_days_invoice_number }}</h2>
+                <span class="d-block text-nowrap pt-1 card-sub-text">فاکتور 7 روز اخیر</span>
+                {% if rounded_diff_7_invoice_num > 0 %}
+                <span class="d-block text-nowrap pt-1 card-sub-text">7 روز گذشته <i class='bx bx-up-arrow-alt text-success'></i><span style="color: #30bd87;">{{ rounded_diff_7_invoice_num }}%</span></span>
+                {% else %}
+                <span class="d-block text-nowrap pt-1 card-sub-text">7 روز گذشته <i class='bx bx-down-arrow-alt text-danger'></i><span style="color: rgb(250 86 87) !important;">{{ rounded_diff_7_invoice_num }}%</span></span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-md-6 col-lg-3 col-xl-3 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <h2 class="mb-n3 num card-stat-num">{{ last_30_days_invoice_number }}</h2>
+                <span class="d-block text-nowrap pt-1 card-sub-text">فاکتور 30 روز اخیر</span>
+                {% if rounded_diff_30_invoice_num > 0 %}
+                <span class="d-block text-nowrap pt-1 card-sub-text">30 روز گذشته <i class='bx bx-up-arrow-alt text-success'></i><span style="color: #30bd87;">{{ rounded_diff_30_invoice_num }}%</span></span>
+                {% else %}
+                <span class="d-block text-nowrap pt-1 card-sub-text">30 روز گذشته <i class='bx bx-down-arrow-alt text-danger'></i><span style="color: rgb(250 86 87) !important;">{{ rounded_diff_30_invoice_num }}%</span></span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-md-6 col-lg-3 col-xl-3 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <h2 class="mb-n3 num card-stat-num">{{ last_7_days_invoice_amount }}</h2>
+                <span class="d-block text-nowrap pt-1 card-sub-text">فروش 7 روز اخیر (تومان)</span>
+                {% if rounded_diff_7_invoice_amount > 0 %}
+                    <span class="d-block text-nowrap pt-1 card-sub-text">7 روز گذشته <i class='bx bx-up-arrow-alt text-success'></i><span style="color: #30bd87;">{{ rounded_diff_7_invoice_amount }}%</span></span>
+                {% else %}
+                    <span class="d-block text-nowrap pt-1 card-sub-text">7 روز گذشته <i class='bx bx-down-arrow-alt text-danger'></i><span style="color: rgb(250 86 87) !important;">{{ rounded_diff_7_invoice_amount }}%</span></span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-md-6 col-lg-3 col-xl-3 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <h2 class="mb-n3 num card-stat-num">{{ last_30_days_invoice_amount }}</h2>
+                <span class="d-block text-nowrap pt-1 card-sub-text">فروش 30 روز اخیر (تومان)</span>
+                {% if rounded_diff_30_invoice_amount > 0 %}
+                <span class="d-block text-nowrap pt-1 card-sub-text">30 روز گذشته <i class='bx bx-up-arrow-alt text-success'></i><span style="color: #30bd87;">{{ rounded_diff_30_invoice_amount }}%</span></span>
+                {% else %}
+                <span class="d-block text-nowrap pt-1 card-sub-text">30 روز گذشته <i class='bx bx-down-arrow-alt text-danger'></i><span style="color: rgb(250 86 87) !important;">{{ rounded_diff_30_invoice_amount }}%</span></span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-md-6 col-lg-3 col-xl-3 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <h2 class="mb-n3 num card-stat-num">{{ last_7_days_entry_total }}</h2>
+                <span class="d-block text-nowrap pt-1 card-sub-text">ترافیک 7 روز اخیر</span>
                 {% if rounded_diff_30_per > 0 %}
-                <small class="d-block mb-3 lh-1-85" style="color: rgb(0, 107, 0);">شما در همه شعب در 30 روز اخیر نسبت به 30 روز قبل تر از آن {{ rounded_diff_30_per }}٪ ترافیک بیشتری داشته اید</small>
-                {% else %}
-                <small class="d-block mb-3 lh-1-85" style="color: rgb(156, 7, 7);">شما در همه شعب در 30 روز اخیر نسبت به 30 روز قبل تر از آن {{ rounded_diff_30_per }}٪ ترافیک کمتر داشته اید</small>
+                <span class="d-block text-nowrap pt-1 card-sub-text">7 روز گذشته <i class='bx bx-up-arrow-alt text-success'></i><span style="color: #30bd87;">{{ rounded_diff_7_per }}%</span></span>
+                {% else %}    
+                <span class="d-block text-nowrap pt-1 card-sub-text">7 روز گذشته <i class='bx bx-down-arrow-alt text-danger'></i><span style="color: rgb(250 86 87) !important;">{{ rounded_diff_7_per }}%</span></span>
                 {% endif %}
-                <a href="{% url 'people_counter' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="btn btn-sm btn-primary">مشاهده شمارنده</a>
             </div>
-            <div class="col-6 text-end">
-                <i class="menu-icon tf-icons bx bx-crown" class="rounded-start" alt="View Sales" style="color: orange; font-size: 100px ;"></i>
-            </div>
-            </div>
-        </div>
         </div>
     </div>
-    <!--/ Gamification Card -->
-
-    <!-- Gamification Card 2 -->
-    <div class="col-lg-4 col-md-6 col-12 mb-4">
+    <div class="col-sm-6 col-md-6 col-lg-3 col-xl-3 mb-4">
         <div class="card h-100">
-        <div class="card-header">
-            <h3 class="card-title mb-2">کمترین ترافیک</h3>
-            <span class="d-block mb-4 text-nowrap primary-font">کمترین ترافیک در بین تمامی شعب در ماه اخیر</span>
-        </div>
-        <div class="card-body">
-            <div class="row align-items-end">
-            <div class="col-6">
-                <h1 class="display-6 text-primary mb-2 pt-3 pb-2">{{ last_30_days_worst_branch_name.branch__name }}</h1>
-                {% if rounded_diff_7_per > 0 %}
-                <small class="d-block mb-3 lh-1-85" style="color: rgb(0, 107, 0);">شما در همه شعب در 7 روز اخیر نسبت به 7 روز قبل تر از آن {{ rounded_diff_7_per }}٪ ترافیک بیشتری داشته اید</small>
-                {% else %}
-                <small class="d-block mb-3 lh-1-85" style="color: rgb(192, 0, 0);">شما در همه شعب در 7 روز اخیر نسبت به 7 روز قبل تر از آن {{ rounded_diff_7_per }}٪ ترافیک کمتر داشته اید</small>
+            <div class="card-body text-center"> 
+                <h2 class="mb-n3 num card-stat-num">{{ last_30_days_entry_total }}</h2>
+                <span class="d-block text-nowrap pt-1 card-sub-text">ترافیک 30 روز اخیر</span>
+                {% if rounded_diff_30_per > 0 %}
+                    <span class="d-block text-nowrap pt-1 card-sub-text">30 روز گذشته <i class='bx bx-up-arrow-alt text-success'></i><span style="color: #30bd87;">{{rounded_diff_30_per}}%</span></span>
+                {% else %}    
+                <span class="d-block text-nowrap pt-1 card-sub-text">30 روز گذشته <i class='bx bx-down-arrow-alt text-danger'></i><span style="color: rgb(250 86 87) !important;">{{rounded_diff_30_per}}%</span></span>
                 {% endif %}
-                <a href="{% url 'people_counter' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="btn btn-sm btn-primary">مشاهده شمارنده</a>
             </div>
-            <div class="col-6 text-end">
-                <i class="menu-icon tf-icons bx bx-map-alt" class="rounded-start" alt="View Sales" style="color: rgb(119, 118, 116); font-size: 100px ;"></i>
-            </div>
-            </div>
-        </div>
         </div>
     </div>
-    <!--/ Gamification Card -->
-
-    <!-- Statistics cards & Revenue Growth Chart -->
-    <div class="col-lg-4 col-12">
-        <div class="row">
-        <!-- Statistics Cards -->
-        <div class="col-6 col-md-3 col-lg-6 mb-4">
-            <div class="card h-100">
-            <div class="card-body text-center">
-                <div class="avatar mx-auto mb-2">
-                <span class="avatar-initial rounded-circle bg-label-primary"><i class="bx bx-purchase-tag fs-4"></i></span>
-                </div>
-                <span class="d-block text-nowrap pt-1">ترافیک کل 30 روز اخیر</span>
-                <h2 class="mb-n3 num">{{ last_30_days_entry_total }}</h2>
-            </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-3 col-lg-6 mb-4">
-            <div class="card h-100">
-            <div class="card-body text-center">
-                <div class="avatar mx-auto mb-2">
-                <span class="avatar-initial rounded-circle bg-label-primary"><i class="bx bx-purchase-tag fs-4"></i></span>
-                </div>
-                <span class="d-block text-nowrap pt-1">ترافیک کل 30 روز قبل</span>
-                <h2 class="mb-n3 num">{{ previous_30_days_entry_total }}</h2>
-            </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-3 col-lg-6 mb-4">
-            <div class="card h-100">
-            <div class="card-body text-center">
-                <div class="avatar mx-auto mb-2">
-                <span class="avatar-initial rounded-circle bg-label-primary"><i class="bx bx-purchase-tag fs-4"></i></span>
-                </div>
-                <span class="d-block text-nowrap pt-1">ترافیک کل 7 روز اخیر</span>
-                <h2 class="mb-n3 num">{{ last_7_days_entry_total }}</h2>
-            </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-3 col-lg-6 mb-4">
-            <div class="card h-100">
-            <div class="card-body text-center">
-                <div class="avatar mx-auto mb-2">
-                <span class="avatar-initial rounded-circle bg-label-primary"><i class="bx bx-purchase-tag fs-4"></i></span>
-                </div>
-                <span class="d-block text-nowrap pt-1">ترافیک کل 7 روز قبل</span>
-                <h2 class="mb-n3 num">{{ previous_7_days_entry_total }}</h2>
-            </div>
-            </div>
-        </div>
-        <!--/ Statistics Cards -->
-        </div>
-    </div>
-    <!--/ Statistics cards & Revenue Growth Chart -->
-
-    <!-- All Users -->
-    <div class="col-md-6 col-lg-6 col-xl-4 mb-4 mb-xl-0">
+</div>
+<div class="row">
+    <!-- <div class="col-md-6 col-lg-6 col-xl-4 mb-4 mb-xl-0">
         <div class="card h-100">
         <div class="card-header">
             <h5 class="card-title mb-3">ترافیک کل 30 روز اخیر</h5>
@@ -141,36 +161,23 @@
             </ul>
         </div>
         </div>
-    </div>
-    <!--/ All Users -->
+    </div> -->
 
-    <!-- All Users -->
-    <div class="col-md-6 col-lg-6 col-xl-4 mb-4 mb-xl-0">
+    <div class="col-md-6 col-lg-6 col-xl-6 mb-4 mb-xl-0">
         <div class="card h-100">
-        <div class="card-header">
-            <h5 class="card-title mb-3">ترافیک کل 7 روز اخیر</h5>
-            <h1 class="display-6 fw-normal mb-0 primary-font num">{{ last_7_days_entry_total }}</h1>
-        </div>
-        <div class="card-body">
-            <ul class="p-0 m-0">
-            {% if branch_7_day_ranks %}
-            {% for rank in branch_7_day_ranks %}
-            <li class="mb-3 d-flex justify-content-between">
-                <div class="d-flex align-items-center me-3">
-                <span class="badge badge-dot bg-primary me-2"></span> {{ rank.branch__name }}
-                </div>
-                <div class="d-flex gap-3">
-                <span class="num">{{ rank.total_entry }}</span>
-                <span class="fw-semibold">{{ rank.percent_seven }}%</span>
-                </div>
-            </li>
-            {% endfor %}
-            {% endif %}
-            </ul>
-        </div>
+            <div class="card-body">
+                <div id="funnel-container"></div>
+            </div>
         </div>
     </div>
-    <!--/ All Users -->
+
+    <div class="col-md-6 col-lg-6 col-xl-6 mb-4 mb-xl-0">
+        <div class="card h-100">
+            <div class="card-body">
+                <div id="30-day-pie-chart"></div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endif %}
 {% endblock %}
@@ -183,5 +190,102 @@
         num.innerHTML = parseInt(num.textContent.replace(/,/g, ""), 10).toLocaleString("en-US")
         })
     })
+</script>
+<!-- HighChart JS -->
+<script src="{% static 'assets/js/highcharts.js' %}"></script>
+<script src="{% static 'assets/js/exporting.js' %}"></script>
+<script src="{% static 'assets/js/export-data.js' %}"></script>
+<script src="{% static 'assets/js/accessibility.js' %}"></script>
+<script src="{% static 'assets/js/highcharts-funnel.js' %}"></script>
+<!-- HighChart JS Funnel -->
+<script>
+// Assign Django variable to JS variable
+const traffic = parseFloat('{{ last_30_days_entry_total }}') || 0;
+const invoices = parseFloat('{{ last_30_days_invoice_number }}') || 0;
+const sales = parseFloat('{{ last_30_days_invoice_amount }}') || 0;
+
+// 30 Day Funnel
+Highcharts.chart('funnel-container', {
+    chart: {
+        type: 'funnel'
+    },
+    title: {
+        text: 'ترافیک و فاکتور 30 روز اخیر',
+        style: {
+            fontSize: '20px',
+            color: '#333',
+            fontFamily: 'Vazirmatn, sans-serif',
+        }
+    },
+    plotOptions: {
+        series: {
+        dataLabels: {
+            enabled: true,
+            format: '<b>{point.name}</b> ({point.y})',
+            softConnector: true,
+            style: {
+                fontSize: '15px',
+                color: '#333',
+                fontFamily: 'Vazirmatn, sans-serif',
+            }
+        },
+        center: ['50%', '50%'],
+        neckWidth: '30%',
+        width: '80%', 
+        neckHeight: '10%',
+        }
+    },
+    tooltip: {
+        formatter: function () {
+        if (this.point.sales) {
+            return `<b>${this.point.name}</b>: ${Highcharts.numberFormat(this.point.y, 0, '.', ',')}<br/>فروش: ${Highcharts.numberFormat(this.point.sales, 0, '.', ',')}`;
+        }
+        return `<b>${this.point.name}</b>: ${Highcharts.numberFormat(this.point.y, 0, '.', ',')}`;
+        },
+        style: {
+            fontSize: '15px',
+            color: '#333',
+            fontFamily: 'Vazirmatn, sans-serif',
+        }
+    },
+    series: [{
+        name: 'Users',
+        data: [
+            ['ترافیک', traffic],
+            { name: 'فاکتور', y: invoices, sales: sales }
+        ]
+    }]
+});
+// 30 Day Traffic Pie Chart
+Highcharts.chart('30-day-pie-chart', {
+    chart: {
+        type: 'pie',
+        style: { fontFamily: 'Vazirmatn, sans-serif' }
+    },
+    title: {
+        text: 'توزیع کل ترافیک شعب 30 روز اخیر',
+        style: { fontSize: '20px', fontFamily: 'Vazirmatn, sans-serif' }
+    },
+    tooltip: {
+        pointFormat: '<b>{point.y}</b> ({point.percentage:.1f}%)'
+    },
+    plotOptions: {
+        pie: {
+            allowPointSelect: true,
+            cursor: 'pointer',
+            dataLabels: {
+                enabled: true,
+                format: '{point.name}: ({point.percentage:.1f}%)',
+                style: { fontSize: '14px', fontFamily: 'Vazirmatn, sans-serif' }
+            },
+            showInLegend: true
+        }
+    },
+    series: [{
+        name: 'توزیع ترافیک شعب در 30 روز اخیر',
+        colorByPoint: true,
+        data: JSON.parse("{{ branch_30_days_traffic_share|escapejs }}")   
+    }]
+});
 </script>
 {% endblock %}

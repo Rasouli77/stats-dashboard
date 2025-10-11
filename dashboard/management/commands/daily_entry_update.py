@@ -40,7 +40,7 @@ class Command(BaseCommand):
             if ping_ip(ip['ip']):
                 print(ip['ip'])
                 try:
-                    data = get_custom_date_camera_data(ip["ip"], today_str, today_str)
+                    data = get_custom_date_camera_data(ip["ip"], "2025-10-10", "2025-10-10")
                     update_or_create_camera_data(data, ip["cam_id"], ip["merchant_id"], ip["branch_id"])
                 except Exception as e:
                     print(e)

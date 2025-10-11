@@ -123,6 +123,88 @@
         background-color: white;
     }
 </style>
+<!-- AI UI -->
+<style>
+    /* ---------- MODAL OVERLAY ---------- */
+    .ai-modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.4);
+        backdrop-filter: blur(6px);
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        animation: fadeIn 0.4s ease forwards;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    /* ---------- MODAL BOX ---------- */
+    .ai-modal-content {
+        background: #1e1e2f;
+        color: #fff;
+        border-radius: 10px;
+        width: 550px;
+        max-width: 90%;
+        padding: 24px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+        transform: scale(0.9);
+        animation: scaleUp 0.4s ease forwards;
+    }
+    @keyframes scaleUp {
+        to { transform: scale(1); }
+    }
+
+    /* ---------- CLOSE BUTTON ---------- */
+    .ai-close {
+        position: absolute;
+        top: 1px;
+        right: 22px;
+        font-size: 26px;
+        cursor: pointer;
+        color: #ccc;
+        transition: color 0.3s ease;
+    }
+    .ai-close:hover {
+        color: #fff;
+    }
+
+    /* ---------- LOADING ANIMATION ---------- */
+    .ai-loading {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 80px;
+    }
+    .ai-loading::before {
+        content: '';
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 30% 30%, #6c63ff, #483dff);
+        animation: pulse 1.6s infinite ease-in-out;
+        box-shadow: 0 0 20px rgba(108,99,255,0.6);
+    }
+    @keyframes pulse {
+        0%, 100% { transform: scale(0.9); opacity: 0.8; box-shadow: 0 0 10px rgba(108,99,255,0.3); }
+        50% { transform: scale(1.2); opacity: 1; box-shadow: 0 0 30px rgba(108,99,255,0.7); }
+    }
+
+    /* ---------- RESPONSE TEXT ---------- */
+    .ai-response {
+        display: none;
+        font-size: 15px;
+        line-height: 1.6;
+        white-space: pre-wrap;
+        border-top: 1px solid #333;
+        margin-top: 15px;
+        padding-top: 10px;
+        min-height: 100px;
+    }
+</style>
 {% endblock %}
 {% block content %}
 <div class="loading-overlay" id="loading-overlay">
@@ -239,170 +321,179 @@
             <div class="demo-inline-spacing mt-3">
                 <div class="tab-content px-0 pt-2">
                     <!-- Conversion Rate Aggregation -->
-                    <div id="ratio-container-tools" class="icon-bar">
+                    <div id="ratio-container-tools" class="icon-bar" style="display: none;">
                         <div class="icon-wrapper bar-chart" data-tooltip="Bar Chart">
                             <i class="bx bx-bar-chart"></i>
                         </div>
                         <div class="icon-wrapper ai" data-tooltip="AI">
-                            <i class="bx bx-brain"></i>
+                            <img src="{% static 'assets/img/icons/misc/gemini-logo.png' %}" alt="Gemini" class="gemini-icon" style="width: 24px;">
                         </div>
                     </div>
-                    <div id="ratio-container" style="width: 100%; height: 400px;"></div>
+                    <div id="ratio-container" style="width: 100%; height: 400px; display: none;"></div>
+                    <!-- AI Modal -->
+                    <div id="aiModal" class="ai-modal">
+                        <div class="ai-modal-content">
+                            <span id="aiClose" class="ai-close">&times;</span>
+                            <div id="aiLoading" class="ai-loading"></div>
+                            <div id="aiResponse" class="ai-response">
+                            </div>
+                        </div>
+                    </div>
                     <!-- Conversion Rate Bar Chart Aggregation -->
-                    <div id="ratio-container-bar-chart-tools" class="icon-bar">
+                    <div id="ratio-container-bar-chart-tools" class="icon-bar" style="display: none;">
                         <div class="icon-wrapper line-chart" data-tooltip="Line Chart">
                             <i class="bx bx-line-chart"></i>
                         </div>
                         <div class="icon-wrapper ai" data-tooltip="AI">
-                            <i class="bx bx-brain"></i>
+                            <img src="{% static 'assets/img/icons/misc/gemini-logo.png' %}" alt="Gemini" class="gemini-icon" style="width: 24px;">
                         </div>
                     </div>
-                    <div id="ratio-container-bar-chart" style="width: 100%; height: 400px;"></div>
+                    <div id="ratio-container-bar-chart" style="width: 100%; height: 400px; display: none;"></div>
                     <!-- Value Entry Aggregation -->
-                    <div id="second-ratio-container-tools" class="icon-bar">
+                    <div id="second-ratio-container-tools" class="icon-bar" style="display: none;">
                         <div class="icon-wrapper bar-chart" data-tooltip="Bar Chart">
                             <i class="bx bx-bar-chart"></i>
                         </div>
                         <div class="icon-wrapper ai" data-tooltip="AI">
-                            <i class="bx bx-brain"></i>
+                            <img src="{% static 'assets/img/icons/misc/gemini-logo.png' %}" alt="Gemini" class="gemini-icon" style="width: 24px;">
                         </div>
                     </div>
-                    <div id="second-ratio-container" style="width: 100%; height: 400px;"></div>
+                    <div id="second-ratio-container" style="width: 100%; height: 400px; display: none;"></div>
                     <!-- Value Entry Bar Chart Aggregation -->
-                    <div id="second-ratio-container-bar-chart-tools" class="icon-bar">
+                    <div id="second-ratio-container-bar-chart-tools" class="icon-bar" style="display: none;">
                         <div class="icon-wrapper line-chart" data-tooltip="Line Chart">
                             <i class="bx bx-line-chart"></i>
                         </div>
                         <div class="icon-wrapper ai" data-tooltip="AI">
-                            <i class="bx bx-brain"></i>
+                            <img src="{% static 'assets/img/icons/misc/gemini-logo.png' %}" alt="Gemini" class="gemini-icon" style="width: 24px;">
                         </div>
                     </div>
-                    <div id="second-ratio-container-bar-chart" style="width: 100%; height: 400px;"></div>
+                    <div id="second-ratio-container-bar-chart" style="width: 100%; height: 400px; display: none;"></div>
                     <!-- Entry Share -->
-                    <div id="one-to-all-container-tools" class="icon-bar">
+                    <div id="one-to-all-container-tools" class="icon-bar" style="display: none;">
                         <div class="icon-wrapper bar-chart" data-tooltip="Bar Chart">
                             <i class="bx bx-bar-chart"></i>
                         </div>
                         <div class="icon-wrapper ai" data-tooltip="AI">
-                            <i class="bx bx-brain"></i>
+                            <img src="{% static 'assets/img/icons/misc/gemini-logo.png' %}" alt="Gemini" class="gemini-icon" style="width: 24px;">
                         </div>
                     </div>
-                    <div id="one-to-all-container" style="width: 100%; height: 400px;"></div>
+                    <div id="one-to-all-container" style="width: 100%; height: 400px; display: none;"></div>
                     <!-- Entry Share Bar Chart -->
-                    <div id="one-to-all-container-bar-chart-tools" class="icon-bar">
+                    <div id="one-to-all-container-bar-chart-tools" class="icon-bar" style="display: none;">
                         <div class="icon-wrapper line-chart" data-tooltip="Line Chart">
                             <i class="bx bx-line-chart"></i>
                         </div>
                         <div class="icon-wrapper ai" data-tooltip="AI">
-                            <i class="bx bx-brain"></i>
+                            <img src="{% static 'assets/img/icons/misc/gemini-logo.png' %}" alt="Gemini" class="gemini-icon" style="width: 24px;">
                         </div>
                     </div>
-                    <div id="one-to-all-container-bar-chart" style="width: 100%; height: 400px;"></div>
+                    <div id="one-to-all-container-bar-chart" style="width: 100%; height: 400px; display: none;"></div>
                     <!-- Conversion Rate Aggregation By Branch -->
-                    <div id="ratio-container-multi-branch-tools" class="icon-bar">
+                    <div id="ratio-container-multi-branch-tools" class="icon-bar" style="display: none;">
                         <div class="icon-wrapper pie-chart" data-tooltip="Pie Chart">
                             <i class="bx bx-pie-chart"></i>
                         </div>
                         <div class="icon-wrapper ai" data-tooltip="AI">
-                            <i class="bx bx-brain"></i>
+                            <img src="{% static 'assets/img/icons/misc/gemini-logo.png' %}" alt="Gemini" class="gemini-icon" style="width: 24px;">
                         </div>
                     </div>
-                    <div id="ratio-container-multi-branch" style="width: 100%; height: 400px;"></div>
+                    <div id="ratio-container-multi-branch" style="width: 100%; height: 400px; display: none;"></div>
                     <!-- Conversion Rate Aggregation Pie Chart By Branch -->
-                    <div id="ratio-container-multi-branch-pie-chart-tools" class="icon-bar">
+                    <div id="ratio-container-multi-branch-pie-chart-tools" class="icon-bar" style="display: none;">
                         <div class="icon-wrapper line-chart" data-tooltip="Line Chart">
                             <i class="bx bx-line-chart"></i>
                         </div>
                         <div class="icon-wrapper ai" data-tooltip="AI">
-                            <i class="bx bx-brain"></i>
+                            <img src="{% static 'assets/img/icons/misc/gemini-logo.png' %}" alt="Gemini" class="gemini-icon" style="width: 24px;">
                         </div>
                     </div>
-                    <div id="ratio-container-multi-branch-pie-chart" style="width: 100%; height: 400px;"></div>
+                    <div id="ratio-container-multi-branch-pie-chart" style="width: 100%; height: 400px; display: none;"></div>
                     <!-- Value Entry Aggregation By Branch -->
-                    <div id="second-ratio-container-multi-branch-tools" class="icon-bar">
+                    <div id="second-ratio-container-multi-branch-tools" class="icon-bar" style="display: none;">
                         <div class="icon-wrapper pie-chart" data-tooltip="Pie Chart">
                             <i class="bx bx-pie-chart"></i>
                         </div>
                         <div class="icon-wrapper ai" data-tooltip="AI">
-                            <i class="bx bx-brain"></i>
+                            <img src="{% static 'assets/img/icons/misc/gemini-logo.png' %}" alt="Gemini" class="gemini-icon" style="width: 24px;">
                         </div>
                     </div>
-                    <div id="second-ratio-container-multi-branch" style="width: 100%; height: 400px;"></div>
+                    <div id="second-ratio-container-multi-branch" style="width: 100%; height: 400px; display: none;"></div>
                     <!-- Value Entry Aggregation Pie Chart By Branch -->
-                    <div id="second-ratio-container-multi-branch-pie-chart-tools" class="icon-bar">
+                    <div id="second-ratio-container-multi-branch-pie-chart-tools" class="icon-bar" style="display: none;">
                         <div class="icon-wrapper line-chart" data-tooltip="Line Chart">
                             <i class="bx bx-line-chart"></i>
                         </div>
                         <div class="icon-wrapper ai" data-tooltip="AI">
-                            <i class="bx bx-brain"></i>
+                            <img src="{% static 'assets/img/icons/misc/gemini-logo.png' %}" alt="Gemini" class="gemini-icon" style="width: 24px;">
                         </div>
                     </div>
-                    <div id="second-ratio-container-multi-branch-pie-chart" style="width: 100%; height: 400px;"></div>
+                    <div id="second-ratio-container-multi-branch-pie-chart" style="width: 100%; height: 400px; display: none;"></div>
                     <!-- Entry Share By Branch -->
-                    <div id="second-one-to-all-container-tools" class="icon-bar">
+                    <div id="second-one-to-all-container-tools" class="icon-bar" style="display: none;">
                         <div class="icon-wrapper pie-chart" data-tooltip="Pie Chart">
                             <i class="bx bx-pie-chart"></i>
                         </div>
                         <div class="icon-wrapper ai" data-tooltip="AI">
-                            <i class="bx bx-brain"></i>
+                            <img src="{% static 'assets/img/icons/misc/gemini-logo.png' %}" alt="Gemini" class="gemini-icon" style="width: 24px;">
                         </div>
                     </div>
-                    <div id="second-one-to-all-container" style="width: 100%; height: 400px;"></div>
+                    <div id="second-one-to-all-container" style="width: 100%; height: 400px; display: none;"></div>
                     <!-- Entry Share Pie Chart By Branch -->
-                    <div id="second-one-to-all-container-pie-chart-tools" class="icon-bar">
+                    <div id="second-one-to-all-container-pie-chart-tools" class="icon-bar" style="display: none;">
                         <div class="icon-wrapper bar-chart" data-tooltip="Bar Chart">
                             <i class="bx bx-bar-chart"></i>
                         </div>
                         <div class="icon-wrapper ai" data-tooltip="AI">
-                            <i class="bx bx-brain"></i>
+                            <img src="{% static 'assets/img/icons/misc/gemini-logo.png' %}" alt="Gemini" class="gemini-icon" style="width: 24px;">
                         </div>
                     </div>
-                    <div id="second-one-to-all-container-pie-chart" style="width: 100%; height: 400px;"></div>
+                    <div id="second-one-to-all-container-pie-chart" style="width: 100%; height: 400px; display: none;"></div>
                     <!-- Product Count Average Aggregation -->
-                    <div id="product-counter-tools" class="icon-bar">
+                    <div id="product-counter-tools" class="icon-bar" style="display: none;">
                         <div class="icon-wrapper bar-chart" data-tooltip="Bar Chart">
                             <i class="bx bx-bar-chart"></i>
                         </div>
                         <div class="icon-wrapper ai" data-tooltip="AI">
-                            <i class="bx bx-brain"></i>
+                            <img src="{% static 'assets/img/icons/misc/gemini-logo.png' %}" alt="Gemini" class="gemini-icon" style="width: 24px;">
                         </div>
                     </div>
-                    <div id="product-counter" style="width: 100%; height: 400px;"></div>
+                    <div id="product-counter" style="width: 100%; height: 400px; display: none;"></div>
                     <!-- Product Count Average Bar Chart Aggregation -->
-                    <div id="product-counter-bar-chart-tools" class="icon-bar">
+                    <div id="product-counter-bar-chart-tools" class="icon-bar" style="display: none;">
                         <div class="icon-wrapper line-chart" data-tooltip="Line Chart">
                             <i class="bx bx-line-chart"></i>
                         </div>
                         <div class="icon-wrapper ai" data-tooltip="AI">
-                            <i class="bx bx-brain"></i>
+                            <img src="{% static 'assets/img/icons/misc/gemini-logo.png' %}" alt="Gemini" class="gemini-icon" style="width: 24px;">
                         </div>
                     </div>
-                    <div id="product-counter-bar-chart" style="width: 100%; height: 400px;"></div>
+                    <div id="product-counter-bar-chart" style="width: 100%; height: 400px; display: none;"></div>
                     <!-- Product Count Average Aggregation By Branches -->
-                    <div id="second-one-to-all-container-tools" class="icon-bar">
+                    <div id="product-counter-branch-tools" class="icon-bar" style="display: none;">
                         <div class="icon-wrapper pie-chart" data-tooltip="Pie Chart">
                             <i class="bx bx-pie-chart"></i>
                         </div>
                         <div class="icon-wrapper ai" data-tooltip="AI">
-                            <i class="bx bx-brain"></i>
+                            <img src="{% static 'assets/img/icons/misc/gemini-logo.png' %}" alt="Gemini" class="gemini-icon" style="width: 24px;">
                         </div>
                     </div>
-                    <div id="product-counter-branch" style="width: 100%; height: 400px;"></div>
+                    <div id="product-counter-branch" style="width: 100%; height: 400px; display: none;"></div>
                     <!-- Product Count Average Aggregation Pie Chart By Branches -->
-                    <div id="product-counter-branch-pie-chart-tools" class="icon-bar">
+                    <div id="product-counter-branch-pie-chart-tools" class="icon-bar" style="display: none;">
                         <div class="icon-wrapper line-chart" data-tooltip="Line Chart">
                             <i class="bx bx-line-chart"></i>
                         </div>
                         <div class="icon-wrapper ai" data-tooltip="AI">
-                            <i class="bx bx-brain"></i>
+                            <img src="{% static 'assets/img/icons/misc/gemini-logo.png' %}" alt="Gemini" class="gemini-icon" style="width: 24px;">
                         </div>
                     </div>
-                    <div id="product-counter-branch-pie-chart" style="width: 100%; height: 400px;"></div>
+                    <div id="product-counter-branch-pie-chart" style="width: 100%; height: 400px; display: none;"></div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="row">
+    <div class="row" style="margin-left: 0px;">
         <div class="col-lg-3" style="margin-bottom: 10px;" id="holiday-container">
             <div class="card" id="holiday-card" style="background-clip: padding-box;
             border-style: solid;
@@ -445,6 +536,33 @@
 <script src="{% static 'assets/js/app-calendar.js' %}"></script>
 <!-- FlatPicker (JS Calendar) Persian Configuration / Form Checks -->
 <script src="{% static 'assets/js/persian-flatpicker-and-form-checks.js' %}"></script>
+<!-- Error Handling  -->
+<script>
+    document.querySelector("#filter-proxy-button").addEventListener("click", (e) => {
+        let m = 0;
+        if (document.getElementById("select-all").checked) {
+            m += 1
+        }
+        document.querySelectorAll(".fake-check").forEach(
+        element => {
+                if (element.checked) {
+                    m += 1
+                }
+            }
+        );
+        if (m === 0) {
+            Swal.fire({
+                icon: "error",
+                title: "خطا",
+                text: "یک مورد را انتخاب کنید",
+                confirmButtonColor: '#5a8dee',
+                confirmButtonText: 'بستن' 
+            });
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    });
+</script>
 <!-- Holiday Spotter -->
 <script>
     const holidayDates = []
@@ -3718,7 +3836,7 @@
 <!-- Sweet Alert CDN -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <!-- Display Toggles -->
-<!-- <script src="{% static 'assets/js/analysis-campaign-list-display-toggle.js' %}"></script> -->
+<script src="{% static 'assets/js/analysis-campaign-list-display-toggle.js' %}"></script>
  <!-- Date and Branch Modal Configuration -->
 <script>
     document.getElementById("confirmDateBtn").addEventListener("click", function () {
@@ -3747,6 +3865,8 @@
 </script>
 <!-- Flatpickr Initial Date Range -->
 <script src="{% static 'assets/js/flatpickr-initial-date-range.js' %}"></script>
+<!-- AI Buttons -->
+<script src="{% static 'assets/js/ai-analysis.js' %}"></script>
 {% endblock %}
 
 

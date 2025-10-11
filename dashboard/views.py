@@ -398,9 +398,14 @@ def home(request, url_hash):
     # Rights
     if not perm_to_open(request, url_hash):
         return render(request, "401.html", status=401)
+    # people counting queryset
     queryset = PeopleCounting.objects.defer(
         "date_created", "last_modified", "exit"
     ).filter(merchant__url_hash=url_hash)
+    # invoice queryset
+    invoice_queryset = Invoice.objects.defer(
+        "date_created", "last_modified"
+    ).filter(branch__merchant__url_hash=url_hash)
     # 7 days
     today = timezone.now().today()
     last_7_days_start = today - timedelta(days=7)
@@ -415,17 +420,58 @@ def home(request, url_hash):
     previous_7_days_entry = queryset.filter(
         date__range=(previous_7_days_start, previous_7_days_end)
     ).aggregate(total_entry=Sum("entry"))
+    # invoice number
+    last_7_days_invoice_number = invoice_queryset.filter(date__range=(last_7_days_start, last_7_days_end)).aggregate(total_number=Sum("total_items"))
+    previous_7_days_invoice_number = invoice_queryset.filter(date__range=(previous_7_days_start, previous_7_days_end)).aggregate(total_number=Sum("total_items"))
+    # invoice amount
+    last_7_days_invoice_amount = invoice_queryset.filter(date__range=(last_7_days_start, last_7_days_end)).aggregate(total_amount=Sum("total_amount")) 
+    previous_7_days_invoice_amount = invoice_queryset.filter(date__range=(previous_7_days_start, previous_7_days_end)).aggregate(total_amount=Sum("total_amount")) 
+    # invoice product count
+    last_7_days_invoice_product = invoice_queryset.filter(date__range=(last_7_days_start, last_7_days_end)).aggregate(total_product=Sum("total_product"))
+    previous_7_days_invoice_product = invoice_queryset.filter(date__range=(previous_7_days_start, previous_7_days_end)).aggregate(total_product=Sum("total_product"))
     try:
+        # people counting difference percentage
         diff_7_per = (
             (last_7_days_entry["total_entry"] - previous_7_days_entry["total_entry"])
             / previous_7_days_entry["total_entry"]
         ) * 100
-    except Exception as e:
-        diff_7_per = 0
-    try:
         rounded_diff_7_per = round(diff_7_per, 2)
-    except Exception as e:
+    except:
+        diff_7_per = 0
         rounded_diff_7_per = 0
+
+    try:
+        # invoice number difference percentage
+        diff_7_invoice_num = (
+            (last_7_days_invoice_number["total_number"] - previous_7_days_invoice_number["total_number"])
+            / previous_7_days_invoice_number["total_number"]
+        ) * 100
+        rounded_diff_7_invoice_num = round(diff_7_invoice_num, 2)
+    except:
+        diff_7_invoice_num = 0
+        rounded_diff_7_invoice_num = 0
+
+    try:
+        # invoice amount difference percentage
+        diff_7_invoice_amount = (
+            (last_7_days_invoice_amount["total_amount"] - previous_7_days_invoice_amount["total_amount"])
+            / previous_7_days_invoice_amount["total_amount"]
+        ) * 100
+        rounded_diff_7_invoice_amount = round(diff_7_invoice_amount, 2)
+    except:
+        diff_7_invoice_amount = 0 
+        rounded_diff_7_invoice_amount = 0
+
+    try:
+        # invoice product count difference
+        diff_7_invoice_product = (
+            (last_7_days_invoice_product["total_product"] - previous_7_days_invoice_product["total_product"])
+            / previous_7_days_invoice_product["total_product"]
+        ) * 100
+        rounded_diff_7_invoice_product = round(diff_7_invoice_product, 2)
+    except: 
+        diff_7_invoice_product = 0
+        rounded_diff_7_invoice_product = 0
 
     # branches
     last_7_days_best_branch_name = (
@@ -465,17 +511,59 @@ def home(request, url_hash):
     previous_30_days_entry = queryset.filter(
         date__range=(previous_30_days_start, previous_30_days_end)
     ).aggregate(total_entry=Sum("entry"))
+        # invoice number
+    last_30_days_invoice_number = invoice_queryset.filter(date__range=(last_30_days_start, last_30_days_end)).aggregate(total_number=Sum("total_items"))
+    previous_30_days_invoice_number = invoice_queryset.filter(date__range=(previous_30_days_start, previous_30_days_end)).aggregate(total_number=Sum("total_items"))
+    # invoice amount
+    last_30_days_invoice_amount = invoice_queryset.filter(date__range=(last_30_days_start, last_30_days_end)).aggregate(total_amount=Sum("total_amount")) 
+    previous_30_days_invoice_amount = invoice_queryset.filter(date__range=(previous_30_days_start, previous_30_days_end)).aggregate(total_amount=Sum("total_amount")) 
+    # invoice product count
+    last_30_days_invoice_product = invoice_queryset.filter(date__range=(last_30_days_start, last_30_days_end)).aggregate(total_product=Sum("total_product"))
+    previous_30_days_invoice_product = invoice_queryset.filter(date__range=(previous_30_days_start, previous_30_days_end)).aggregate(total_product=Sum("total_product"))
     try:
         diff_30_per = (
             (last_30_days_entry["total_entry"] - previous_30_days_entry["total_entry"])
             / previous_30_days_entry["total_entry"]
         ) * 100
-    except Exception as e:
-        diff_30_per = 0
-    try:
         rounded_diff_30_per = round(diff_30_per, 2)
-    except Exception as e:
+    except:
+        diff_30_per = 0
         rounded_diff_30_per = 0
+
+    try:
+        # invoice number difference percentage
+        diff_30_invoice_num = (
+            (last_30_days_invoice_number["total_number"] - previous_30_days_invoice_number["total_number"])
+            / previous_30_days_invoice_number["total_number"]
+        ) * 100
+        rounded_diff_30_invoice_num = round(diff_30_invoice_num, 2)
+    except:
+        diff_30_invoice_num = 0
+        rounded_diff_30_invoice_num = 0
+
+    try:
+        # invoice amount difference percentage
+        diff_30_invoice_amount = (
+            (last_30_days_invoice_amount["total_amount"] - previous_30_days_invoice_amount["total_amount"])
+            / previous_30_days_invoice_amount["total_amount"]
+        ) * 100
+        rounded_diff_30_invoice_amount = round(diff_30_invoice_amount, 2)
+    except:
+        diff_30_invoice_amount = 0
+        rounded_diff_30_invoice_amount = 0
+
+    try:
+        # invoice product count difference
+        diff_30_invoice_product = (
+            (last_30_days_invoice_product["total_product"] - previous_30_days_invoice_product["total_product"])
+            / previous_30_days_invoice_product["total_product"]
+        ) * 100
+        rounded_diff_30_invoice_product = round(diff_30_invoice_product, 2)
+    except:
+        diff_30_invoice_product = 0
+        rounded_diff_30_invoice_product = 0
+
+
 
     # branches
     last_30_days_best_branch_name = (
@@ -492,7 +580,7 @@ def home(request, url_hash):
         .order_by("total_entry")
         .first()
     )
-
+    branch_30_days_traffic_share = []
     # branch rank
     try:
         branch_30_day_ranks = (
@@ -506,9 +594,11 @@ def home(request, url_hash):
             )
             .order_by("-total_entry")
         )
+        for item in branch_30_day_ranks:
+            branch_30_days_traffic_share.append({"name": item["branch__name"], "y": float(item["total_entry"])})
+        print(branch_30_days_traffic_share)
     except:
         branch_30_day_ranks = []
-
     # online data
     today = datetime.today()
     today_data = []
@@ -535,7 +625,7 @@ def home(request, url_hash):
         {
             "last_7_days_best_branch_name": last_7_days_best_branch_name,
             "last_7_days_worst_branch_name": last_7_days_worst_branch_name,
-            "branch_30_day_ranks": branch_30_day_ranks,
+            "branch_30_days_traffic_share": json.dumps(branch_30_days_traffic_share),
             "branch_7_day_ranks": branch_7_day_ranks,
             "last_30_days_best_branch_name": last_30_days_best_branch_name,
             "last_30_days_worst_branch_name": last_30_days_worst_branch_name,
@@ -546,6 +636,18 @@ def home(request, url_hash):
             "previous_7_days_entry_total": previous_7_days_entry["total_entry"],
             "previous_30_days_entry_total": previous_30_days_entry["total_entry"],
             "online_map_data": json.dumps(today_data),
+            "last_7_days_invoice_number": last_7_days_invoice_number["total_number"],
+            "last_7_days_invoice_amount": last_7_days_invoice_amount["total_amount"] / 10,
+            "last_7_days_invoice_product": last_7_days_invoice_product["total_product"],
+            "rounded_diff_7_invoice_num": rounded_diff_7_invoice_num,
+            "rounded_diff_7_invoice_amount": rounded_diff_7_invoice_amount,
+            "rounded_diff_7_invoice_product": rounded_diff_7_invoice_product,
+            "last_30_days_invoice_number": last_30_days_invoice_number["total_number"],
+            "last_30_days_invoice_amount": last_30_days_invoice_amount["total_amount"] / 10,
+            "last_30_days_invoice_product": last_30_days_invoice_product["total_product"],
+            "rounded_diff_30_invoice_num": rounded_diff_30_invoice_num,
+            "rounded_diff_30_invoice_amount": rounded_diff_30_invoice_amount,
+            "rounded_diff_30_invoice_product": rounded_diff_30_invoice_product
         },
     )
 
