@@ -57,7 +57,9 @@ from dashboard.api_views import (
     GroupedCampaignComparison,
     CampaignComparison,
     HolidaySpotter,
-    CamStatus
+    CamStatus,
+    NormalWeeklyDisplay,
+    NormalMonthlyDisplay
 )
 from django.contrib.auth import views as auth_views
 from django.contrib import admin
@@ -163,6 +165,8 @@ urlpatterns = [
     path("api/holiday-spotter/<str:year>/<str:month>/<str:day>/", holiday_spotter, name="holiday_spotter"),
     path("api/holiday-spot", HolidaySpotter.as_view(), name="holiday_spot"),
     path("api/cam-status", CamStatus.as_view(), name="cam_status"),
+    path("api/normal-weekly-display", NormalWeeklyDisplay.as_view(), name="normal-weekly-display"),
+    path("api/normal-monthly-display", NormalMonthlyDisplay.as_view(), name="normal-monthly-display"),
     path("dashboard/alert-menu/<str:url_hash>", alert_menu, name="alert_menu"),
     path("dashboard/alert-form-sms/<str:url_hash>", alert_form_sms, name="alert_form_sms"),
     path("dahsboard/alert-form-social/<str:url_hash>", alert_form_social, name="alert_form_social"),

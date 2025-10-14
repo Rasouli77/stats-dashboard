@@ -408,10 +408,10 @@ def home(request, url_hash):
     ).filter(branch__merchant__url_hash=url_hash)
     # 7 days
     today = timezone.now().today()
-    last_7_days_start = today - timedelta(days=7)
-    last_7_days_end = today
-    previous_7_days_start = today - timedelta(days=14)
-    previous_7_days_end = today - timedelta(days=7)
+    last_7_days_start = today - timedelta(days=8)
+    last_7_days_end = today - timedelta(days=1)
+    previous_7_days_start = today - timedelta(days=15)
+    previous_7_days_end = today - timedelta(days=8)
 
     # entries
     last_7_days_entry = queryset.filter(
@@ -489,14 +489,19 @@ def home(request, url_hash):
         .first()
     )
 
+    branch_7_days_traffic_share = []
     # branch rank
-    branch_7_day_ranks = (
-        queryset.filter(date__range=(last_7_days_start, last_7_days_end))
-        .values("branch__id", "branch__name")
-        .annotate(total_entry=Sum("entry"))
-        .annotate(percent_seven=ExpressionWrapper((Sum("entry") / last_7_days_entry["total_entry"] * 100), output_field=FloatField()))
-        .order_by("-total_entry")
-    )
+    try:
+        branch_7_day_ranks = (
+            queryset.filter(date__range=(last_7_days_start, last_7_days_end))
+            .values("branch__id", "branch__name")
+            .annotate(total_entry=Sum("entry"))
+            .order_by("-total_entry")
+        )
+        for item in branch_7_day_ranks:
+            branch_7_days_traffic_share.append({"name": item["branch__name"], "y": float(item["total_entry"])})
+    except:
+        branch_7_day_ranks = []
 
     # 30 days
     last_30_days_start = today - timedelta(days=30)
@@ -587,16 +592,10 @@ def home(request, url_hash):
             queryset.filter(date__range=(last_30_days_start, last_30_days_end))
             .values("branch__id", "branch__name")
             .annotate(total_entry=Sum("entry"))
-            .annotate(
-                percent_thirty=ExpressionWrapper((Sum("entry") / last_30_days_entry["total_entry"]) * 100,
-                output_field=FloatField()
-                )
-            )
             .order_by("-total_entry")
         )
         for item in branch_30_day_ranks:
             branch_30_days_traffic_share.append({"name": item["branch__name"], "y": float(item["total_entry"])})
-        print(branch_30_days_traffic_share)
     except:
         branch_30_day_ranks = []
     # online data
@@ -618,7 +617,8 @@ def home(request, url_hash):
                 today_data.append(today_data_item)
     except:
         pass
-
+    print(branch_7_days_traffic_share)
+    print(branch_30_days_traffic_share)
     return render(
         request,
         "home.html",
@@ -626,7 +626,7 @@ def home(request, url_hash):
             "last_7_days_best_branch_name": last_7_days_best_branch_name,
             "last_7_days_worst_branch_name": last_7_days_worst_branch_name,
             "branch_30_days_traffic_share": json.dumps(branch_30_days_traffic_share),
-            "branch_7_day_ranks": branch_7_day_ranks,
+            "branch_7_days_traffic_share": json.dumps(branch_7_days_traffic_share),
             "last_30_days_best_branch_name": last_30_days_best_branch_name,
             "last_30_days_worst_branch_name": last_30_days_worst_branch_name,
             "rounded_diff_30_per": rounded_diff_30_per,
@@ -650,8 +650,6 @@ def home(request, url_hash):
             "rounded_diff_30_invoice_product": rounded_diff_30_invoice_product
         },
     )
-
-
 
 @login_required
 def profile(request, user_id):

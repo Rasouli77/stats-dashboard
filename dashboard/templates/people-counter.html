@@ -314,6 +314,15 @@
                     <div class="tab-content px-0 pt-2">
                         <!-- total traffic aggregation line chart -->
                         <div id="container-tools" class="icon-bar" style="display: none;">
+                            <div class="icon-wrapper day" data-tooltip="Day">
+                                <i class="bx bx-calendar-event"></i>
+                            </div>
+                            <div class="icon-wrapper week" data-tooltip="Week">
+                                <i class="bx bx-calendar-week"></i>
+                            </div>
+                            <div class="icon-wrapper month" data-tooltip="Month">
+                                <i class="bx bx-calendar"></i>
+                            </div>
                             <div class="icon-wrapper bar-chart" data-tooltip="Bar Chart">
                                 <i class="bx bx-bar-chart"></i>
                             </div>
@@ -333,6 +342,15 @@
                         </div>
                         <!-- total traffic aggregation bar chart -->
                         <div id="container-bar-chart-tools" class="icon-bar">
+                            <div class="icon-wrapper day" data-tooltip="Day">
+                                <i class="bx bx-calendar-event"></i>
+                            </div>
+                            <div class="icon-wrapper week" data-tooltip="Week">
+                                <i class="bx bx-calendar-week"></i>
+                            </div>
+                            <div class="icon-wrapper month" data-tooltip="Month">
+                                <i class="bx bx-calendar"></i>
+                            </div>
                             <div class="icon-wrapper line-chart" data-tooltip="Line Chart">
                                 <i class="bx bx-line-chart"></i>
                             </div>
@@ -343,6 +361,15 @@
                         <div id="container-bar-chart" style="width: 100%; height: 400px;"></div>
                         <!-- total traffic aggregation by branches -->
                         <div id="second-container-tools" class="icon-bar" style="display: none;">
+                            <div class="icon-wrapper day" data-tooltip="Day">
+                                <i class="bx bx-calendar-event"></i>
+                            </div>
+                            <div class="icon-wrapper week" data-tooltip="Week">
+                                <i class="bx bx-calendar-week"></i>
+                            </div>
+                            <div class="icon-wrapper month" data-tooltip="Month">
+                                <i class="bx bx-calendar"></i>
+                            </div>
                             <div class="icon-wrapper pie-chart" data-tooltip="Pie Chart">
                                 <i class="bx bx-pie-chart"></i>
                             </div>
@@ -1246,6 +1273,7 @@
                 return response.json();
             })
             .then(data => {
+                // Overall Category Update
                 const total = data.entry_totals.reduce((a, b) => a + b, 0);
                 const newCategories = data.dates.map(dateStr => {
                     const date = new Date(dateStr);
@@ -1255,6 +1283,7 @@
                         day: '2-digit'
                     });
                 });
+                // Overall Line Chart Update
                 lineChart.update({
                     xAxis: { 
                         categories: newCategories,
@@ -1276,6 +1305,184 @@
                     {data: data.exit_totals}
                     ],
                 });
+                // Line Chart Monthly Display Button Logic
+                // Line Chart Monthly Display Function
+                function handleMonthlyDisplay() {
+                    const apiUrl = "/api/normal-monthly-display";
+                    const x = newCategories;
+                    const y = data.entry_totals;
+                    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                    fetch(apiUrl, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": csrftoken,
+                        },
+                        body: JSON.stringify({x: x, y: y})
+                    }).then(response => {
+                        if (!response.ok) throw new Error("Invalid Response");
+                        return response.json()
+                    }).then(d => {
+                        // Line Chart Update
+                        lineChart.update({
+                            xAxis: { 
+                                categories: d.months,
+                                labels: {
+                                    useHTML: true,  
+                                    formatter: function () {
+                                            const value = this.value; 
+                                            if (holidayDates.includes(value)) {
+                                                return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                            }
+                                            if (fridays.includes(value)) {
+                                                return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                            }
+                                            return value; 
+                                        }
+                                    } 
+                                },
+                            series: [{ name: `ترافیک (${Number(total).toLocaleString('fa-IR')})`, data: d.values}
+                            ],
+                        });
+                        //  Bar Chart Update
+                        barChart.update({
+                            xAxis: { 
+                                categories: d.months,
+                                labels: {
+                                    useHTML: true,  
+                                    formatter: function () {
+                                            const value = this.value; 
+                                            if (holidayDates.includes(value)) {
+                                                return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                            }
+                                            if (fridays.includes(value)) {
+                                                return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                            }
+                                            return value; 
+                                        }
+                                    } 
+                                },
+                            series: [{ name: `ترافیک (${Number(total).toLocaleString('fa-IR')})`, data: d.values},
+                            {data: data.exit_totals}
+                            ],
+                        });
+                    });
+                }
+                // Line Chart Monthly Display Event Listeners
+                $("#container-tools .month").off("click").on("click", handleMonthlyDisplay);
+                // Line Chart Weekly Display Button Logic
+                // Line Chart Weekly Display Function
+                function handleWeeklyDisplay() {
+                    const apiUrl = "/api/normal-weekly-display";
+                    const x = newCategories;
+                    const y = data.entry_totals;
+                    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                    fetch(apiUrl, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": csrftoken,
+                        },
+                        body: JSON.stringify({x: x, y: y})
+                    }).then(response => {
+                        if (!response.ok) throw new Error("Invalid Response");
+                        return response.json()
+                    }).then(d => {
+                        // Line Chart Update
+                        lineChart.update({
+                            xAxis: { 
+                                categories: d.weeks,
+                                labels: {
+                                    useHTML: true,  
+                                    formatter: function () {
+                                            const value = this.value; 
+                                            if (holidayDates.includes(value)) {
+                                                return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                            }
+                                            if (fridays.includes(value)) {
+                                                return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                            }
+                                            return value; 
+                                        }
+                                    } 
+                                },
+                            series: [{ name: `ترافیک (${Number(total).toLocaleString('fa-IR')})`, data: d.values}
+                            ],
+                        });
+                        //  Bar Chart Update
+                        barChart.update({
+                            xAxis: { 
+                                categories: d.weeks,
+                                labels: {
+                                    useHTML: true,  
+                                    formatter: function () {
+                                            const value = this.value; 
+                                            if (holidayDates.includes(value)) {
+                                                return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                            }
+                                            if (fridays.includes(value)) {
+                                                return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                            }
+                                            return value; 
+                                        }
+                                    } 
+                                },
+                            series: [{ name: `ترافیک (${Number(total).toLocaleString('fa-IR')})`, data: d.values},
+                            {data: data.exit_totals}
+                            ],
+                        });
+                    });
+                }
+                // Line Chart Monthly Display Event Listener
+                $("#container-tools .week").off("click").on("click", handleWeeklyDisplay);
+                // Line Chart Daily Display Button
+                document.querySelector("#container-tools .day").addEventListener("click", () => {
+                    // Line Chart Update
+                    lineChart.update({
+                        xAxis: { 
+                            categories: newCategories,
+                            labels: {
+                                useHTML: true,  
+                                formatter: function () {
+                                        const value = this.value; 
+                                        if (holidayDates.includes(value)) {
+                                            return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                        }
+                                        if (fridays.includes(value)) {
+                                            return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                        }
+                                        return value; 
+                                    }
+                                } 
+                            },
+                        series: [{ name: `ترافیک (${Number(total).toLocaleString('fa-IR')})`, data: data.entry_totals},
+                        {data: data.exit_totals}
+                        ]
+                    });
+                    // Bar Chart Update
+                    barChart.update({
+                        xAxis: { 
+                            categories: newCategories,
+                            labels: {
+                                useHTML: true,  
+                                formatter: function () {
+                                        const value = this.value; 
+                                        if (holidayDates.includes(value)) {
+                                            return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                        }
+                                        if (fridays.includes(value)) {
+                                            return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                        }
+                                        return value; 
+                                    }
+                                } 
+                            },
+                        series: [{ name: `ترافیک (${Number(total).toLocaleString('fa-IR')})`, data: data.entry_totals},
+                        {data: data.exit_totals}
+                        ],
+                    });
+                });
+                // Overall Bar Chart Update
                 barChart.update({
                     xAxis: { 
                         categories: newCategories,
@@ -1297,6 +1504,66 @@
                     {data: data.exit_totals}
                     ],
                 });
+                // Bar Chart Monthly Display Button Logic
+                // Bar Chart Monthly Display Function
+                // The function is the same as line chart monthly display logic
+                // Bar Chart Monthly Display Event Listener
+                $("#container-bar-chart-tools .month").off("click").on("click", handleMonthlyDisplay);
+
+                // Bar Chart Weekly Display Button Logic
+                // Bar Chart Monthly Display Function
+                // The function is the same as line chart monthly display logic
+                // Bar Chart Weekly Display Event Listener
+                $("#container-bar-chart-tools .week").off("click").on("click", handleWeeklyDisplay);
+
+                // Bar Chart Daily Display Button
+                document.querySelector("#container-bar-chart-tools .day").addEventListener("click", () => {
+                    // Line Chart Update
+                    lineChart.update({
+                        xAxis: { 
+                            categories: newCategories,
+                            labels: {
+                                useHTML: true,  
+                                formatter: function () {
+                                        const value = this.value; 
+                                        if (holidayDates.includes(value)) {
+                                            return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                        }
+                                        if (fridays.includes(value)) {
+                                            return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                        }
+                                        return value; 
+                                    }
+                                } 
+                            },
+                        series: [{ name: `ترافیک (${Number(total).toLocaleString('fa-IR')})`, data: data.entry_totals},
+                        {data: data.exit_totals}
+                        ]
+                    });
+                    // Bar Chart Update
+                    barChart.update({
+                        xAxis: { 
+                            categories: newCategories,
+                            labels: {
+                                useHTML: true,  
+                                formatter: function () {
+                                        const value = this.value; 
+                                        if (holidayDates.includes(value)) {
+                                            return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                        }
+                                        if (fridays.includes(value)) {
+                                            return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                        }
+                                        return value; 
+                                    }
+                                } 
+                            },
+                        series: [{ name: `ترافیک (${Number(total).toLocaleString('fa-IR')})`, data: data.entry_totals},
+                        {data: data.exit_totals}
+                        ],
+                    });
+                });
+                // Campaign UI Update
                 document.querySelector("#campaign-fill").innerHTML = "";
                 if (data.campaigns.length === 0) {
                     const card = document.createElement("div");
@@ -1498,9 +1765,8 @@
                     const total = branchItem.data.reduce((sum, val) => sum + val, 0);
                     return { name: branchItem.name, y: total };
                 });
-
-                console.log(series)
-                console.log(categories)
+                console.log("ترافیک تفکیکی", series)
+                console.log("تاریخ تفکیکی", categories)
                 Highcharts.chart("second-container", {
                     chart: { type: "line",
                         backgroundColor: '#ffffff',
@@ -1702,6 +1968,10 @@
 <script src="{% static 'assets/vendor/libs/jdate/jdate.js' %}"></script>
 <script src="{% static 'assets/vendor/libs/flatpickr/flatpickr-jdate.js' %}"></script>
 <script src="{% static 'assets/vendor/libs/moment/moment.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment-jalaali/build/moment-jalaali.js"></script>
+<script>
+    moment.loadPersian({usePersianDigits: false});
+</script>
 <script src="{% static 'assets/vendor/libs/flatpickr/l10n/fa-jdate.js' %}"></script>
 <script src="{% static 'assets/js/app-calendar-events.js' %}"></script>
 <script src="{% static 'assets/js/app-calendar.js' %}"></script>

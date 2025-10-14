@@ -69,9 +69,14 @@
 
                 <div id="id_branch">
                     <label class="form-label">شعب</label>
+                    <div>
+                        <label class="form-check-label">
+                        <input id="select-all" class="form-check-input" type="checkbox" style="margin-left: 10px;">انتخاب همه</label>
+                    </div>
                     {% for branch in branches %}
                     <div>
-                        <label class="form-check-label"><input class="form-check-input" type="checkbox" name="branch" value="{{ branch.pk }}" aria-invalid="true" style="margin-left: 10px;">{{ branch.name }}</label>
+                        <label class="form-check-label">
+                        <input class="form-check-input" type="checkbox" name="branch" value="{{ branch.pk }}" aria-invalid="true" style="margin-left: 10px;">{{ branch.name }}</label>
                     </div>
                     {% endfor %}
                     <small id="err-branch" style="color: #ff5b5c;">شعبه یا شعب مورد نظر را انتخاب کنید</small>
@@ -165,6 +170,9 @@
     const errBranch = document.getElementById("err-branch");
     const errCost = document.getElementById("err-cost");
     const errType = document.getElementById("err-type");
+    const selectAll = document.querySelector("#select-all");
+    const allCheckBoxes = document.querySelectorAll(".form-check-input");
+
     // Event Listner Form Confirmation and Error Handling
     idName.addEventListener("change", () => {
         if (!idName.value) {
@@ -213,6 +221,17 @@
         } else {
             errType.style.display = 'none';
         }  
+    });
+    selectAll.addEventListener("change", () => {
+        if (selectAll.checked === true) {
+            allCheckBoxes.forEach(item => {
+                item.checked = true;
+            });
+        } else {
+            allCheckBoxes.forEach(item => {
+                item.checked = false;
+            });
+        }
     });
 </script>
 {% endblock %}

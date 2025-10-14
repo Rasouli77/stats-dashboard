@@ -8,6 +8,18 @@
 {% endblock %}
 {% block content %}
 {% block extra_css %}
+<!-- Map CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<style>
+    .leaflet-popup-content-wrapper {
+        background: white;
+        border-radius: 8px;
+        padding: 6px 10px;
+        font-size: 13px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+</style>
+<!-- Card CSS -->
 <style>
     .card {
         border-style: solid;
@@ -19,18 +31,85 @@
     }
     .card-stat-num {
         text-align: left !important;
-        font-size: 20px !important;
+        font-size: 25px !important;
         margin-bottom: 12.5px !important;
     }
     .card-sub-text {
         margin-top: 10px !important;
+        font-size: 17px !important;
         font-weight: bold !important;
         text-align: left !important;
+    }
+</style>
+<!-- Icon -->
+<!-- Chart Tool Bar -->
+<style>
+    .icon-bar {
+        display: flex;
+        gap: 12px;
+        font-size: 24px;
+        margin-top: 25px;
+    }
+
+    .icon-wrapper {
+        position: relative;
+        cursor: pointer;
+        transition: color 0.3s ease;
+    }
+
+    /* Default color */
+    .icon-wrapper i {
+        color: #555;
+        transition: color 0.3s ease;
+    }
+
+    /* Hover colors for each one */
+    .bar-chart:hover i { color: #4caf50; } /* Green */
+    .pie-chart:hover i { color: #ff9800; } /* Orange */
+    .line-chart:hover i { color: #2196f3; } /* Blue */
+    .ai:hover i { color: #9c27b0; } /* Purple */
+
+    /* Tooltip styling */
+    .icon-wrapper::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        top: -32px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #333;
+        color: #fff;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 12px;
+        opacity: 0;
+        pointer-events: none;
+        white-space: nowrap;
+        transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    /* Show tooltip on hover */
+    .icon-wrapper:hover::after {
+        opacity: 1;
+        transform: translateX(-50%) translateY(4px);
     }
 </style>
 {% endblock %}
 {% if request.user.profile.is_manager %}
 <div class="row">
+    <div class="col-12">
+        <div id="map" style="width: 100%; height: 500px; border-radius: 8px;
+        border-style: solid;
+        border-color: #e5e5e5;
+        border-width: 1px;"></div>
+    </div>
+    <div class="col-12" style="margin-top: 10px;">
+        <span style="display: flex; flex-direction: row;">
+            <i class='menu-icon bx bx-refresh'></i>
+            <h6>هیت مپ ترافیک امروز شعب (آخرین آپدیت: 5 دقیقه پیش)</h6>
+        </span>
+    </div>
+</div>
+<div class="row" style="margin-top: 50px;">
     <div class="col-sm-6 col-md-6 col-lg-3 col-xl-3 mb-4">
         <div class="card h-100">
             <div class="card-body text-center">
@@ -137,44 +216,54 @@
     </div>
 </div>
 <div class="row">
-    <!-- <div class="col-md-6 col-lg-6 col-xl-4 mb-4 mb-xl-0">
-        <div class="card h-100">
-        <div class="card-header">
-            <h5 class="card-title mb-3">ترافیک کل 30 روز اخیر</h5>
-            <h1 class="display-6 fw-normal mb-0 primary-font num">{{ last_30_days_entry_total }}</h1>
+    <div class="col-md-6 col-lg-6 col-xl-6 mb-4 mb-xl-0" id="thirty-day-funnel-container" style="display: none;">
+        <div id="thirty-day-funnel-tools" class="icon-bar">
+            <div class="icon-wrapper seven-day" data-tooltip="7 روز اخیر">
+                <i class="menu-icon bx bx-calendar-week"></i>
+            </div>
         </div>
-        <div class="card-body">
-            <ul class="p-0 m-0">
-            {% if branch_30_day_ranks %}
-            {% for rank in branch_30_day_ranks %}
-            <li class="mb-3 d-flex justify-content-between">
-                <div class="d-flex align-items-center me-3">
-                <span class="badge badge-dot bg-primary me-2"></span> {{ rank.branch__name }}
-                </div>
-                <div class="d-flex gap-3">
-                <span class="num">{{ rank.total_entry }}</span>
-                <span class="fw-semibold">{{ rank.percent_thirty }}%</span>
-                </div>
-            </li>
-            {% endfor %}
-            {% endif %}
-            </ul>
-        </div>
-        </div>
-    </div> -->
-
-    <div class="col-md-6 col-lg-6 col-xl-6 mb-4 mb-xl-0">
         <div class="card h-100">
             <div class="card-body">
-                <div id="funnel-container"></div>
+                <div id="thirty-day-funnel"></div>
             </div>
         </div>
     </div>
 
-    <div class="col-md-6 col-lg-6 col-xl-6 mb-4 mb-xl-0">
+    <div class="col-md-6 col-lg-6 col-xl-6 mb-4 mb-xl-0" id="seven-day-funnel-container">
+        <div id="seven-day-funnel-tools" class="icon-bar">
+            <div class="icon-wrapper thirty-day" data-tooltip="30 روز اخیر">
+                <i class="menu-icon bx bx-calendar"></i>
+            </div>
+        </div>
         <div class="card h-100">
             <div class="card-body">
-                <div id="30-day-pie-chart"></div>
+                <div id="seven-day-funnel"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-lg-6 col-xl-6 mb-4 mb-xl-0" id="thirty-day-pie-chart-container" style="display: none;">
+        <div id="thirty-day-pie-chart-tools" class="icon-bar">
+            <div class="icon-wrapper seven-day" data-tooltip="7 روز اخیر">
+                <i class="menu-icon bx bx-calendar-week"></i>
+            </div>
+        </div>
+        <div class="card h-100">
+            <div class="card-body">
+                <div id="thirty-day-pie-chart"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-lg-6 col-xl-6 mb-4 mb-xl-0" id="seven-day-pie-chart-container">
+        <div id="seven-day-pie-chart-tools" class="icon-bar">
+            <div class="icon-wrapper thirty-day" data-tooltip="30 روز اخیر">
+                <i class="menu-icon bx bx-calendar"></i>
+            </div>
+        </div>
+        <div class="card h-100">
+            <div class="card-body">
+                <div id="seven-day-pie-chart"></div>
             </div>
         </div>
     </div>
@@ -197,15 +286,53 @@
 <script src="{% static 'assets/js/export-data.js' %}"></script>
 <script src="{% static 'assets/js/accessibility.js' %}"></script>
 <script src="{% static 'assets/js/highcharts-funnel.js' %}"></script>
+<!-- Map -->
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+<script>
+    var map = L.map('map', {
+        zoomControl: false,
+        doubleClickZoom: false,
+        touchZoom: false,
+        scrollWheelZoom: false,
+    }).setView([35.6892, 51.3890], 10);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+    const heatData = JSON.parse("{{online_map_data|escapejs}}");
+    var heat = L.heatLayer(heatData, {
+        radius: 25,   // size of each “point”
+        blur: 18,     // blur effect
+        maxZoom: 17,  // max zoom level
+        gradient: {   // optional, color mapping
+            0.2: 'blue',
+            0.4: 'lime',
+            0.6: 'orange',
+            0.8: 'red'
+        }
+    }).addTo(map);
+    heatData.forEach(point => {
+    var lat = point[0];
+    var lng = point[1];
+    var intensity = point[2];
+
+    var popupContent = `<div class="leaflet-popup-content-wrapper">
+                            <strong>ﺕﺭﺎﻔﯿﮐ:</strong> ${intensity}
+                        </div>`;
+
+    L.marker([lat, lng], {opacity: 1}) // invisible marker
+        .addTo(map)
+        .bindPopup(popupContent);
+ });
+</script>
 <!-- HighChart JS Funnel -->
 <script>
 // Assign Django variable to JS variable
 const traffic = parseFloat('{{ last_30_days_entry_total }}') || 0;
 const invoices = parseFloat('{{ last_30_days_invoice_number }}') || 0;
 const sales = parseFloat('{{ last_30_days_invoice_amount }}') || 0;
-
 // 30 Day Funnel
-Highcharts.chart('funnel-container', {
+Highcharts.chart('thirty-day-funnel', {
     chart: {
         type: 'funnel'
     },
@@ -256,8 +383,63 @@ Highcharts.chart('funnel-container', {
         ]
     }]
 });
+// 7 Day Funnel
+const sTraffic = parseFloat('{{ last_7_days_entry_total }}') || 0;
+const sInvoices = parseFloat('{{ last_7_days_invoice_number }}') || 0;
+const sSales = parseFloat('{{ last_7_days_invoice_amount }}') || 0;
+Highcharts.chart('seven-day-funnel', {
+    chart: {
+        type: 'funnel'
+    },
+    title: {
+        text: 'ترافیک و فاکتور 7 روز اخیر',
+        style: {
+            fontSize: '20px',
+            color: '#333',
+            fontFamily: 'Vazirmatn, sans-serif',
+        }
+    },
+    plotOptions: {
+        series: {
+        dataLabels: {
+            enabled: true,
+            format: '<b>{point.name}</b> ({point.y})',
+            softConnector: true,
+            style: {
+                fontSize: '15px',
+                color: '#333',
+                fontFamily: 'Vazirmatn, sans-serif',
+            }
+        },
+        center: ['50%', '50%'],
+        neckWidth: '30%',
+        width: '80%', 
+        neckHeight: '10%',
+        }
+    },
+    tooltip: {
+        formatter: function () {
+        if (this.point.sales) {
+            return `<b>${this.point.name}</b>: ${Highcharts.numberFormat(this.point.y, 0, '.', ',')}<br/>فروش: ${Highcharts.numberFormat(this.point.sales, 0, '.', ',')}`;
+        }
+        return `<b>${this.point.name}</b>: ${Highcharts.numberFormat(this.point.y, 0, '.', ',')}`;
+        },
+        style: {
+            fontSize: '15px',
+            color: '#333',
+            fontFamily: 'Vazirmatn, sans-serif',
+        }
+    },
+    series: [{
+        name: 'Users',
+        data: [
+            ['ترافیک', sTraffic],
+            { name: 'فاکتور', y: sInvoices, sales: sSales }
+        ]
+    }]
+});
 // 30 Day Traffic Pie Chart
-Highcharts.chart('30-day-pie-chart', {
+Highcharts.chart('thirty-day-pie-chart', {
     chart: {
         type: 'pie',
         style: { fontFamily: 'Vazirmatn, sans-serif' }
@@ -287,5 +469,67 @@ Highcharts.chart('30-day-pie-chart', {
         data: JSON.parse("{{ branch_30_days_traffic_share|escapejs }}")   
     }]
 });
+// 7 Day Traffic Pie Chart
+Highcharts.chart('seven-day-pie-chart', {
+    chart: {
+        type: 'pie',
+        style: { fontFamily: 'Vazirmatn, sans-serif' }
+    },
+    title: {
+        text: 'توزیع کل ترافیک شعب 7 روز اخیر',
+        style: { fontSize: '20px', fontFamily: 'Vazirmatn, sans-serif' }
+    },
+    tooltip: {
+        pointFormat: '<b>{point.y}</b> ({point.percentage:.1f}%)'
+    },
+    plotOptions: {
+        pie: {
+            allowPointSelect: true,
+            cursor: 'pointer',
+            dataLabels: {
+                enabled: true,
+                format: '{point.name}: ({point.percentage:.1f}%)',
+                style: { fontSize: '14px', fontFamily: 'Vazirmatn, sans-serif' }
+            },
+            showInLegend: true
+        }
+    },
+    series: [{
+        name: 'توزیع ترافیک شعب در 7 روز اخیر',
+        colorByPoint: true,
+        data: JSON.parse("{{ branch_7_days_traffic_share|escapejs }}")   
+    }]
+});
+</script>
+<!-- Display Toggle -->
+<script>
+    // Display Toggle Buttons
+    const dayFunnelTools30Day = document.querySelector("#seven-day-funnel-tools .thirty-day");
+    const pieChartTools30Day = document.querySelector("#seven-day-pie-chart-tools .thirty-day");
+    const dayFunnelTools7Day = document.querySelector("#thirty-day-funnel-tools .seven-day");
+    const pieChartTools7Day = document.querySelector("#thirty-day-pie-chart-tools .seven-day");
+
+    // Containers
+    const sevenDayFunnelContainer = document.querySelector("#seven-day-funnel-container");
+    const thirtyDayFunnelContainer = document.querySelector("#thirty-day-funnel-container");
+    const sevenDayPieChartContainer = document.querySelector("#seven-day-pie-chart-container")
+    const thirtyDayPieChartContainer = document.querySelector("#thirty-day-pie-chart-container");
+
+    dayFunnelTools30Day.addEventListener("click", () => {
+        sevenDayFunnelContainer.style.display = "none";
+        thirtyDayFunnelContainer.style.display = "";
+    });
+    pieChartTools30Day.addEventListener("click", () => {
+        sevenDayPieChartContainer.style.display = "none";
+        thirtyDayPieChartContainer.style.display = "";
+    });
+    dayFunnelTools7Day.addEventListener("click", () => {
+        sevenDayFunnelContainer.style.display = "";
+        thirtyDayFunnelContainer.style.display = "none";
+    });
+    pieChartTools7Day.addEventListener("click", () => {
+        sevenDayPieChartContainer.style.display = "";
+        thirtyDayPieChartContainer.style.display = "none";
+    });
 </script>
 {% endblock %}

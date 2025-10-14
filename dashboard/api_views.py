@@ -9,6 +9,10 @@ from rest_framework import serializers
 from django.db import connection
 import re
 import subprocess
+import jdatetime
+import re
+from collections import defaultdict
+
 
 class MultipleBranches(APIView):
     def get(self, request):
@@ -545,6 +549,131 @@ class CamStatus(APIView):
                 cam.status = False
                 cam.save()
                 return Response({"cam_id": cam.pk, "status": cam.status})
+        except Exception as e:
+            return Response({"error": f"{e}"})
+
+
+PERSIAN_TO_ENGLISH_MAPPING = str.maketrans(
+    "۰۱۲۳۴۵۶۷۸۹",
+    "0123456789"
+)
+ENGLISH_TO_PERSIAN_MAPPING = str.maketrans(
+    "0123456789",
+    "۰۱۲۳۴۵۶۷۸۹"
+)
+
+def ascii_to_persian(s: str) -> str:
+    s = s.strip()
+    return s.translate(ENGLISH_TO_PERSIAN_MAPPING)
+
+
+def persian_to_ascii(s: str) -> str:
+    s = s.strip()
+    return s.translate(PERSIAN_TO_ENGLISH_MAPPING)
+
+
+def persian_date_to_jdate(s: str):
+    s = persian_to_ascii(s)
+    parts = re.split(r'[\/\-\.]', s)
+    y, m, d = map(int, parts)
+    return jdatetime.date(y, m, d)
+
+
+def divide_monthly(dates, values):
+    monthly_data = defaultdict(int)
+    for d, v in zip(dates, values):
+        date = persian_date_to_jdate(d)
+        year = date.year
+        month = date.month
+        if len(str(month)) == 1:
+            key = f'{year}/0{month}'
+        else:
+            key = f'{year}/{month}'
+        monthly_data[key] += v
+    sorted_monthly_data = sorted(monthly_data.items(), key=lambda item: int(re.sub("/", "", item[0])))
+    monthly_data = dict(sorted_monthly_data)
+    monthly_data_output = {}
+    for k, v in monthly_data.items():
+        monthly_data_output[ascii_to_persian(k)] = v 
+    months = list(monthly_data_output.keys())
+    values = list(monthly_data_output.values())
+    return months, values
+
+
+def divide_weekly(dates, values):
+    weekly_data = defaultdict(int)
+    for d, v in zip(dates, values):
+        date = persian_date_to_jdate(d)
+        year = date.year
+        week = date.isocalendar()[1]
+        key = f'هفته {week}'
+        weekly_data[key] += v
+    sorted_weekly_data = sorted(weekly_data.items(), key=lambda item: int(re.findall(r'\d+', item[0])[0]))
+    weekly_data = dict(sorted_weekly_data)
+    weekly_data_output = {}
+    for k, v in weekly_data.items():
+        weekly_data_output[f"هفته {ascii_to_persian(re.findall(r'\d+', k)[0])}"] = v
+    weeks = list(weekly_data_output.keys())
+    values = list(weekly_data_output.values())
+    return weeks, values
+
+
+class NormalWeeklyDisplay(APIView):
+    def post(self, request):
+        try:
+            x = request.data.get("x")
+            y = request.data.get("y")
+            weeks, values = divide_weekly(x, y)
+            return Response({"weeks": weeks, "values": values})
+        except Exception as e:
+            return Response({"error": f"{e}"})
+        
+
+class abNormalWeeklyDisplay(APIView):
+    def post(self, request):
+        try:
+            x = request.data.get("x")
+            y = request.data.get("y")
+            values = []
+            x_dict =  {}
+            weeks = []
+            for dictionary in x:
+                for k, v in dictionary:
+                    x_dict[k] = divide_weekly(x, v)[1]
+                    if not weeks:
+                        weeks = divide_weekly(x, v)[0]
+                values.append(dictionary)
+            return Response({"weeks": weeks, "values": values}) 
+        except Exception as e:
+            return Response({"error": f"{e}"})
+
+
+class NormalMonthlyDisplay(APIView):
+    def post(self, request):
+        try:
+            x = request.data.get("x")
+            y = request.data.get("y")
+            months, values = divide_monthly(x, y)
+            return Response({"months": months, "values": values})
+        except Exception as e:
+            return Response({"error": f"{e}"})
+        
+
+class abNormalMonthlyDisplay(APIView):
+    def post(self, request):
+        try:
+            x = request.data.get("x")
+            y = request.data.get("y")
+            values = []
+            x_dict =  {}
+            months = []
+            for dictionary in x:
+                for k, v in dictionary:
+                    x_dict[k] = divide_weekly(x, v)[1]
+                    if not months:
+                        months = divide_weekly(x, v)[0]
+                values.append(dictionary)
+            return Response({"months": months, "values": values}) 
         except Exception as e:
             return Response({"error": f"{e}"})
         
