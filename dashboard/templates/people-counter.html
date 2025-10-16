@@ -667,14 +667,14 @@
             }
             
             function jalaliDateConvertor() {
-            document.querySelectorAll(".greg-date").forEach(el => {
-                const gregorian = el.innerHTML.split("-");
-                const gYear = parseInt(gregorian[0]);
-                const gMonth = parseInt(gregorian[1]);
-                const gDay = parseInt(gregorian[2]);
-                const jdate = jalaali.toJalaali(gYear, gMonth, gDay);
-                el.innerText = `${jdate.jy}/${String(jdate.jm).padStart(2, '0')}/${String(jdate.jd).padStart(2, '0')}`;
-                });
+                document.querySelectorAll(".greg-date").forEach(el => {
+                    const gregorian = el.innerHTML.split("-");
+                    const gYear = parseInt(gregorian[0]);
+                    const gMonth = parseInt(gregorian[1]);
+                    const gDay = parseInt(gregorian[2]);
+                    const jdate = jalaali.toJalaali(gYear, gMonth, gDay);
+                    el.innerText = `${jdate.jy}/${String(jdate.jm).padStart(2, '0')}/${String(jdate.jd).padStart(2, '0')}`;
+                    });
             }
             document.querySelectorAll(".campaign-cost").forEach(el => {
                 const cost = Number(el.innerText);
@@ -791,6 +791,204 @@
                     day: '2-digit'
                 });
             });
+            // Initial Line Chart Monthly Display Button Logic
+            // Initial Line Chart Monthly Display Button Function
+            function initialHandleMonthlyChart () {
+                const apiUrl = "/api/normal-monthly-display";
+                const x = newCategories;
+                const y = data.entry_totals;
+                const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                fetch(apiUrl, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": csrftoken,
+                    },
+                    body: JSON.stringify({x: x, y: y})
+                }).then(response => {
+                    if (!response.ok) throw new Error("Invalid Response");
+                    return response.json()
+                }).then(d => {
+                    // Line Chart Update
+                    lineChart.update({
+                        xAxis: { 
+                            categories: d.months,
+                            labels: {
+                                useHTML: true,  
+                                formatter: function () {
+                                        const value = this.value; 
+                                        if (holidayDates.includes(value)) {
+                                            return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                        }
+                                        if (fridays.includes(value)) {
+                                            return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                        }
+                                        return value; 
+                                    }
+                                } 
+                            },
+                        series: [{ name: `ترافیک (${Number(total).toLocaleString('fa-IR')})`, data: d.values}
+                        ],
+                    });
+                    //  Bar Chart Update
+                    barChart.update({
+                        xAxis: { 
+                            categories: d.months,
+                            labels: {
+                                useHTML: true,  
+                                formatter: function () {
+                                        const value = this.value; 
+                                        if (holidayDates.includes(value)) {
+                                            return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                        }
+                                        if (fridays.includes(value)) {
+                                            return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                        }
+                                        return value; 
+                                    }
+                                } 
+                            },
+                        series: [{ name: `ترافیک (${Number(total).toLocaleString('fa-IR')})`, data: d.values},
+                        {data: data.exit_totals}
+                        ],
+                    });
+                });
+            }
+            // Initial Line Chart Monthly Event Listener
+            $("#container-tools .month").off("click").on("click", initialHandleMonthlyChart);
+            // Initial Line Chart Weekly Display Button Logic
+            // Initial Line Chart Weekly Display Button Function
+            function initialHandleWeeklyChart () {
+                const apiUrl = "/api/normal-weekly-display";
+                const x = newCategories;
+                const y = data.entry_totals;
+                const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                fetch(apiUrl, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": csrftoken,
+                    },
+                    body: JSON.stringify({x: x, y: y})
+                }).then(response => {
+                    if (!response.ok) throw new Error("Invalid Response");
+                    return response.json()
+                }).then(d => {
+                    // Line Chart Update
+                    lineChart.update({
+                        xAxis: { 
+                            categories: d.weeks,
+                            labels: {
+                                useHTML: true,  
+                                formatter: function () {
+                                        const value = this.value; 
+                                        if (holidayDates.includes(value)) {
+                                            return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                        }
+                                        if (fridays.includes(value)) {
+                                            return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                        }
+                                        return value; 
+                                    }
+                                } 
+                            },
+                        series: [{ name: `ترافیک (${Number(total).toLocaleString('fa-IR')})`, data: d.values}
+                        ],
+                    });
+                    //  Bar Chart Update
+                    barChart.update({
+                        xAxis: { 
+                            categories: d.weeks,
+                            labels: {
+                                useHTML: true,  
+                                formatter: function () {
+                                        const value = this.value; 
+                                        if (holidayDates.includes(value)) {
+                                            return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                        }
+                                        if (fridays.includes(value)) {
+                                            return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                        }
+                                        return value; 
+                                    }
+                                } 
+                            },
+                        series: [{ name: `ترافیک (${Number(total).toLocaleString('fa-IR')})`, data: d.values},
+                        {data: data.exit_totals}
+                        ],
+                    });
+                });
+            }
+            // Initial Line Chart Weekly Display Button Event Listener
+            $("#container-tools .week").off("click").on("click", initialHandleWeeklyChart);
+            // Initial Line Chart Daily Display Button Logic
+            // Initial Line Chart Daily Display Function
+            function initialHandleDailyChart() {
+                lineChart.update({
+                    xAxis: { 
+                        categories: newCategories,
+                        labels: {
+                            useHTML: true,  
+                            formatter: function () {
+                                    const value = this.value; 
+                                    if (holidayDates.includes(value)) {
+                                        return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                    }
+                                    if (fridays.includes(value)) {
+                                        return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                    }
+                                    return value; 
+                                }
+                            } 
+                        },
+                    series: [{ name: `ترافیک (${Number(total).toLocaleString('fa-IR')})`, data: data.entry_totals},
+                    {data: data.exit_totals}
+                    ],
+                });
+                barChart.update({
+                    xAxis: { 
+                        categories: newCategories,
+                        labels: {
+                            useHTML: true,  
+                            formatter: function () {
+                                    const value = this.value; 
+                                    if (holidayDates.includes(value)) {
+                                        return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                    }
+                                    if (fridays.includes(value)) {
+                                        return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                    }
+                                    return value; 
+                                }
+                            } 
+                        },
+                    series: [{ name: `ترافیک (${Number(total).toLocaleString('fa-IR')})`, data: data.entry_totals},
+                    {data: data.exit_totals}
+                    ],
+                });
+            }
+            // Initial Line Chart Daily Display Event Listener
+            $("#container-tools .day").off("click").on("click", initialHandleDailyChart);
+
+            // Initial Bar Chart Monthly Display Button Logic
+            // Initial Bar Chart Monthly Display Function
+            // The same function above is used
+            // Initial Bar Chart Monthly Event Listener
+            $("#container-bar-chart-tools .month").off("click").on("click", initialHandleMonthlyChart);
+
+            // Initial Bar Chart Weekly Display Button Logic
+            // Initial Bar Chart Weekly Display Function
+            // The same function above is used
+            // Initial Bar Chart Weekly Event Listener
+            $("#container-bar-chart-tools .week").off("click").on("click", initialHandleWeeklyChart);
+
+            // Initial Bar Chart Daily Display Button Logic
+            // Initial Bar Chart Daily Display Function
+            // The same function above is used
+            // Initial Bar Chart Daily Event Listener
+            $("#container-bar-chart-tools .day").off("click").on("click", initialHandleDailyChart);
+
+            // Initial Line Chart 
             lineChart.update({
                 xAxis: { 
                     categories: newCategories,
@@ -812,6 +1010,7 @@
                 {data: data.exit_totals}
                 ],
             });
+            // Bar Line Chart 
             barChart.update({
                 xAxis: { 
                     categories: newCategories,
@@ -980,7 +1179,255 @@
                         }
                     }
                 });
-
+                // Initial Line Chart By Branch Monthly Display Button Logic
+                // Initial Line Chart By Branch Monthly Display Button Function
+                function initialHandleBranchMonthlyDisplay() {
+                    const apiUrl = "/api/abnormal-monthly-display";
+                    const x = categories;
+                    const y = series;
+                    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                    fetch(apiUrl, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": csrftoken,
+                        },
+                        body: JSON.stringify({x: x, y: y})
+                    }).then(response => {
+                        if (!response.ok) throw new Error("Invalid Response");
+                        return response.json()
+                    }).then(data => {
+                        // Line Chart By Branch Update
+                        Highcharts.chart("second-container", {
+                            chart: { type: "line",
+                                backgroundColor: '#ffffff',
+                                borderColor: '#e5e5e5',  
+                                borderWidth: 1,           
+                                borderRadius: 12,         
+                                spacing: [30, 20, 30, 20],
+                                style: {
+                                    fontFamily: 'Vazirmatn, sans-serif',
+                                    fontSize: '20px'
+                                    }
+                                },
+                            title: { text: "ترافیک تفکیکی",
+                                style: {
+                                    fontSize: '25px',
+                                    color: '#333',
+                                    fontFamily: 'Vazirmatn, sans-serif',
+                                } 
+                            },
+                            xAxis: { 
+                                categories: data.months,
+                                title: {
+                                text: "تاریخ",
+                                style: {
+                                fontSize: '20px',
+                                fontWeight: 'bold',
+                                fontFamily: 'Vazirmatn, sans-serif',
+                                    }
+                                },
+                                labels: {
+                                    useHTML: true,  
+                                    formatter: function () {
+                                            const value = this.value; 
+                                            if (holidayDates.includes(value)) {
+                                                return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                            }
+                                            if (fridays.includes(value)) {
+                                                return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                            }
+                                                return value; 
+                                        }
+                                    } 
+                                },
+                            yAxis: { title: { text: "ترافیک",
+                                style: {
+                                    fontSize: '20px',
+                                    fontWeight: 'bold'
+                                    } 
+                                } 
+                            },
+                            series: data.values,
+                        });
+                    });
+                }
+                // Initial Line Chart By Branch Monthly Display Event Listener
+                $("#second-container-tools .month").off("click").on("click", initialHandleBranchMonthlyDisplay);
+                // Initial Line Chart By Branch Weekly Display Button Logic
+                // Initial Line Chart By Branch Weekly Display Button Function
+                function initialHandleBranchWeeklyDisplay() {
+                    const apiUrl = "/api/abnormal-weekly-display";
+                    const x = categories;
+                    const y = series;
+                    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                    fetch(apiUrl, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": csrftoken,
+                        },
+                        body: JSON.stringify({x: x, y: y})
+                    }).then(response => {
+                        if (!response.ok) throw new Error("Invalid Response");
+                        return response.json()
+                    }).then(data => {
+                        // Line Chart By Branch Update
+                        Highcharts.chart("second-container", {
+                            chart: { type: "line",
+                                backgroundColor: '#ffffff',
+                                borderColor: '#e5e5e5',  
+                                borderWidth: 1,           
+                                borderRadius: 12,         
+                                spacing: [30, 20, 30, 20],
+                                style: {
+                                    fontFamily: 'Vazirmatn, sans-serif',
+                                    fontSize: '20px'
+                                    }
+                                },
+                            title: { text: "ترافیک تفکیکی",
+                                style: {
+                                    fontSize: '25px',
+                                    color: '#333',
+                                    fontFamily: 'Vazirmatn, sans-serif',
+                                } 
+                            },
+                            xAxis: { 
+                                categories: data.weeks,
+                                title: {
+                                text: "تاریخ",
+                                style: {
+                                fontSize: '20px',
+                                fontWeight: 'bold',
+                                fontFamily: 'Vazirmatn, sans-serif',
+                                    }
+                                },
+                                labels: {
+                                    useHTML: true,  
+                                    formatter: function () {
+                                            const value = this.value; 
+                                            if (holidayDates.includes(value)) {
+                                                return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                            }
+                                            if (fridays.includes(value)) {
+                                                return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                            }
+                                                return value; 
+                                        }
+                                    } 
+                                },
+                            yAxis: { title: { text: "ترافیک",
+                                style: {
+                                    fontSize: '20px',
+                                    fontWeight: 'bold'
+                                    } 
+                                } 
+                            },
+                            series: data.values,
+                        });
+                    });
+                }
+                // Initial Line Chart By Branch Weekly Display Event Listener
+                $("#second-container-tools .week").off("click").on("click", initialHandleBranchWeeklyDisplay);
+                // Initial Line Chart By Branch Daily Display Logic
+                // Initial Line Chart By Branch Daily Display Function
+                function initialHandleBranchDailyDisplay() {
+                    Highcharts.chart("second-container", {
+                        chart: { type: "line",
+                            backgroundColor: '#ffffff',
+                            borderColor: '#e5e5e5',  
+                            borderWidth: 1,           
+                            borderRadius: 12,         
+                            spacing: [30, 20, 30, 20],
+                            style: {
+                                fontFamily: 'Vazirmatn, sans-serif',
+                                fontSize: '20px'
+                                }
+                            },
+                        title: { text: "ترافیک تفکیکی",
+                            style: {
+                                fontSize: '25px',
+                                color: '#333',
+                                fontFamily: 'Vazirmatn, sans-serif',
+                            } 
+                        },
+                        xAxis: { categories,
+                            title: {
+                            text: "تاریخ",
+                            style: {
+                            fontSize: '20px',
+                            fontWeight: 'bold',
+                            fontFamily: 'Vazirmatn, sans-serif',
+                                }
+                            },
+                            labels: {
+                                useHTML: true,  
+                                formatter: function () {
+                                        const value = this.value; 
+                                        if (holidayDates.includes(value)) {
+                                            return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                        }
+                                        if (fridays.includes(value)) {
+                                            return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                        }
+                                            return value; 
+                                    }
+                                } 
+                            },
+                        yAxis: { title: { text: "ترافیک",
+                            style: {
+                                fontSize: '20px',
+                                fontWeight: 'bold'
+                                } 
+                            } 
+                        },
+                        series: series,
+                        plotOptions: {
+                            series: {
+                                point: {
+                                    events: {
+                                        click: function () {
+                                            const apiUrl = "/api/get-campaign-each-point";
+                                            const date = this.category;
+                                            const branch = this.series.name;
+                                            const body = document.querySelector("body");
+                                            const infoModal = document.querySelector("#info-modal");
+                                            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                                            fetch(apiUrl, {
+                                                method: "POST",
+                                                headers: {
+                                                    "Content-Type": "application/json",
+                                                    "X-CSRFToken": csrftoken,
+                                                },
+                                                body: JSON.stringify({date: date, branch: branch.replace(/\(.*?\)/, "").trim()})
+                                            }).then(response => {
+                                                if (!response.ok) throw new Error("Invalid Response");
+                                                return response.json()
+                                            }).then(data => {
+                                                let htmlCampaigns = data.map((camp, index) =>
+                                                    `<p style='margin-bottom: 0px;' style='margin-bottom: 0px; margin-top: 0px;'>${index + 1}. ${camp.campaign_name}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${camp.campaign_type}</p>`
+                                                ).join('')
+                                                if (data.length === 0) {
+                                                    htmlCampaigns = `<p>هیچ کمپینی یافت نشد.</p>`
+                                                }
+                                                Swal.fire({
+                                                html: `<h3 style='margin-bottom: 0px;'>${this.y}</h3><p style='margin-bottom: 0px; margin-top: 0px;'>${this.series.name.replace(/\(.*?\)/, "").trim()}</p><p style='margin-top: 0px;'>${this.category}</p>
+                                                <p style='margin-bottom: 0px;'>کمپین ها:</p>
+                                                ${htmlCampaigns}
+                                                `,
+                                                confirmButtonText: 'بستن',
+                                                confirmButtonColor: '#5a8dee'
+                                            });
+                                            })
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+                // Initial Line Chart By Branch Daily Display Event Listener
+                $("#second-container-tools .day").off("click").on("click", initialHandleBranchDailyDisplay);
                 Highcharts.chart('second-container-pie-chart', {
                     chart: {
                         type: 'pie',
@@ -1746,12 +2193,12 @@
             success: function (data) {
                 const rawCategories = data.dates;
                 const categories = rawCategories.map(dateStr => {
-                const date = new Date(dateStr);
-                return date.toLocaleDateString('fa-IR', {
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit'
-                });
+                    const date = new Date(dateStr);
+                    return date.toLocaleDateString('fa-IR', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit'
+                    });
                 });
                 const series = Object.entries(data.branches).map(([id, branchData]) => {
                     const total = branchData.entry_totals.reduce((a, b) => a + b, 0);
@@ -1765,8 +2212,7 @@
                     const total = branchItem.data.reduce((sum, val) => sum + val, 0);
                     return { name: branchItem.name, y: total };
                 });
-                console.log("ترافیک تفکیکی", series)
-                console.log("تاریخ تفکیکی", categories)
+                // Line Chart By Branch Update
                 Highcharts.chart("second-container", {
                     chart: { type: "line",
                         backgroundColor: '#ffffff',
@@ -1860,7 +2306,256 @@
                         }
                     }
                 });
-
+                // Line Chart By Branch Monthly Display Button Logic
+                // Line Chart By Branch Monthly Display Button Function
+                function handleBranchMonthlyDisplay() {
+                    const apiUrl = "/api/abnormal-monthly-display";
+                    const x = categories;
+                    const y = series;
+                    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                    fetch(apiUrl, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": csrftoken,
+                        },
+                        body: JSON.stringify({x: x, y: y})
+                    }).then(response => {
+                        if (!response.ok) throw new Error("Invalid Response");
+                        return response.json()
+                    }).then(data => {
+                        // Line Chart By Branch Update
+                        Highcharts.chart("second-container", {
+                            chart: { type: "line",
+                                backgroundColor: '#ffffff',
+                                borderColor: '#e5e5e5',  
+                                borderWidth: 1,           
+                                borderRadius: 12,         
+                                spacing: [30, 20, 30, 20],
+                                style: {
+                                    fontFamily: 'Vazirmatn, sans-serif',
+                                    fontSize: '20px'
+                                    }
+                                },
+                            title: { text: "ترافیک تفکیکی",
+                                style: {
+                                    fontSize: '25px',
+                                    color: '#333',
+                                    fontFamily: 'Vazirmatn, sans-serif',
+                                } 
+                            },
+                            xAxis: { 
+                                categories: data.months,
+                                title: {
+                                text: "تاریخ",
+                                style: {
+                                fontSize: '20px',
+                                fontWeight: 'bold',
+                                fontFamily: 'Vazirmatn, sans-serif',
+                                    }
+                                },
+                                labels: {
+                                    useHTML: true,  
+                                    formatter: function () {
+                                            const value = this.value; 
+                                            if (holidayDates.includes(value)) {
+                                                return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                            }
+                                            if (fridays.includes(value)) {
+                                                return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                            }
+                                                return value; 
+                                        }
+                                    } 
+                                },
+                            yAxis: { title: { text: "ترافیک",
+                                style: {
+                                    fontSize: '20px',
+                                    fontWeight: 'bold'
+                                    } 
+                                } 
+                            },
+                            series: data.values,
+                        });
+                    });
+                }
+                // Line Chart By Branch Monthly Display Event Listener
+                $("#second-container-tools .month").off("click").on("click", handleBranchMonthlyDisplay);
+                // Line Chart By Branch Weekly Display Button Logic
+                // Line Chart By Branch Weekly Display Button Function
+                function handleBranchWeeklyDisplay() {
+                    const apiUrl = "/api/abnormal-weekly-display";
+                    const x = categories;
+                    const y = series;
+                    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                    fetch(apiUrl, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": csrftoken,
+                        },
+                        body: JSON.stringify({x: x, y: y})
+                    }).then(response => {
+                        if (!response.ok) throw new Error("Invalid Response");
+                        return response.json()
+                    }).then(data => {
+                        // Line Chart By Branch Update
+                        Highcharts.chart("second-container", {
+                            chart: { type: "line",
+                                backgroundColor: '#ffffff',
+                                borderColor: '#e5e5e5',  
+                                borderWidth: 1,           
+                                borderRadius: 12,         
+                                spacing: [30, 20, 30, 20],
+                                style: {
+                                    fontFamily: 'Vazirmatn, sans-serif',
+                                    fontSize: '20px'
+                                    }
+                                },
+                            title: { text: "ترافیک تفکیکی",
+                                style: {
+                                    fontSize: '25px',
+                                    color: '#333',
+                                    fontFamily: 'Vazirmatn, sans-serif',
+                                } 
+                            },
+                            xAxis: { 
+                                categories: data.weeks,
+                                title: {
+                                text: "تاریخ",
+                                style: {
+                                fontSize: '20px',
+                                fontWeight: 'bold',
+                                fontFamily: 'Vazirmatn, sans-serif',
+                                    }
+                                },
+                                labels: {
+                                    useHTML: true,  
+                                    formatter: function () {
+                                            const value = this.value; 
+                                            if (holidayDates.includes(value)) {
+                                                return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                            }
+                                            if (fridays.includes(value)) {
+                                                return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                            }
+                                                return value; 
+                                        }
+                                    } 
+                                },
+                            yAxis: { title: { text: "ترافیک",
+                                style: {
+                                    fontSize: '20px',
+                                    fontWeight: 'bold'
+                                    } 
+                                } 
+                            },
+                            series: data.values,
+                        });
+                    });
+                }
+                // Line Chart By Branch Weekly Display Event Listener
+                $("#second-container-tools .week").off("click").on("click", handleBranchWeeklyDisplay);
+                // Line Chart By Branch Daily Display Logic
+                // Line Chart By Branch Daily Display Function
+                function handleBranchDailyDisplay() {
+                    Highcharts.chart("second-container", {
+                        chart: { type: "line",
+                            backgroundColor: '#ffffff',
+                            borderColor: '#e5e5e5',  
+                            borderWidth: 1,           
+                            borderRadius: 12,         
+                            spacing: [30, 20, 30, 20],
+                            style: {
+                                fontFamily: 'Vazirmatn, sans-serif',
+                                fontSize: '20px'
+                                }
+                            },
+                        title: { text: "ترافیک تفکیکی",
+                            style: {
+                                fontSize: '25px',
+                                color: '#333',
+                                fontFamily: 'Vazirmatn, sans-serif',
+                            } 
+                        },
+                        xAxis: { categories,
+                            title: {
+                            text: "تاریخ",
+                            style: {
+                            fontSize: '20px',
+                            fontWeight: 'bold',
+                            fontFamily: 'Vazirmatn, sans-serif',
+                                }
+                            },
+                            labels: {
+                                useHTML: true,  
+                                formatter: function () {
+                                        const value = this.value; 
+                                        if (holidayDates.includes(value)) {
+                                            return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                        }
+                                        if (fridays.includes(value)) {
+                                            return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                        }
+                                            return value; 
+                                    }
+                                } 
+                            },
+                        yAxis: { title: { text: "ترافیک",
+                            style: {
+                                fontSize: '20px',
+                                fontWeight: 'bold'
+                                } 
+                            } 
+                        },
+                        series: series,
+                        plotOptions: {
+                            series: {
+                                point: {
+                                    events: {
+                                        click: function () {
+                                            const apiUrl = "/api/get-campaign-each-point";
+                                            const date = this.category;
+                                            const branch = this.series.name;
+                                            const body = document.querySelector("body");
+                                            const infoModal = document.querySelector("#info-modal");
+                                            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                                            fetch(apiUrl, {
+                                                method: "POST",
+                                                headers: {
+                                                    "Content-Type": "application/json",
+                                                    "X-CSRFToken": csrftoken,
+                                                },
+                                                body: JSON.stringify({date: date, branch: branch.replace(/\(.*?\)/, "").trim()})
+                                            }).then(response => {
+                                                if (!response.ok) throw new Error("Invalid Response");
+                                                return response.json()
+                                            }).then(data => {
+                                                let htmlCampaigns = data.map((camp, index) =>
+                                                    `<p style='margin-bottom: 0px;' style='margin-bottom: 0px; margin-top: 0px;'>${index + 1}. ${camp.campaign_name}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${camp.campaign_type}</p>`
+                                                ).join('')
+                                                if (data.length === 0) {
+                                                    htmlCampaigns = `<p>هیچ کمپینی یافت نشد.</p>`
+                                                }
+                                                Swal.fire({
+                                                html: `<h3 style='margin-bottom: 0px;'>${this.y}</h3><p style='margin-bottom: 0px; margin-top: 0px;'>${this.series.name.replace(/\(.*?\)/, "").trim()}</p><p style='margin-top: 0px;'>${this.category}</p>
+                                                <p style='margin-bottom: 0px;'>کمپین ها:</p>
+                                                ${htmlCampaigns}
+                                                `,
+                                                confirmButtonText: 'بستن',
+                                                confirmButtonColor: '#5a8dee'
+                                            });
+                                            })
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+                // Line Chart By Branch Daily Display Event Listener
+                $("#second-container-tools .day").off("click").on("click", handleBranchDailyDisplay);
+                // Pie Chart Update
                 Highcharts.chart('second-container-pie-chart', {
                     chart: {
                         type: 'pie',
@@ -1899,7 +2594,6 @@
                         data: pieData   // aggregated data here
                     }]
                 });
-
             },
             error: function (xhr) {
                 console.error("Error loading data");

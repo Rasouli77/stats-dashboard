@@ -350,4 +350,42 @@ class HolidayDescription(models.Model):
         verbose_name_plural = "مناسبت تعطیلات"
         indexes = [models.Index(fields=["date"])]
 
+
+# class AlertMalfunction(models.Model):
+#     merchant = models.ForeignKey(
+#         Merchant,
+#         on_delete=models.CASCADE,
+#         verbose_name="مرچنت",
+#         db_index=True,
+#     )
+#     name = models.CharField(max_length=255, verbose_name="نام")
+#     mobile = models.CharField(max_length=11, verbose_name="شماره موبایل")
+#     is_active = models.BooleanField(verbose_name="فعال")
+#     time_sent = models.TimeField(verbose_name="زمان ارسال")
+#     date_created = models.DateTimeField(
+#         null=True, default=datetime.now, verbose_name="تاریخ ساخت"
+#     )
+#     last_modified = models.DateTimeField(
+#         auto_now=True, verbose_name="تاریخ آخرین تغییر"
+#     )
+
+
+# class SendReport(models.Model):
+#     merchant = models.ForeignKey(
+#         Merchant,
+#         on_delete=models.CASCADE,
+#         verbose_name="مرچنت",
+#         db_index=True,
+#     )
+#     name = models.CharField(max_length=255, verbose_name="نام")
+#     whatsapp_mobile = models.CharField(max_length=11, verbose_name="شماره واتساپ", null=True, blank=True)
+#     id_telegram = models.CharField(max_length=225, verbose_name="آی دی تلگرام", null=True, blank=True)
+#     is_active = models.BooleanField(verbose_name="فعال")
+#     time_sent = models.TimeField(verbose_name="زمان ارسال")
+#     date_created = models.DateTimeField(
+#         null=True, default=datetime.now, verbose_name="تاریخ ساخت"
+#     )
+#     last_modified = models.DateTimeField(
+#         auto_now=True, verbose_name="تاریخ آخرین تغییر"
+#     )
     

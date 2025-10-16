@@ -1,12 +1,18 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .models import PeopleCounting, Branch, Invoice, PermissionToViewBranch, Campaign, HolidayDate, HolidayDescription, Cam
+from .models import (
+    PeopleCounting,
+    Branch,
+    Invoice,
+    PermissionToViewBranch,
+    Campaign,
+    HolidayDate,
+    Cam,
+)
 from django.db.models import Sum, Q, Min, Max, Avg, F
 from .views import jalali_to_gregorian
 from datetime import datetime
 import math
-from rest_framework import serializers
-from django.db import connection
 import re
 import subprocess
 import jdatetime
@@ -87,7 +93,7 @@ class MultiBranchesInvoice(APIView):
                     "name": branch.name,
                     "total_amounts": total_amounts,
                     "total_items": total_items,
-                    "total_products": total_products
+                    "total_products": total_products,
                 }
             return Response(response)
 
@@ -149,7 +155,10 @@ class Analysis(APIView):
                     total_amounts.append(float(amount))
                     total_items.append(float(items))
                     total_products.append(float(products))
-                total_products_avg = [round(float(a / b if b != 0 else 0), 1) for a, b in zip(total_products, total_items)]
+                total_products_avg = [
+                    round(float(a / b if b != 0 else 0), 1)
+                    for a, b in zip(total_products, total_items)
+                ]
                 print(total_products)
                 print(total_items)
                 print(total_products_avg)
@@ -157,7 +166,7 @@ class Analysis(APIView):
                     "name": branch.name,
                     "total_amounts": total_amounts,
                     "total_items": total_items,
-                    "total_products_avg": total_products_avg
+                    "total_products_avg": total_products_avg,
                 }
             for branch in branches:
                 entry_totals = []
@@ -466,14 +475,16 @@ class HolidaySpotter(APIView):
             if start_date_str and end_date_str:
                 start_date = datetime.strptime(start_date_str, "%Y-%m-%d").date()
                 end_date = datetime.strptime(end_date_str, "%Y-%m-%d").date()
-                holidays = HolidayDate.objects.filter(gregorian_date__range=(start_date, end_date))
+                holidays = HolidayDate.objects.filter(
+                    gregorian_date__range=(start_date, end_date)
+                )
                 complete_holiday_dates = []
                 dictionary = {}
-                descriptions_for_each_holiday = [] 
+                descriptions_for_each_holiday = []
                 for holiday in holidays:
                     dictionary = {}
                     dictionary["date"] = to_persian_digits(holiday.date)
-                    descriptions_for_each_holiday = [] 
+                    descriptions_for_each_holiday = []
                     descriptions = holiday.holidaydsc.all()
                     if descriptions:
                         for x in descriptions:
@@ -494,7 +505,7 @@ def ping_ip(ip, timeout=15):
             ["ping", "-c", "1", "-W", str(timeout), ip],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
-            timeout=timeout + 2  
+            timeout=timeout + 2,
         )
         return result.returncode == 0
     except subprocess.TimeoutExpired:
@@ -503,7 +514,7 @@ def ping_ip(ip, timeout=15):
     except Exception as e:
         print(f"Error: {e}")
         return False
-    
+
 
 def get_ping(ip, timeout=15):
     try:
@@ -513,7 +524,7 @@ def get_ping(ip, timeout=15):
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
-            timeout=timeout + 2
+            timeout=timeout + 2,
         )
 
         if result.returncode == 0:
@@ -553,14 +564,11 @@ class CamStatus(APIView):
             return Response({"error": f"{e}"})
 
 
-PERSIAN_TO_ENGLISH_MAPPING = str.maketrans(
-    "۰۱۲۳۴۵۶۷۸۹",
-    "0123456789"
-)
-ENGLISH_TO_PERSIAN_MAPPING = str.maketrans(
-    "0123456789",
-    "۰۱۲۳۴۵۶۷۸۹"
-)
+PERSIAN_TO_ENGLISH_MAPPING = str.maketrans("۰۱۲۳۴۵۶۷۸۹", "0123456789")
+
+
+ENGLISH_TO_PERSIAN_MAPPING = str.maketrans("0123456789", "۰۱۲۳۴۵۶۷۸۹")
+
 
 def ascii_to_persian(s: str) -> str:
     s = s.strip()
@@ -574,7 +582,7 @@ def persian_to_ascii(s: str) -> str:
 
 def persian_date_to_jdate(s: str):
     s = persian_to_ascii(s)
-    parts = re.split(r'[\/\-\.]', s)
+    parts = re.split(r"[\/\-\.]", s)
     y, m, d = map(int, parts)
     return jdatetime.date(y, m, d)
 
@@ -586,15 +594,17 @@ def divide_monthly(dates, values):
         year = date.year
         month = date.month
         if len(str(month)) == 1:
-            key = f'{year}/0{month}'
+            key = f"{year}/0{month}"
         else:
-            key = f'{year}/{month}'
+            key = f"{year}/{month}"
         monthly_data[key] += v
-    sorted_monthly_data = sorted(monthly_data.items(), key=lambda item: int(re.sub("/", "", item[0])))
+    sorted_monthly_data = sorted(
+        monthly_data.items(), key=lambda item: int(re.sub("/", "", item[0]))
+    )
     monthly_data = dict(sorted_monthly_data)
     monthly_data_output = {}
     for k, v in monthly_data.items():
-        monthly_data_output[ascii_to_persian(k)] = v 
+        monthly_data_output[ascii_to_persian(k)] = v
     months = list(monthly_data_output.keys())
     values = list(monthly_data_output.values())
     return months, values
@@ -606,9 +616,11 @@ def divide_weekly(dates, values):
         date = persian_date_to_jdate(d)
         year = date.year
         week = date.isocalendar()[1]
-        key = f'هفته {week}'
+        key = f"هفته {week}"
         weekly_data[key] += v
-    sorted_weekly_data = sorted(weekly_data.items(), key=lambda item: int(re.findall(r'\d+', item[0])[0]))
+    sorted_weekly_data = sorted(
+        weekly_data.items(), key=lambda item: int(re.findall(r"\d+", item[0])[0])
+    )
     weekly_data = dict(sorted_weekly_data)
     weekly_data_output = {}
     for k, v in weekly_data.items():
@@ -627,7 +639,7 @@ class NormalWeeklyDisplay(APIView):
             return Response({"weeks": weeks, "values": values})
         except Exception as e:
             return Response({"error": f"{e}"})
-        
+
 
 class abNormalWeeklyDisplay(APIView):
     def post(self, request):
@@ -635,21 +647,33 @@ class abNormalWeeklyDisplay(APIView):
             x = request.data.get("x")
             y = request.data.get("y")
             values = []
-            x_dict =  {}
+            x_dict = {}
             weeks = []
-            for dictionary in x:
-                for k, v in dictionary:
-                    x_dict[k] = divide_weekly(x, v)[1]
-                    if not weeks:
-                        weeks = divide_weekly(x, v)[0]
-                values.append(dictionary)
-            return Response({"weeks": weeks, "values": values}) 
+            for dictionary in y:
+                x_dict = {}
+                x_dict["name"] = dictionary["name"]
+                x_dict["data"] = divide_weekly(x, dictionary["data"])[1]
+                if not weeks:
+                    weeks = divide_weekly(x, dictionary["data"])[0]
+                values.append(x_dict)
+            print({"weeks": weeks, "values": values})
+            return Response({"weeks": weeks, "values": values})
         except Exception as e:
             return Response({"error": f"{e}"})
 
 
 class NormalMonthlyDisplay(APIView):
+    """
+    This is related to sending data to normal charts.
+    Whenever the monthly display button is pushed on the front-end, it sends a request to this API.
+    It then send a dictionary which contains 2 lists: months and values.
+    """
     def post(self, request):
+        """
+        A request of type post must be sent to this API otherwise, it sends an error.
+        It must get 2 lists: 1. dates 2. values in order to work properly.
+        The divide_monthly function is used here in a pretty straightforward way.
+        """
         try:
             x = request.data.get("x")
             y = request.data.get("y")
@@ -657,32 +681,34 @@ class NormalMonthlyDisplay(APIView):
             return Response({"months": months, "values": values})
         except Exception as e:
             return Response({"error": f"{e}"})
-        
+
 
 class abNormalMonthlyDisplay(APIView):
+    """
+    This class-based view differs from the normal monthly display as it deals with separate-branch charts.
+    This is related to sending data to separate-branch charts.
+    Whenever the monthly display button is pushed on the front-end, it sends a request to this API.
+    It then send a dictionary which contains 2 lists: months and values.
+    """
     def post(self, request):
+        """
+        A request of type post must be sent to this API otherwise, it sends an error.
+        It must get 2 lists: 1. dates 2. values in order to work properly.
+        The divide_monthly function is used here but in a different way.
+        """
         try:
             x = request.data.get("x")
             y = request.data.get("y")
             values = []
-            x_dict =  {}
+            x_dict = {}
             months = []
-            for dictionary in x:
-                for k, v in dictionary:
-                    x_dict[k] = divide_weekly(x, v)[1]
-                    if not months:
-                        months = divide_weekly(x, v)[0]
-                values.append(dictionary)
-            return Response({"months": months, "values": values}) 
+            for dictionary in y:
+                x_dict = {}
+                x_dict["name"] = dictionary["name"]
+                x_dict["data"] = divide_monthly(x, dictionary["data"])[1]
+                if not months:
+                    months = divide_monthly(x, dictionary["data"])[0]
+                values.append(x_dict)
+            return Response({"months": months, "values": values})
         except Exception as e:
             return Response({"error": f"{e}"})
-        
-
-
-
-
-
-
-
-
-
