@@ -351,7 +351,7 @@ class HolidayDescription(models.Model):
         indexes = [models.Index(fields=["date"])]
 
 
-# class AlertMalfunction(models.Model):
+# class AlertCameraMalfunction(models.Model):
 #     merchant = models.ForeignKey(
 #         Merchant,
 #         on_delete=models.CASCADE,
@@ -368,7 +368,9 @@ class HolidayDescription(models.Model):
 #     last_modified = models.DateTimeField(
 #         auto_now=True, verbose_name="تاریخ آخرین تغییر"
 #     )
-
+#     class Meta:
+#         verbose_name = "اطلاع رسانی خطا در سیستم"
+#         verbose_name_plural = "اطلاع رسانی خطا در سیستم"
 
 # class SendReport(models.Model):
 #     merchant = models.ForeignKey(
