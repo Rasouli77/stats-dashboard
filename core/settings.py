@@ -119,7 +119,7 @@ USE_I18N = True
 
 USE_TZ = True
 
-LOGIN_URL = "/dashboard/login/"
+LOGIN_URL = "/dashboard/account/login"
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/

@@ -37,36 +37,38 @@ def find_broken_ips(merchant_hash):
     )  # change this later according to the merchant's hash
     for camera in cameras:
         camera.status = ping_ip(camera.ip)
-        if camera.status == False:
-            broken_ips.append(camera.cam_name)
+        if camera.status == True:
+            broken_ips.append(camera.ip)
         camera.save()
     return broken_ips
 
 
-def send_camera_malfunction_alert(mobile: str, broken_cam_names: list):
+def send_camera_malfunction_alert(mobile: str, broken_cam_ips: list):
+    broken_cam_ips = [item for item in broken_cam_ips if item is not None]
     mobile = [
         mobile,
     ]
-    message = "خطای دوربین:\n" + "\n".join(broken_cam_names) + "\nکانتر باکس" 
-    print(message)
+    token = ",".join(broken_cam_ips)
     try:
         api = KavenegarAPI(KAVENEGAR_API)
         params = {
-            "sender": "",
-            "receptor": "0098" + mobile[0],
-            "message": message,
+            'sender': '', 
+            'receptor': '09126997470', # change this to mobile with the existing format
+            'template': 'alert', 
+            'token': token
         }
-        response = api.sms_send(params)
+        response = api.verify_lookup(params)
         print(response)
     except Exception as e:
         print(e)
-        # print(response)
+        pass
     except APIException as e:
         print(f"APIException: {e}")
         return {"error": str(e)}
     except HTTPException as e:
         print(f"HTTPException: {e}")
         return {"error": str(e)}
+
 
 
 class Command(BaseCommand):

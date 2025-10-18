@@ -29,11 +29,11 @@
 {% if messages %}
     {% for message in messages %}
         {% if message.tags == 'success' %}
-        <div class="alert alert-success" role="alert">{{ message }}</div>
+        <div style="display: none;" class="alert alert-success" role="alert">{{ message }}</div>
         {% elif message.tags == 'warning' %}
-        <div class="alert alert-warning" role="alert">{{ message }}</div>
+        <div style="display: none;" class="alert alert-warning" role="alert">{{ message }}</div>
         {% else %}
-        <div class="alert alert-danger" role="alert">{{ message }}</div>
+        <div style="display: none;" class="alert alert-danger" role="alert">{{ message }}</div>
         {% endif %}
     {% endfor %}
 {% endif %}
@@ -41,7 +41,7 @@
 <!-- Error -->
 <div class="container-xxl container-p-y">
     <div class="misc-wrapper">
-    <h1 class="mb-2 mx-2 secondary-font"> مشکلی در پردازش فایل پیش آمده :(</h1>
+    <h1 class="mb-2 mx-2 secondary-font">مشکلی در پردازش فایل پیش آمده</h1>
     <p class="mb-4 mx-2">{{ error }}</p>
     {% if branches %}
         {% for branch in branches %}

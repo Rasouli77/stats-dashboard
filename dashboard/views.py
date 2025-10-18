@@ -12,6 +12,7 @@ from .models import (
     Campaign,
     Cam,
     Invoice,
+    AlertCameraMalfunction
 )
 from django.db.models import Sum, F, Q, Min, Max
 from django.contrib.auth.models import User
@@ -23,6 +24,7 @@ from .forms import (
     CreateCampaign,
     UploadInvoiceExcel,
     InvoiceForm,
+    AlertCameraMalfunctionForm
 )
 import jdatetime
 import json
@@ -1730,6 +1732,7 @@ def holiday_spotter(request, year, month, day):
     return JsonResponse({"error": "no response"}, status=response.status_code)
 
 
+@login_required
 def alert_menu(request, url_hash):
     # Rights
     if not perm_to_open(request, url_hash):
@@ -1737,11 +1740,36 @@ def alert_menu(request, url_hash):
     return render(request, "alert-menu.html")
 
 
+@login_required
 def alert_form_sms(request, url_hash):
     # Rights
     if not perm_to_open(request, url_hash):
         return render(request, "401.html", status=401)
-    return render(request, "alert-form-sms.html")
+    form = AlertCameraMalfunctionForm()
+    if request.method == "POST":
+        form = AlertCameraMalfunctionForm(request.POST)
+        if form.is_valid():
+            contact = form.save(commit=False)
+            contact.merchant = request.user.profile.merchant
+            contact = form.save()
+            messages.success(request, "مخاطب با موفقیت ساخته شد")
+        else:
+            messages.error(request, f"{form.errors}")
+            return render(request, "alert-form-sms.html", {"form": form, "error": f"{form.errors}"})
+    return render(request, "alert-form-sms.html", {"form": form})
+
+
+@login_required
+def alert_from_sms_contact_list(request, url_hash):
+    # Rights
+    if not perm_to_open(request, url_hash):
+        return render(request, "401.html", status=401)
+    contacts = AlertCameraMalfunction.objects.filter(merchant__url_hash=url_hash).order_by("-pk")
+    return render(request, "alert_from_sms_contact_list.html", {"contacts": contacts})
+
+
+def alert_from_sms_contact_list_detail(request, url_hash, contact_id):
+    pass
 
 
 def alert_form_social(request, url_hash):

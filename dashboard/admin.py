@@ -13,7 +13,9 @@ from .models import (
     PermissionToViewBranch,
     Invoice,
     HolidayDate,
-    HolidayDescription
+    HolidayDescription,
+    AlertCameraMalfunction,
+    AlertCameraMalfunctionMessage
 )
 from rangefilter.filters import DateRangeFilter
 
@@ -168,4 +170,6 @@ admin.site.register(PermissionToViewBranch, PermissionToViewBranchAdmin)
 admin.site.register(Invoice, InvoiceAdmin)
 admin.site.register(HolidayDate, HolidayDateAdmin)
 admin.site.register(HolidayDescription)
+admin.site.register(AlertCameraMalfunction)
+admin.site.register(AlertCameraMalfunctionMessage)
 

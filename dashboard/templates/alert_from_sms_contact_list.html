@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}
+    لیست دریافت کنندگان خطای دوربین
+{% endblock %}
+{% block meta_description %}
+	لیست دریافت کنندگان خطای دوربین
+{% endblock %}
+{% block extra_css %}
+<!-- Custom Style for the Loading Overlay / Additional CSS -->
+<style>
+    .loading-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+    }
+    .loader {
+        border: 8px solid #f3f3f3;
+        border-top: 8px solid #3498db;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="loading-overlay" id="loading-overlay">
+    <div class="loader"></div>
+</div>
+<div class="card">
+  <h5 class="card-header heading-color">مخاطبین دریافت پیامک</h5>
+   <a href="{% url 'alert_form_sms' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="btn btn-success" type="button" style="width: 200px; margin: 20px;">مخاطب جدید</a>
+  <div class="table-responsive text-nowrap" style="margin-bottom: 100px;">
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th>مرچنت</th>
+          <th>نام</th>
+          <th>شماره</th>
+          <th>وضعیت</th>
+          <th>آخرین ارسال</th>
+          <th>تاریخچه ارسال</th>
+        </tr>
+      </thead>
+      <tbody class="table-border-bottom-0">
+        {% for contact in contacts %}
+        <tr>
+          <td><i class="align-middle fab fa-angular fa-lg text-danger me-3"></i><strong>{{ contact.merchant.name }}</strong></td>
+          <td>
+            {{ contact.name }}
+          </td>
+          <td>
+            {{ contact.mobile }}
+          </td>
+          <td>
+            {% if contact.is_active %}
+            <a href="">
+                <i class="badge badge-dot bg-success"></i>
+                <span class="align-middle ms-2">فعال</span>
+            </a>
+            {% else %}
+            <a href="">
+                <i class="badge badge-dot bg-danger"></i>
+                <span class="align-middle ms-2">غیر فعال</span>
+            </a>
+            {% endif %}
+          </td>
+          <td>
+            {% if contact.last_time_sent %}
+                {{ contact.last_time_sent }}
+            {% else %}
+                پیامی یافت نشد
+            {% endif %}
+          </td>
+          <td>
+            {% if contact.last_time_sent %}
+            <a class="btn btn-primary btn-sm" href=""><i class='bx bx-search-alt'></i></a>
+            {% else %}
+                پیامی یافت نشد
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

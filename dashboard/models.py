@@ -351,26 +351,51 @@ class HolidayDescription(models.Model):
         indexes = [models.Index(fields=["date"])]
 
 
-# class AlertCameraMalfunction(models.Model):
-#     merchant = models.ForeignKey(
-#         Merchant,
-#         on_delete=models.CASCADE,
-#         verbose_name="مرچنت",
-#         db_index=True,
-#     )
-#     name = models.CharField(max_length=255, verbose_name="نام")
-#     mobile = models.CharField(max_length=11, verbose_name="شماره موبایل")
-#     is_active = models.BooleanField(verbose_name="فعال")
-#     time_sent = models.TimeField(verbose_name="زمان ارسال")
-#     date_created = models.DateTimeField(
-#         null=True, default=datetime.now, verbose_name="تاریخ ساخت"
-#     )
-#     last_modified = models.DateTimeField(
-#         auto_now=True, verbose_name="تاریخ آخرین تغییر"
-#     )
-#     class Meta:
-#         verbose_name = "اطلاع رسانی خطا در سیستم"
-#         verbose_name_plural = "اطلاع رسانی خطا در سیستم"
+class AlertCameraMalfunction(models.Model):
+    merchant = models.ForeignKey(
+        Merchant,
+        on_delete=models.CASCADE,
+        verbose_name="مرچنت",
+        db_index=True,
+        blank=True,
+        null=True
+    )
+    name = models.CharField(max_length=255, verbose_name="نام")
+    mobile = models.CharField(max_length=11, verbose_name="شماره موبایل", unique=True)
+    is_active = models.BooleanField(verbose_name="فعال")
+    last_time_sent = models.CharField(max_length=9, verbose_name="آخرین زمان ارسال", null=True, blank=True)
+    date_created = models.DateTimeField(
+        null=True, default=datetime.now, verbose_name="تاریخ ساخت"
+    )
+    last_modified = models.DateTimeField(
+        auto_now=True, verbose_name="تاریخ آخرین تغییر"
+    )
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "مخاطب دریافت پیامک"
+        verbose_name_plural = "مخاطب دریافت پیامک"
+
+
+class AlertCameraMalfunctionMessage(models.Model):
+    contact = models.ForeignKey(AlertCameraMalfunction, on_delete=models.CASCADE)
+    message = models.TextField(verbose_name="متن پیام")
+    date_created = models.DateTimeField(
+        null=True, default=datetime.now, verbose_name="تاریخ ساخت"
+    )
+    last_modified = models.DateTimeField(
+        auto_now=True, verbose_name="تاریخ آخرین تغییر"
+    )
+
+    def __str__(self):
+        return self.message
+
+    class Meta:
+        verbose_name = "پیام خطای اطلاع رسانی دوربین"
+        verbose_name_plural = "پیام خطای اطلاع رسانی دوربین"
+
 
 # class SendReport(models.Model):
 #     merchant = models.ForeignKey(

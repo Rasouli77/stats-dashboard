@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User, Permission
-from .models import PermissionToViewBranch, Campaign, Invoice, Branch
+from .models import PermissionToViewBranch, Campaign, Invoice, Branch, AlertCameraMalfunction
 
 
 class Generate_User(forms.ModelForm):
@@ -86,3 +86,10 @@ class InvoiceForm(forms.ModelForm):
     class Meta:
         model = Invoice
         fields = ["date", "branch", "total_amount", "total_items"]
+
+
+
+class AlertCameraMalfunctionForm(forms.ModelForm):
+    class Meta:
+        model = AlertCameraMalfunction
+        fields = ["merchant", "name", "mobile", "is_active"]
