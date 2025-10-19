@@ -12,7 +12,8 @@ from .models import (
     Campaign,
     Cam,
     Invoice,
-    AlertCameraMalfunction
+    AlertCameraMalfunction,
+    AlertCameraMalfunctionMessage
 )
 from django.db.models import Sum, F, Q, Min, Max
 from django.contrib.auth.models import User
@@ -1768,8 +1769,32 @@ def alert_from_sms_contact_list(request, url_hash):
     return render(request, "alert_from_sms_contact_list.html", {"contacts": contacts})
 
 
-def alert_from_sms_contact_list_detail(request, url_hash, contact_id):
-    pass
+@login_required
+def alert_from_sms_contact_list_detail(request, contact_id):
+    if not request.user.profile.mobile:
+        return render(request, "401.html", status=401)
+    contact = get_object_or_404(AlertCameraMalfunction, pk=contact_id)
+    messages = AlertCameraMalfunctionMessage.objects.filter(contact=contact).order_by("-pk")
+    return render(request, "alert_from_sms_contact_list_detail.html", {"messages": messages})
+
+
+@login_required
+def alert_form_sms_edit(request, contact_id):
+    if not request.user.profile.mobile:
+        return render(request, "401.html", status=401)
+    contact = get_object_or_404(AlertCameraMalfunction, pk=contact_id)
+    form = AlertCameraMalfunctionForm(instance=contact)
+    if request.method == "POST":
+        form = AlertCameraMalfunctionForm(request.POST, instance=contact)
+        if form.is_valid():
+            edit_contact = form.save(commit=False)
+            edit_contact.merchant = request.user.profile.merchant
+            edit_contact.save()
+            messages.success(request, "مخاطب با موفقیت تغییر یافت")
+    else:
+        messages.error(request, f"{form.errors}")
+        return render(request, "alert_form_sms_edit.html", {"contact": contact, "form": form, "error": f"{form.errors}"})
+    return render(request, "alert_form_sms_edit.html", {"form": form, "contact": contact})
 
 
 def alert_form_social(request, url_hash):

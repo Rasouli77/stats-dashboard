@@ -1,10 +1,11 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load to_jalali %}
 {% block title %}
-    لیست دریافت کنندگان خطای دوربین
+  مخاطبین دریافت پیامک
 {% endblock %}
 {% block meta_description %}
-	لیست دریافت کنندگان خطای دوربین
+  مخاطبین دریافت پیامک  
 {% endblock %}
 {% block extra_css %}
 <!-- Custom Style for the Loading Overlay / Additional CSS -->
@@ -41,7 +42,7 @@
 </div>
 <div class="card">
   <h5 class="card-header heading-color">مخاطبین دریافت پیامک</h5>
-   <a href="{% url 'alert_form_sms' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="btn btn-success" type="button" style="width: 200px; margin: 20px;">مخاطب جدید</a>
+  <a href="{% url 'alert_form_sms' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="btn btn-success" type="button" style="width: 200px; margin: 20px;">مخاطب جدید</a>
   <div class="table-responsive text-nowrap" style="margin-bottom: 100px;">
     <table class="table table-hover">
       <thead>
@@ -51,6 +52,7 @@
           <th>شماره</th>
           <th>وضعیت</th>
           <th>آخرین ارسال</th>
+          <th>ویرایش</th>
           <th>تاریخچه ارسال</th>
         </tr>
       </thead>
@@ -79,14 +81,19 @@
           </td>
           <td>
             {% if contact.last_time_sent %}
-                {{ contact.last_time_sent }}
+                {{ contact.last_time_sent|to_jalali }}
             {% else %}
                 پیامی یافت نشد
             {% endif %}
           </td>
           <td>
+            <a class="btn btn-primary btn-sm" href="{% url 'alert-form-sms-edit' contact_id=contact.pk %}">
+              <i class="bx bx-edit"></i>
+            </a>
+          </td>
+          <td>
             {% if contact.last_time_sent %}
-            <a class="btn btn-primary btn-sm" href=""><i class='bx bx-search-alt'></i></a>
+            <a class="btn btn-primary btn-sm" href="{% url 'alert-from-sms-contact-list-detail' contact_id=contact.pk %}"><i class='bx bx-search-alt'></i></a>
             {% else %}
                 پیامی یافت نشد
             {% endif %}
@@ -95,6 +102,7 @@
         {% endfor %}
         </tbody>
     </table>
+    <a href="{% url 'home' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="btn btn-secondary" type="button" style="margin: 30px;">بازگشت</a>
   </div>
 </div>
 {% endblock %}

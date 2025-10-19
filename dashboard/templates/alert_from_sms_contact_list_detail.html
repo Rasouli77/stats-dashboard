@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load to_jalali %}
+{% block title %}
+    تاریخچه پیامک ها
+{% endblock %}
+{% block meta_description %}
+    تاریخچه پیامک ها
+{% endblock %}
+{% block extra_css %}
+<!-- Custom Style for the Loading Overlay / Additional CSS -->
+<style>
+    .loading-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+    }
+    .loader {
+        border: 8px solid #f3f3f3;
+        border-top: 8px solid #3498db;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="loading-overlay" id="loading-overlay">
+    <div class="loader"></div>
+</div>
+<div class="card">
+  <h5 class="card-header heading-color">تاریخچه پیامک ها</h5>
+  <div class="table-responsive text-nowrap" style="margin-bottom: 100px;">
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th>متن</th>
+          <th>تاریخ ارسال</th>
+        </tr>
+      </thead>
+      <tbody class="table-border-bottom-0">
+        {% for message in messages %}
+        <tr>
+          <td><i class="align-middle fab fa-angular fa-lg text-danger me-3"></i><strong>{{ message.message }}</strong></td>
+          <td>
+            {{ message.date_created|to_jalali }}
+          </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <a href="{% url 'alert-from-sms-contact-list' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="btn btn-secondary" type="button" style="margin: 30px;">بازگشت</a>
+  </div>
+</div>
+{% endblock %}

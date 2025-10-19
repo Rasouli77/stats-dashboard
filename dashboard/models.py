@@ -363,7 +363,7 @@ class AlertCameraMalfunction(models.Model):
     name = models.CharField(max_length=255, verbose_name="نام")
     mobile = models.CharField(max_length=11, verbose_name="شماره موبایل", unique=True)
     is_active = models.BooleanField(verbose_name="فعال")
-    last_time_sent = models.CharField(max_length=9, verbose_name="آخرین زمان ارسال", null=True, blank=True)
+    last_time_sent = models.DateTimeField(verbose_name="آخرین زمان ارسال", null=True, blank=True)
     date_created = models.DateTimeField(
         null=True, default=datetime.now, verbose_name="تاریخ ساخت"
     )

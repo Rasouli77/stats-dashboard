@@ -1,7 +1,7 @@
 from kavenegar import *
 import os
 from dotenv import load_dotenv
-from dashboard.models import Cam
+from dashboard.models import Cam, AlertCameraMalfunction, AlertCameraMalfunctionMessage
 import subprocess
 from django.core.management.base import BaseCommand
 import logging
@@ -13,7 +13,7 @@ load_dotenv()
 KAVENEGAR_API = os.environ.get("KAVENEGAR_API")
 
 
-def ping_ip(ip, timeout=15):
+def ping_ip(ip, timeout=1):
     try:
         result = subprocess.run(
             ["ping", "-c", "1", "-W", str(timeout), ip],
@@ -37,7 +37,7 @@ def find_broken_ips(merchant_hash):
     )  # change this later according to the merchant's hash
     for camera in cameras:
         camera.status = ping_ip(camera.ip)
-        if camera.status == True:
+        if camera.status == False: # change it accordingly
             broken_ips.append(camera.ip)
         camera.save()
     return broken_ips
@@ -45,20 +45,26 @@ def find_broken_ips(merchant_hash):
 
 def send_camera_malfunction_alert(mobile: str, broken_cam_ips: list):
     broken_cam_ips = [item for item in broken_cam_ips if item is not None]
-    mobile = [
-        mobile,
-    ]
     token = ",".join(broken_cam_ips)
+    contact = []
+    try:
+        contact = AlertCameraMalfunction.objects.get(mobile=mobile)
+    except Exception as e:
+        print(f"error: {e}")
+        return {"error": str(e)}
     try:
         api = KavenegarAPI(KAVENEGAR_API)
         params = {
             'sender': '', 
-            'receptor': '09126997470', # change this to mobile with the existing format
+            'receptor': mobile, # change this to mobile with the existing format
             'template': 'alert', 
             'token': token
         }
         response = api.verify_lookup(params)
-        print(response)
+        contact = AlertCameraMalfunction.objects.get(mobile=mobile)
+        message = AlertCameraMalfunctionMessage.objects.create(contact=contact, message=f"خطا در دوربین های زیر:\n{token}\nکانترباکس")
+        contact.last_time_sent = message.date_created
+        contact.save()
     except Exception as e:
         print(e)
         pass
@@ -73,8 +79,19 @@ def send_camera_malfunction_alert(mobile: str, broken_cam_ips: list):
 
 class Command(BaseCommand):
     help = "send sms of broken ips"
-
     def handle(self, *args, **kwargs):
-        broken_camera_ips = find_broken_ips("4CbCwLRPAJ5B") # change this hash later accordingly
+        hash_key = "4CbCwLRPAJ5B" # change this hash later accordingly
+        broken_camera_ips = find_broken_ips(hash_key) 
         print(broken_camera_ips)
-        send_camera_malfunction_alert("9361413096", broken_camera_ips)
+        if broken_camera_ips:
+            contacts = AlertCameraMalfunction.objects.filter(merchant__url_hash=hash_key)
+            if contacts:
+                for contact in contacts:
+                    if contact.is_active:
+                        send_camera_malfunction_alert(contact.mobile, broken_camera_ips)
+                    else:
+                        print("User Not Active.")
+            else:
+                print("No Contacts Found.")
+        else:
+            print("All cameras are working perfectly.")
