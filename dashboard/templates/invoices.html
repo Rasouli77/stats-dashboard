@@ -4,7 +4,7 @@
     مشاهده اطلاعات فروش
 {% endblock %}
 {% block meta_description %}
-	مشاهده اطلاعات فروش
+	  مشاهده اطلاعات فروش
 {% endblock %}
 {% block extra_css %}
 <!-- Style for Calendar, FlatPicker and Toastr -->
@@ -46,27 +46,15 @@
     }
 
     .highcharts-credits {
-      display: none;
+        display: none;
     }
 
-    .branches-grid {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 10px;
+    .demo-inline-spacing > * {
+        margin: 0px !important;
     }
-
-    /* Tablets */
-    @media (max-width: 992px) {
-      .branches-grid {
-        grid-template-columns: repeat(4, 1fr);
-      }
-    }
-
-    /* Phones */
-    @media (max-width: 576px) {
-      .branches-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
+    .box {
+        height: 25vh;  
+        overflow-y: auto;
     }
 </style>
 {% endblock %}
@@ -74,115 +62,135 @@
 <div class="loading-overlay" id="loading-overlay"></div>
 <div class="container">
   <div class="row">
-    <!-- Date Accordion -->
-    <div class="col-xl-4 col-lg-4 col-md-12 col-sm-12" style="margin-bottom: 10px;">
-      <h6>تاریخ</h6>
-      <div class="accordion mt-3 accordion-header-primary" id="accordionDate">
-          <div class="card accordion-item">
-          <h2 class="accordion-header d-flex align-items-center">
-              <button type="button" class="accordion-button" data-bs-toggle="collapse" data-bs-target="#collapseDate" aria-expanded="true">
-              <i class="menu-icon tf-icons bx bx-calendar"></i>
-              انتخاب تاریخ
-              </button>
-          </h2>
-
-          <div id="collapseDate" class="accordion-collapse collapse" data-bs-parent="#accordionDate">
-              <div class="accordion-body" style="display: flex; justify-content: center; align-items: center;">
-              <div id="date-range"></div>
-              </div>
-          </div>
-          </div>
-      </div>              
+    <!-- Date Picker Card -->
+    <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12" style="margin-bottom: 10px;">
+        <h1 style="color: #262626; font-size: 1.38rem; font-weight: 700;">مشاهده اطلاعات فروش</h1>
     </div>
-    <!-- Branch Accordion -->
-    <div class="col-xl-8 col-lg-8 col-md-12 col-sm-12" style="margin-bottom: 10px;">
-    <h6>شعب</h6>
-      <div class="accordion mt-3 accordion-header-primary" id="accordionBranch">
-          <div class="card accordion-item">
-          <h2 class="accordion-header d-flex align-items-center">
-              <button type="button" class="accordion-button" data-bs-toggle="collapse" data-bs-target="#collapseBranch" aria-expanded="true">
-              <i class="menu-icon tf-icons bx bx-map-alt"></i>
-              انتخاب شعب
-              </button>
-          </h2>
-
-          <div id="collapseBranch" class="accordion-collapse collapse" data-bs-parent="#accordionBranch">
-              <div class="accordion-body">
-              <div class="branches-grid mt-3">
-                  <div class="form-check mt-3">
-                      <input class="form-check-input" type="checkbox" id="select-all">
-                      <label class="form-check-label" for="defaultCheck1">انتخاب همه</label>
-                  </div>
-                  {% for branch in branches %}
-                  <div class="form-check mt-3">
-                      <input class="form-check-input fake-check" type="checkbox" value="{{ branch.pk }}">
-                      <label class="form-check-label" for="defaultCheck1">{{ branch.name }}</label>
-                  </div>
-                  {% endfor %}
-              </div>
-              </div>
-          </div>
-          </div>
-      </div>   
+    <div class="col-xl-3 col-lg-2 col-md-12 col-sm-12" style="margin-bottom: 10px;">
+        <h1 style="color: #262626; font-size: 1.125rem; font-weight: 700;">گزارش بر اساس:</h1>
     </div>
-    <form action="" method="get" id="filter-form" style="margin-bottom: 20px;">
-      <label style="display: none;" for="start-date">از تاریخ</label>
-      <input type="text" name="start-date" id="start-date" style="display: none;">
-      <label style="display: none;" for="end-date">تا</label>
-      <input type="text" name="end-date" id="end-date" style="display: none;">
-      {% for branch in branches %}
-      <div class="form-check mt-3" style="display: none;">
-          <input class="form-check-input real-check" type="checkbox" value="{{ branch.pk }}" name="branch">
-          <label class="form-check-label" for="defaultCheck1">{{ branch.name }}</label>
-      </div>
-      {% endfor %}
-      <button class="btn btn-primary btn-md" type="submit" id="filter-proxy-button" data-bs-toggle="collapse" data-bs-target="#collapseDate">اعمال فیلتر</button>
-    </form>
+    <div class="col-xl-3 col-lg-2 col-md-12 col-sm-12" style="margin-bottom: 10px;">
+        <small>بازه زمانی گزارش و شعب</small>
+        <div class="card mt-3">
+            <div class="card-body" style="padding: 0px !important;">
+                <button type="button" class="btn btn-outline-primary w-100" data-bs-toggle="modal" data-bs-target="#dateModal" style="border: none; color: black; background-color: #ccdbf1;">
+                    <i class="menu-icon tf-icons bx bx-filter"></i>
+                    فیلتر
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- Date Picker Modal -->
+    <div class="modal fade" id="dateModal" tabindex="-1" aria-labelledby="dateModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="dateModalLabel">بازه زمانی گزارش</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="بستن"></button>
+                </div>
+                <div class="modal-body" style="display: flex; justify-content: center; align-items: center;">
+                    <!-- Your date range picker goes here -->
+                    <div id="date-range"></div>
+                </div>
+                <div class="modal-footer">
+                    <button 
+                        type="button" 
+                        class="btn btn-primary" 
+                        id="confirmDateBtn">
+                        بعدی
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Branch Selector Card -->
+    <!-- Branch Selector Modal -->
+    <div class="modal fade" id="branchModal" tabindex="-1" aria-labelledby="branchModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="branchModalLabel">انتخاب شعب</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="بستن"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="branches-grid">
+                    <div class="form-check mt-2">
+                        <input class="form-check-input" type="checkbox" id="select-all">
+                        <label class="form-check-label" for="select-all">انتخاب همه</label>
+                    </div>
+                    {% for branch in branches %}
+                    <div class="form-check mt-2">
+                        <input class="form-check-input fake-check" type="checkbox" value="{{ branch.pk }}" id="branch-{{ branch.pk }}">
+                        <label class="form-check-label" for="branch-{{ branch.pk }}">{{ branch.name }}</label>
+                    </div>
+                    {% endfor %}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary">قبلی</button>
+                    <form action="" method="get" id="filter-form">
+                        <label style="display: none;" for="start-date">از تاریخ</label>
+                        <input type="text" name="start-date" id="start-date" style="display: none;">
+                        <label style="display: none;" for="end-date">تا</label>
+                        <input type="text" name="end-date" id="end-date" style="display: none;">
+                        {% for branch in branches %}
+                        <div class="form-check mt-3" style="display: none;">
+                            <input class="form-check-input real-check" type="checkbox" value="{{ branch.pk }}" name="branch">
+                            <label class="form-check-label" for="defaultCheck1">{{ branch.name }}</label>
+                        </div>
+                        {% endfor %}
+                        <button class="btn btn-primary btn-md" type="submit" id="filter-proxy-button" data-bs-dismiss="modal">فیلتر</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
   </div>
-</div>
-<div class="card">
-  <h5 class="card-header heading-color">اطلاعات فروش</h5>
-  <div class="table-responsive text-nowrap" style="margin-bottom: 100px;">
-    <table class="table table-hover">
-      <thead>
-        <tr>
-          <th>تاریخ میلادی</th>
-          <th>تاریخ شمسی</th>
-          <th>کد شعبه</th>
-          <th>نام شعبه</th>
-          <th>تعداد فاکتور</th>
-          <th>مبلغ فاکتور</th>
-          <th>ویرایش</th>
-        </tr>
-      </thead>
-      <tbody class="table-border-bottom-0">
-        {% for invoice in invoices %}
-        <tr>
-            <td>
-                {{ invoice.date|date:"Y-m-d" }} 
-            </td>
-            <td class="greg-date">
-                {{ invoice.date|date:"Y-m-d" }}
-            </td>
-            <td>
-                {{ invoice.branch.pk }}
-            </td>
-            <td>
-                {{ invoice.branch.name }}
-            </td>
-            <td>
-                {{ invoice.total_items }}
-            </td>
-            <td>
-                {{ invoice.total_amount }}
-            </td>
-            <td>
-            <a href="{% url 'invoice_detail' invoice_pk=invoice.pk %}">مشاهده</a>
-            </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+  <div class="row" style="margin-top: 40px;">
+    <div class="card">
+      <div class="table-responsive text-nowrap" style="margin-bottom: 100px; margin-top: 50px;">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>تاریخ میلادی</th>
+              <th>تاریخ شمسی</th>
+              <th>کد شعبه</th>
+              <th>نام شعبه</th>
+              <th>تعداد فاکتور</th>
+              <th>مبلغ فاکتور</th>
+              <th>ویرایش</th>
+            </tr>
+          </thead>
+          <tbody class="table-border-bottom-0">
+            {% for invoice in invoices %}
+            <tr>
+                <td>
+                    {{ invoice.date|date:"Y-m-d" }} 
+                </td>
+                <td class="greg-date">
+                    {{ invoice.date|date:"Y-m-d" }}
+                </td>
+                <td>
+                    {{ invoice.branch.pk }}
+                </td>
+                <td>
+                    {{ invoice.branch.name }}
+                </td>
+                <td>
+                    {{ invoice.total_items }}
+                </td>
+                <td>
+                    {{ invoice.total_amount }}
+                </td>
+                <td>
+                <a href="{% url 'invoice_detail' invoice_pk=invoice.pk %}"><i class="bx bx-edit"></i></a>
+                </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 </div>
 {% endblock %}
@@ -272,7 +280,7 @@
                         ${invoice.total_amount}
                     </td>
                     <td>
-                    <a href="invoice-detail/${invoice.id}">مشاهده</a>
+                    <a href="invoice-detail/${invoice.id}"><i class="bx bx-edit"></i></a>
                     </td>
                 </tr>
                 `
@@ -313,6 +321,32 @@
 </script>
 <!-- Sweet Alert CDN -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- Date and Branch Modal Configuration -->
+<script>
+    document.getElementById("confirmDateBtn").addEventListener("click", function () {
+    // Close the date modal
+    var dateModal = bootstrap.Modal.getInstance(document.getElementById("dateModal"));
+    dateModal.hide();
+
+    // When it's fully hidden, open the branch modal
+    document.getElementById("dateModal").addEventListener("hidden.bs.modal", function () {
+        var branchModal = new bootstrap.Modal(document.getElementById("branchModal"));
+        branchModal.show();
+    }, { once: true });
+    });
+
+    document.querySelector(".btn-secondary").addEventListener("click", function () {
+    // Close the date modal
+    var dateModal = bootstrap.Modal.getInstance(document.getElementById("branchModal"));
+    dateModal.hide();
+
+    // When it's fully hidden, open the date modal
+    document.getElementById("branchModal").addEventListener("hidden.bs.modal", function () {
+        var branchModal = new bootstrap.Modal(document.getElementById("dateModal"));
+        branchModal.show();
+    }, { once: true });
+    });
+</script>
 <!-- Button Color and Background -->
 <script src="{% static 'assets/js/accordion-color-and-background.js' %}"></script>
 {% endblock %}

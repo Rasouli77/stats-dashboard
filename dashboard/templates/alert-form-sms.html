@@ -9,7 +9,13 @@
 {% block content %}
 {% if request.user.is_authenticated %}
     {% if request.user.is_superuser %}
-    <h4 class="py-3 breadcrumb-wrapper mb-4">ساخت مخاطب دریافت پیامک</h4>
+    <div class="d-flex align-items-center py-3 mb-4">
+        <i class='bx bx-user-pin bx-lg text-primary me-3'></i>
+        <div>
+            <h4 class="mb-1">ساخت مخاطب جدید</h4>
+            <p class="text-muted mb-0">مخاطب جدید دریافت پیامک را در این قسمت بسازید</p>
+        </div>
+    </div>
     <form action="" method="post">
         {% csrf_token %}
         <div class="row">
@@ -17,17 +23,22 @@
               <div class="card mb-4">
                 <div class="card-body">
                   <div>
+                    <i class='bx bx-user text-muted'></i>
                     <label class="form-label" for="id_name">نام:</label>
                     <input type="text" class="form-control" name="name" value="" maxlength="255" required="" id="id_name">
-                    <label class="form-label" for="id_mobile">شماره موبایل:</label>
+                    <i class='bx bx-mobile-alt text-muted'></i>
+                    <label class="form-label" for="id_mobile" style="margin-top: 20px;">شماره موبایل:</label>
                     <input type="number" class="form-control" name="mobile" value="" maxlength="11" required="" id="id_mobile" pattern="09[0-9]{9}" placeholder="09xxxxxxxxx">
                     <div class="form-check form-switch" style="margin-top: 20px;">
                       <label class="form-check-label" for="flexSwitchCheckDefault">فعال</label>
                       <input class="form-check-input" type="checkbox" name="is_active" id="flexSwitchCheckDefault" checked="">
                     </div>
-                    <button class="btn btn-primary" type="submit">ثبت</button>
-                    <a href="{% url 'alert-from-sms-contact-list' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="btn btn-secondary" type="button" style="margin: 30px;">بازگشت</a>
+                    <small class="form-text">در صورت فعال بودن، مخاطب پیامک دریافت می‌کند</small>
                   </div>
+                </div>
+                <div style="display: flex; justify-content: center; align-items: center; flex-direction: row;">
+                  <button class="btn btn-primary" type="submit" style="margin: 20px; width: 40%;"><i style="margin-left: 10px;" class='bx bx-save me-2'></i> ثبت</button>
+                  <a href="{% url 'alert-from-sms-contact-list' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="btn btn-secondary" type="button" style="margin: 20px; width: 40%;"><i style="margin-left: 10px;" class='bx bx-arrow-back me-2'></i> بازگشت</a>
                 </div>
               </div>
             </div>

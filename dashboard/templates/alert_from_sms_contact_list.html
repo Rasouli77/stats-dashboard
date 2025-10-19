@@ -40,9 +40,15 @@
 <div class="loading-overlay" id="loading-overlay">
     <div class="loader"></div>
 </div>
+<div class="d-flex align-items-center py-3 mb-4">
+    <i class='bx bx-user-pin bx-lg text-primary me-3'></i>
+    <div>
+        <h4 class="mb-1">مخاطبین دریافت پیامک</h4>
+        <p class="text-muted mb-0">لیست مخاطبین دریافت پیامک</p>
+    </div>
+</div>
 <div class="card">
-  <h5 class="card-header heading-color">مخاطبین دریافت پیامک</h5>
-  <a href="{% url 'alert_form_sms' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="btn btn-success" type="button" style="width: 200px; margin: 20px;">مخاطب جدید</a>
+  <a href="{% url 'alert_form_sms' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="btn btn-success" type="button" style="width: 200px; margin: 20px;"><i style="margin-left: 10px;" class='bx bx-plus-circle me-2'></i> مخاطب جدید</a>
   <div class="table-responsive text-nowrap" style="margin-bottom: 100px;">
     <table class="table table-hover">
       <thead>
@@ -102,7 +108,7 @@
         {% endfor %}
         </tbody>
     </table>
-    <a href="{% url 'home' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="btn btn-secondary" type="button" style="margin: 30px;">بازگشت</a>
+    <a href="{% url 'home' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="btn btn-secondary" type="button" style="margin: 30px;"><i style="margin-left: 10px;" class='bx bx-arrow-back me-2'></i> بازگشت</a>
   </div>
 </div>
 {% endblock %}

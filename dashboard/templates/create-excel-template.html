@@ -72,10 +72,17 @@
 {% endblock %}
 {% block content %}
 <div class="loading-overlay" id="loading-overlay"></div>
+<div class="d-flex align-items-center py-3 mb-4">
+    <i class='bx bx-spreadsheet bx-lg text-primary me-3'></i>
+    <div>
+        <h4 class="mb-1">تمپلیت اکسل اطلاعات فروش</h4>
+        <p class="text-muted mb-0">در صورتی که API فروش متصل نیست و یا قصد دارید اطلاعات فروش را از طریق اکسل آپلود کنید باید در این قسمت تمپلیت بسازید</p>
+    </div>
+</div>
 <div class="container">
   <div class="row">
     <!-- Date Accordion -->
-    <div class="col-xl-4 col-lg-4 col-md-12 col-sm-12" style="margin-bottom: 10px;">
+    <div class="col-xl-6 col-lg-4 col-md-12 col-sm-12" style="margin-bottom: 10px;">
         <h6>تاریخ</h6>
         <div class="accordion mt-3 accordion-header-primary" id="accordionDate">
             <div class="card accordion-item">
@@ -95,7 +102,7 @@
         </div>              
     </div>
     <!-- Branch Accordion -->
-    <div class="col-xl-3 col-lg-3 col-md-12 col-sm-12" style="margin-bottom: 10px;">
+    <div class="col-xl-6 col-lg-3 col-md-12 col-sm-12" style="margin-bottom: 10px;">
     <h6>شعب</h6>
         <div class="accordion mt-3 accordion-header-primary" id="accordionBranch">
             <div class="card accordion-item">
@@ -107,7 +114,7 @@
             </h2>
             <div id="collapseBranch" class="accordion-collapse collapse" data-bs-parent="#accordionBranch">
                 <div class="accordion-body" style="position: absolute; z-index: 999; width: 100%; background-color: white; box-shadow: 0 0.25rem 1rem rgba(147, 158, 170, 0.45);">
-                    <div class="form-check">
+                    <div class="form-check" style="margin-top: 10px;">
                         <input class="form-check-input" type="checkbox" id="select-all">
                         <label class="form-check-label" for="defaultCheck1">انتخاب همه</label>
                     </div>
@@ -123,7 +130,7 @@
         </div>   
     </div>
 
-    <div class="col-xl-2 col-lg-2 col-md-12 col-sm-12" style="margin-top: 20px; display: flex; justify-content: center; align-items: center;">
+    <div style="display: flex; justify-content: center; align-items: center; margin-top: 60px;">
         <form action="" method="get" id="filter-form" style="margin-bottom: 20px;">
         <label style="display: none;" for="start-date">از تاریخ</label>
         <input type="text" name="start-date" id="start-date" style="display: none;">
@@ -135,7 +142,7 @@
             <label class="form-check-label" for="defaultCheck1">{{ branch.name }}</label>
         </div>
         {% endfor %}
-        <button class="btn btn-primary btn-md" type="submit" id="filter-proxy-button">ساخت تمپلیت</button>
+        <button class="btn btn-primary btn-md" type="submit" id="filter-proxy-button"><i style="margin-left: 10px;" class='bx bx-download me-2'></i> دانلود فایل</button>
         </form>
     </div>
   </div>
