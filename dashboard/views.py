@@ -770,9 +770,11 @@ def create_campaign(request, url_hash):
                         **form.cleaned_data,
                     )
                 messages.success(request, "کمپین با موفقیت ساخته شد")
-                return redirect("campaign", request.user.profile.merchant.url_hash)
+                return render(
+                        request, "create-campaign.html", {"form": form, "branches": branches}
+                    )
             else:
-                messages.error(request, "لطفا اطلاعات کمپین را به درستی وارد نمایید")
+                messages.error(request, f"{form.errors}")
         return render(
             request, "create-campaign.html", {"form": form, "branches": branches}
         )
@@ -1548,21 +1550,6 @@ def campaign_detail(request, campaign_id):
             "total_items": json.dumps(invoice_count_series),
         },
     )
-
-
-@login_required
-def stats_menu(request, url_hash):
-    return render(request, "stats-menu.html")
-
-
-@login_required
-def info_menu(request, url_hash):
-    return render(request, "info-menu.html")
-
-
-@login_required
-def campaign_menu(request, url_hash):
-    return render(request, "campaign-menu.html")
 
 
 @login_required

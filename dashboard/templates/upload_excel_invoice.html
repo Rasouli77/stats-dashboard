@@ -53,10 +53,17 @@
 </div>
 <!-- /Error -->
 {% else %}
+<div class="d-flex align-items-center py-3 mb-4">
+    <i class='bx bx-cloud-upload bx-lg text-primary me-3'></i>
+    <div>
+        <h4 class="mb-1">آپلود اطلاعات فروش</h4>
+        <p class="text-muted mb-0">فایل اکسل اطلاعات فروش را در این قسمت آپلود کنید. (فایل آپلود شده باید طبق تمپلیت باشد.)</p>
+        <p class="text-muted mb-0"><a href="{% url 'excel_template_generator' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}"><i style="margin-left: 5px;" class='bx bx-plus-circle me-2'></i> ورود به صفحه ساخت تمپلیت اکسل</p></a>
+    </div>
+</div>
 <div class="row">
 <div class="col-12">
     <div class="card mb-4">
-        <h5 class="card-header heading-color">آپلود اطلاعات فروش</h5>
         <div class="card-body" style="display: flex; flex-direction: column; align-items: center;">
             <form method="post" enctype="multipart/form-data" class="form form-control" id="dropzone-basic">
                 {% csrf_token %}
@@ -66,8 +73,9 @@
                     <span class="note needsclick">فایل اکسل با توجه به تمپلیت مربوطه آپلود شود</span>
                 </div>
             </form>
-            <button class="btn btn-primary" id="submit-invoice-upload" style="margin-top: 25px; width: 15%;">آپلود</button>
+            <button class="btn btn-primary" id="submit-invoice-upload" style="margin-top: 25px; width: 15%;"><i style="margin-left: 10px;" class='bx bx-cloud-upload me-2'></i> آپلود</button>
             <button class="btn btn-danger" id="remove-invoice-file" style="margin-top: 25px; width: 15%;">حذف فایل</button>
+            <a href="{% url 'home' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="btn btn-secondary" type="button" style="margin-top: 25px; width: 15%;"><i style="margin-left: 10px;" class='bx bx-arrow-back me-2'></i> بازگشت</a>
         </div> 
     </div>
 </div>

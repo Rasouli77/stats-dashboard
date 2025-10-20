@@ -7,9 +7,15 @@
 	  کمپین ها
 {% endblock %}
 {% block content %}
+<div class="d-flex align-items-center py-3 mb-4">
+    <i class='bx bx-bullseye bx-lg text-primary me-3'></i>
+    <div>
+        <h4 class="mb-1">کمپین ها</h4>
+        <p class="text-muted mb-0">لیست کمپین های همه شعب</p>
+    </div>
+</div>
 <div class="card">
-  <h5 class="card-header heading-color">کمپین ها</h5>
-  <a href="{% url 'create_campaign' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="btn btn-success" type="button" style="width: 200px; margin: 20px;">ساخت کمپین جدید</a>
+  <a href="{% url 'create_campaign' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="btn btn-success" type="button" style="width: 200px; margin: 20px;"><i style="margin-left: 10px;" class='bx bx-plus me-2'></i> ساخت کمپین جدید</a>
   <div class="table-responsive text-nowrap" style="margin-bottom: 100px;">
     <table class="table table-hover">
       <thead>
@@ -57,6 +63,7 @@
         </tbody>
     </table>
   </div>
+  <a href="{% url 'home' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="btn btn-secondary" type="button" style="margin: 30px; width: 100px;"><i style="margin-left: 10px;" class='bx bx-arrow-back me-2'></i> بازگشت</a>
 </div>
 {% endblock %}
 {% block extra_js %}

@@ -30,6 +30,7 @@
     <link rel="stylesheet" href="{% static 'assets/vendor/libs/formvalidation/dist/css/formValidation.min.css' %}">
     <!-- Google Font Vazirmatn -->
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap" rel="stylesheet">
+    <!-- More CSS -->
     <style>
       body {
         font-family: 'Vazirmatn', sans-serif;
@@ -70,7 +71,7 @@
         <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
           <div class="app-brand demo">
             <a href="" class="app-brand-link">
-              <span class="app-brand-text demo menu-text fw-bold ms-2">counter box</span>
+              <span class="app-brand-text demo menu-text fw-bold ms-2">Counter Box</span>
             </a>
 
             <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto">
@@ -91,12 +92,13 @@
                 <div data-i18n="Page 1">خانه</div>
               </a>
             </li>
-            <li class="menu-item open">
+            <li class="menu-item">
                 <a href="javascript:void(0);" class="menu-link">
                   <i class="menu-icon tf-icons bx bx-spreadsheet"></i>
                   <div data-i18n="Invoice">آمار</div>
+                  <i class="menu-arrow bx bx-chevron-down" style="margin-right: auto;"></i>
                 </a>
-                <ul class="menu-sub show">
+                <ul class="menu-sub">
                   <li class="menu-item">
                     <a href="{% url 'people_counter' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
                       <div data-i18n="List">ترافیک</div>
@@ -109,12 +111,13 @@
                   </li>
                 </ul>
             </li>
-            <li class="menu-item open">
+            <li class="menu-item">
                 <a href="javascript:void(0);" class="menu-link">
                   <i class="menu-icon tf-icons bx bx-chart"></i>
                   <div data-i18n="Invoice">آنالیز</div>
+                  <i class="menu-arrow bx bx-chevron-down" style="margin-right: auto;"></i>
                 </a>
-                <ul class="menu-sub show">
+                <ul class="menu-sub">
                   <li class="menu-item">
                     <a href="{% url 'analysis' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}?type=1" class="menu-link">
                       <div data-i18n="List">نرخ تبدیل</div>
@@ -133,35 +136,79 @@
                 </ul>
             </li>
             <li class="menu-item">
-              <a href="{% url 'info_menu' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-file"></i>
-                <div data-i18n="Page 1">اطلاعات</div>
-              </a>
+                <a href="javascript:void(0);" class="menu-link">
+                  <i class="menu-icon tf-icons bx bx-file"></i>
+                  <div data-i18n="Invoice">اطلاعات</div>
+                  <i class="menu-arrow bx bx-chevron-down" style="margin-right: auto;"></i>
+                </a>
+                <ul class="menu-sub">
+                  <li class="menu-item">
+                    <a href="{% url 'invoices' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
+                      <div data-i18n="List">فروش</div>
+                    </a>
+                  </li>
+                  <li class="menu-item">
+                    <a href="{% url 'excel_template_generator' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
+                      <div data-i18n="Preview">تمپلیت</div>
+                    </a>
+                  </li>
+                  <li class="menu-item">
+                    <a href="{% url 'upload_excel_file_invoice' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
+                      <div data-i18n="Preview">آپلود</div>
+                    </a>
+                  </li>
+                </ul>
             </li>
             <li class="menu-item">
-              <a href="{% url 'campaign_menu' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-calendar"></i>
-                <div data-i18n="Page 2">کمپین</div>
-              </a>
+                <a href="javascript:void(0);" class="menu-link">
+                  <i class="menu-icon tf-icons bx bx-calendar"></i>
+                  <div data-i18n="Invoice">کمپین</div>
+                  <i class="menu-arrow bx bx-chevron-down" style="margin-right: auto;"></i>
+                </a>
+                <ul class="menu-sub">
+                  <li class="menu-item">
+                    <a href="{% url 'create_campaign' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
+                      <div data-i18n="List">ساخت</div>
+                    </a>
+                  </li>
+                  <li class="menu-item">
+                    <a href="{% url 'campaign' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
+                      <div data-i18n="Preview">لیست</div>
+                    </a>
+                  </li>
+                  <li class="menu-item">
+                    <a href="{% url 'campaign_comparison' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
+                      <div data-i18n="Preview">مقایسه</div>
+                    </a>
+                  </li>
+                </ul>
             </li>
             <li class="menu-item">
-              <a href="{% url 'camera_list' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-map"></i>
-                <div data-i18n="Page 2">دوربین</div>
-              </a>
+                <a href="javascript:void(0);" class="menu-link">
+                  <i class="menu-icon tf-icons bx bx-envelope"></i>
+                  <div data-i18n="Invoice">اطلاع رسانی</div>
+                  <i class="menu-arrow bx bx-chevron-down" style="margin-right: auto;"></i>
+                </a>
+                <ul class="menu-sub">
+                  <li class="menu-item">
+                    <a href="{% url 'alert-from-sms-contact-list' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
+                      <div data-i18n="List">پیامک اختلال</div>
+                    </a>
+                  </li>
+                  <li class="menu-item">
+                    <a href="{% url 'alert_form_social' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
+                      <div data-i18n="Preview">گزارش روزانه</div>
+                    </a>
+                  </li>
+                </ul>
             </li>
             <li class="menu-item">
-              <a href="{% url 'alert_menu' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-envelope"></i>
-                <div data-i18n="Page 2">اطلاع رسانی</div>
-              </a>
-            </li>
-            <li class="menu-item open">
                 <a href="javascript:void(0);" class="menu-link">
                   <i class="menu-icon tf-icons bx bx-user"></i>
                   <div data-i18n="Invoice">کاربران</div>
+                  <i class="menu-arrow bx bx-chevron-down" style="margin-right: auto;"></i>
                 </a>
-                <ul class="menu-sub show">
+                <ul class="menu-sub">
                   <li class="menu-item">
                     <a href="{% url 'users' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
                       <div data-i18n="List">لیست کاربران</div>
@@ -173,6 +220,12 @@
                     </a>
                   </li>
                 </ul>
+            </li>
+            <li class="menu-item">
+              <a href="{% url 'camera_list' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-camera"></i>
+                <div data-i18n="Page 2">دوربین</div>
+              </a>
             </li>
           </ul>
         </aside>
@@ -314,5 +367,24 @@
     <!-- Logout JS -->
      <script src="{% static 'assets/js/logout.js' %}"></script>
     <!-- Page JS -->
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const menuLinks = document.querySelectorAll(".menu-item > .menu-link");
+
+        menuLinks.forEach(link => {
+          link.addEventListener("click", function () {
+            const parentItem = this.parentElement;
+            const subMenu = parentItem.querySelector(".menu-sub");
+
+            // Toggle classes on the clicked item only
+            parentItem.classList.toggle("open");
+            if (subMenu) {
+              subMenu.classList.toggle("show");
+            }
+          });
+        });
+      });
+    </script>
+
   </body>
 </html>

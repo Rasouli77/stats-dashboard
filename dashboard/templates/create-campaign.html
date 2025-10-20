@@ -23,23 +23,21 @@
 </style>
 {% endblock %}
 {% block content %}
-{% if messages %}
-{% for message in messages %}
-    {% if message.tags == 'success' %}
-    <div class="alert alert-success" style="width: 50%;">{{ message }}</div>
-    {% else %}
-    <div class="alert alert-danger" style="width: 50%;">{{ message }}</div>
-    {% endif %}
-{% endfor %}
-{% endif %}
+<div class="d-flex align-items-center py-3 mb-4">
+    <i class='bx bx-bullseye bx-lg text-primary me-3'></i>
+    <div>
+        <h4 class="mb-1">ساخت کمپین</h4>
+        <p class="text-muted mb-0">در این قسمت می توانید برای شعب انتخاب شده کمپین خود را بسازید</p>
+    </div>
+</div>
 <div class="row">
     <div class="col-md-6">
         <div class="card mb-4">
-        <h5 class="card-header heading-color">ساخت کمپین</h5>
         <div class="card-body">
             <form method="post" action="" id="form-create-campaign">
                 {% csrf_token %}
-                <div>
+                <div style="margin-top: 20px;">
+                    <i class='bx bx-bullseye text-muted'></i>
                     <label for="id_name" class="form-label">نام کمپین</label>
                     <input type="text" name="name" value="" maxlength="255" required class="form-control" id="id_name" placeholder="کمپین نوروز" aria-describedby="defaultFormControlHelp">
                     <small id="err-name" style="color: #ff5b5c;">نام کمپین را وارد کنید</small>
@@ -55,19 +53,22 @@
                     <input type="text" name="end_date" value="" required id="id_end_date">
                 </div>
 
-                <div>
+                <div style="margin-top: 20px;">
+                    <i class='bx bx-calendar text-muted'></i>
                     <label for="flatpickr-date" class="form-label">تاریخ شروع</label>
                     <input type="text" class="form-control" placeholder="YYYY/MM/DD" id="flatpickr-date">
                     <small id="err-start-date" style="color: #ff5b5c;">تاریخ شروع را وارد کنید</small>
                 </div>
 
-                <div>
+                <div style="margin-top: 20px;">
+                    <i class='bx bx-calendar text-muted'></i>
                     <label for="flatpickr-date-end" class="form-label">تاریخ پایان</label>
                     <input type="text" class="form-control" placeholder="YYYY/MM/DD" id="flatpickr-date-end">
                     <small id="err-end-date" style="color: #ff5b5c;">تاریخ پایان را وارد کنید</small>
                 </div>
 
-                <div id="id_branch">
+                <div id="id_branch" style="margin-top: 20px;">
+                    <i class='bx bx-current-location text-muted'></i>
                     <label class="form-label">شعب</label>
                     <div>
                         <label class="form-check-label">
@@ -82,13 +83,15 @@
                     <small id="err-branch" style="color: #ff5b5c;">شعبه یا شعب مورد نظر را انتخاب کنید</small>
                 </div>
 
-                <div>
+                <div style="margin-top: 20px;">
+                    <i class='bx bx-wallet text-muted'></i>
                     <label for="id_cost" class="form-label">هزینه:</label>
                     <input type="number" name="cost" value="" maxlength="255" id="id_cost" class="form-control" placeholder="(هزینه کمپین به تومان)" aria-describedby="defaultFormControlHelp">
                     <small id="err-cost" style="color: #ff5b5c;">هزینه را وارد کنید</small>
                 </div>
 
-                <div>
+                <div style="margin-top: 20px;">
+                    <i class='bx bx-text text-muted'></i>
                     <label for="id_campaign_type" class="form-label">نوع کمپین:</label>
                     <select name="campaign_type" required id="id_campaign_type" class="form-select">
                             <option value="">---------</option>
@@ -98,14 +101,25 @@
                     <small id="err-type" style="color: #ff5b5c;">نوع کمپین را وارد کنید</small>
                 </div>
 
-                <button class="btn btn-primary" style="margin-top: 35px;" id="submit-btn">ثبت</button>
+                <div style="margin-top: 35px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                    <button class="btn btn-primary" id="submit-btn" style="width: 40%;;"><i style="margin-left: 10px;" class='bx bx-save me-2'></i> ثبت</button>
+                    <a href="{% url 'campaign' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="btn btn-secondary" style="width: 40%; margin-top: 30px;"><i style="margin-left: 10px;" class='bx bx-arrow-back me-2'></i> بازگشت</a>
+                </div>
             </form>
             
         </div>
         </div>
     </div>
 </div>
-<a href="{% url 'campaign' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="btn btn-secondary" style="margin-top: 35px; width: 200px;">بازگشت</a>
+{% for message in messages %}
+    {% if message.tags == 'success' %}
+        <div style="display: none;" class="alert alert-success" role="alert">{{ message }}</div>
+        {% elif message.tags == 'warning' %}
+        <div style="display: none;" class="alert alert-warning" role="alert">{{ message }}</div>
+        {% else %}
+        <div style="display: none;" class="alert alert-danger" role="alert">{{ message }}</div>
+    {% endif %}
+{% endfor %}
 {% endblock %}
 {% block extra_js %}
 <!-- FlatPicker JS (Calendar) -->
@@ -233,5 +247,44 @@
             });
         }
     });
+</script>
+<!-- JQuery and Toastr Scripts -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="{% static 'assets/vendor/libs/toastr/toastr.js' %}"></script>
+<!-- Sweet Alert CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- Pop Ups -->
+<script>
+  try {
+    const successContainer = document.querySelector(".alert-success");
+    if (successContainer) {
+      const success = successContainer.innerText;
+        Swal.fire({
+        icon: "success",
+        title: "موفق",
+        html: `${success}<br><br><a class="btn btn-primary" href="{% url 'campaign' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}">بستن</a>`,
+        showConfirmButton: false,
+      });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+  
+  try {
+    const errorContainer = document.querySelector(".alert-danger");
+    const errorItem = $('.alert ul.errorlist li:first').contents().first().text().trim();
+    if (errorContainer.children.length >= 1) {
+      const error = `${errorItem} - ${document.querySelector(".errorlist li .errorlist li").innerText}`;
+        Swal.fire({
+        icon: "error",
+        title: "خطا",
+        html: `${error}`,
+        confirmButtonColor: '#5a8dee',
+        confirmButtonText: 'بستن' 
+      });
+    }
+  } catch (error) {
+    console.log(error);
+  }
 </script>
 {% endblock %}
