@@ -37,14 +37,15 @@ def find_broken_ips(merchant_hash):
     )  # change this later according to the merchant's hash
     for camera in cameras:
         camera.status = ping_ip(camera.ip)
-        if camera.status == False: # change it accordingly
-            broken_ips.append(camera.ip)
+        if camera.status == True: # change it accordingly
+            broken_ips.append(camera.cam_name)
         camera.save()
     return broken_ips
 
 
 def send_camera_malfunction_alert(mobile: str, broken_cam_ips: list):
-    broken_cam_ips = [item for item in broken_cam_ips if item is not None]
+    broken_cam_ips = [item.replace(" ", "_") for item in broken_cam_ips if item is not None]
+    print(broken_cam_ips)
     token = ",".join(broken_cam_ips)
     contact = []
     try:

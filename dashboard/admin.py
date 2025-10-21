@@ -15,7 +15,7 @@ from .models import (
     HolidayDate,
     HolidayDescription,
     AlertCameraMalfunction,
-    AlertCameraMalfunctionMessage
+    AlertCameraMalfunctionMessage,
 )
 from rangefilter.filters import DateRangeFilter
 
@@ -147,14 +147,35 @@ class InvoiceAdmin(admin.ModelAdmin):
     exclude = ["date_created"]
     list_per_page = 75
 
+
 class HolidayDescriptionAdminInline(admin.TabularInline):
     model = HolidayDescription
     readonly_fields = ["description"]
     extra = 0
 
+
 class HolidayDateAdmin(admin.ModelAdmin):
     inlines = [HolidayDescriptionAdminInline]
     readonly_fields = ["date"]
+
+
+class AlertCameraMalfunctionAdmin(admin.ModelAdmin):
+    list_display = [
+        "merchant",
+        "name",
+        "mobile",
+        "is_active",
+        "last_time_sent",
+        "date_created",
+        "last_modified",
+    ]
+    exclude = ["date_created", "last_modified"]
+
+
+class AlertCameraMalfunctionMessageAdmin(admin.ModelAdmin):
+    list_display = ["contact", "date_created"]
+    exclude = ["date_created", "last_modified"]
+
 
 admin.site.register(PeopleCounting, PeopleCountingAdmin)
 admin.site.register(Cam, CamAdmin)
@@ -170,6 +191,5 @@ admin.site.register(PermissionToViewBranch, PermissionToViewBranchAdmin)
 admin.site.register(Invoice, InvoiceAdmin)
 admin.site.register(HolidayDate, HolidayDateAdmin)
 admin.site.register(HolidayDescription)
-admin.site.register(AlertCameraMalfunction)
-admin.site.register(AlertCameraMalfunctionMessage)
-
+admin.site.register(AlertCameraMalfunction, AlertCameraMalfunctionAdmin)
+admin.site.register(AlertCameraMalfunctionMessage, AlertCameraMalfunctionMessageAdmin)

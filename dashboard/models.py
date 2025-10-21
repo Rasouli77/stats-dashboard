@@ -310,7 +310,9 @@ class Invoice(models.Model):
     branch = models.ForeignKey(Branch, on_delete=models.CASCADE, db_index=True)
     total_amount = models.BigIntegerField(verbose_name="مبلغ کل")
     total_items = models.BigIntegerField(verbose_name="تعداد آیتم")
-    total_product = models.IntegerField(null=True, blank=True, verbose_name="تعداد محصول")
+    total_product = models.IntegerField(
+        null=True, blank=True, verbose_name="تعداد محصول"
+    )
     date_created = models.DateTimeField(
         null=True, default=datetime.now, verbose_name="تاریخ ساخت"
     )
@@ -325,26 +327,35 @@ class Invoice(models.Model):
 
     def __str__(self):
         return f"{self.pk}"
-    
+
 
 class HolidayDate(models.Model):
-    gregorian_date = models.DateField(null=True, db_index=True, verbose_name="تاریخ میلادی")
+    gregorian_date = models.DateField(
+        null=True, db_index=True, verbose_name="تاریخ میلادی"
+    )
     date = models.CharField(max_length=10, verbose_name="تاریخ شمسی")
 
     def __str__(self):
         return self.date
-    
+
     class Meta:
         verbose_name = "تاریخ تعطیلات"
         verbose_name_plural = "تاریخ تعطیلات"
 
+
 class HolidayDescription(models.Model):
     description = models.CharField(max_length=255, verbose_name="مناسبت")
-    date = models.ForeignKey(HolidayDate, on_delete=models.CASCADE, db_index=True, related_name="holidaydsc", verbose_name="تاریخ")
+    date = models.ForeignKey(
+        HolidayDate,
+        on_delete=models.CASCADE,
+        db_index=True,
+        related_name="holidaydsc",
+        verbose_name="تاریخ",
+    )
 
     def __str__(self):
         return self.description
-    
+
     class Meta:
         verbose_name = "مناسبت تعطیلات"
         verbose_name_plural = "مناسبت تعطیلات"
@@ -358,12 +369,14 @@ class AlertCameraMalfunction(models.Model):
         verbose_name="مرچنت",
         db_index=True,
         blank=True,
-        null=True
+        null=True,
     )
     name = models.CharField(max_length=255, verbose_name="نام")
     mobile = models.CharField(max_length=11, verbose_name="شماره موبایل", unique=True)
     is_active = models.BooleanField(verbose_name="فعال")
-    last_time_sent = models.DateTimeField(verbose_name="آخرین زمان ارسال", null=True, blank=True)
+    last_time_sent = models.DateTimeField(
+        verbose_name="آخرین زمان ارسال", null=True, blank=True
+    )
     date_created = models.DateTimeField(
         null=True, default=datetime.now, verbose_name="تاریخ ساخت"
     )
@@ -415,4 +428,3 @@ class AlertCameraMalfunctionMessage(models.Model):
 #     last_modified = models.DateTimeField(
 #         auto_now=True, verbose_name="تاریخ آخرین تغییر"
 #     )
-    

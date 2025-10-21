@@ -21,6 +21,19 @@
         display: none;
     }
 </style>
+<!-- Form Custom Style -->
+<style>
+    #form-card {
+        background-clip: padding-box;
+        border-style: solid;
+        box-shadow: none;
+        border-width: 1px;
+        border-color: #e5e5e5;
+        border-radius: 12px;
+        height: 100%;
+        padding: 10px;
+    }
+</style>
 {% endblock %}
 {% block content %}
 <div class="d-flex align-items-center py-3 mb-4">
@@ -32,7 +45,7 @@
 </div>
 <div class="row">
     <div class="col-md-6">
-        <div class="card mb-4">
+        <div class="card mb-4" id="form-card">
         <div class="card-body">
             <form method="post" action="" id="form-create-campaign">
                 {% csrf_token %}

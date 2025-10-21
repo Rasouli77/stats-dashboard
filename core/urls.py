@@ -47,6 +47,7 @@ from dashboard.views import (
     alert_from_sms_contact_list_detail,
     alert_form_social,
     alert_form_sms_edit,
+    campaign_search_as_type
 )
 from dashboard.api_views import (
     MultipleBranches,
@@ -174,4 +175,5 @@ urlpatterns = [
     path("dashboard/alert-from-sms-contact-list/<str:url_hash>", alert_from_sms_contact_list, name="alert-from-sms-contact-list"),
     path("dashboard/alert-from-sms-contact-list-detail/<int:contact_id>", alert_from_sms_contact_list_detail, name="alert-from-sms-contact-list-detail"),
     path("dashboard/alert-form-sms-edit/<int:contact_id>", alert_form_sms_edit, name="alert-form-sms-edit"),
+    path("dashboard/search/campaign_search_as_type/", campaign_search_as_type, name="campaign_search_as_type"),
 ]

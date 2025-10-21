@@ -668,6 +668,7 @@ class NormalMonthlyDisplay(APIView):
     Whenever the monthly display button is pushed on the front-end, it sends a request to this API.
     It then send a dictionary which contains 2 lists: months and values.
     """
+
     def post(self, request):
         """
         A request of type post must be sent to this API otherwise, it sends an error.
@@ -690,6 +691,7 @@ class abNormalMonthlyDisplay(APIView):
     Whenever the monthly display button is pushed on the front-end, it sends a request to this API.
     It then send a dictionary which contains 2 lists: months and values.
     """
+
     def post(self, request):
         """
         A request of type post must be sent to this API otherwise, it sends an error.

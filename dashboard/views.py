@@ -13,7 +13,7 @@ from .models import (
     Cam,
     Invoice,
     AlertCameraMalfunction,
-    AlertCameraMalfunctionMessage
+    AlertCameraMalfunctionMessage,
 )
 from django.db.models import Sum, F, Q, Min, Max
 from django.contrib.auth.models import User
@@ -25,7 +25,7 @@ from .forms import (
     CreateCampaign,
     UploadInvoiceExcel,
     InvoiceForm,
-    AlertCameraMalfunctionForm
+    AlertCameraMalfunctionForm,
 )
 import jdatetime
 import json
@@ -40,6 +40,7 @@ from io import BytesIO
 import random
 import requests
 from django.db.models import F, ExpressionWrapper, FloatField
+
 
 def perm_to_open(request, url_hash):
     """Checks if the user has the right to open the page."""
@@ -196,28 +197,30 @@ def people_counter(request, url_hash):
             queryset = queryset.filter(branch__pk__in=selected_branches)
             if request.user.profile.is_manager:
                 campaigns = (
-                Campaign.objects.filter(
-                    branch__merchant__url_hash=request.user.profile.merchant.url_hash
-                )
-                .filter(branch__pk__in=selected_branches)
-                .filter(Q(start_date__lte=end_date) & Q(end_date__gte=start_date))
-                .values("group_id")
-                .annotate(
-                    campaign_name=Min("name"),
-                    campaign_start_date=Min("start_date"),
-                    campaign_end_date=Max("end_date"),
-                    campaign_cost=Sum("cost"),
-                    campaign_type=Min("campaign_type"),
-                    campaign_last_modified=Max("last_modified"),
-                    campaign_group_id=Min("group_id"),
-                )
-                .order_by("-campaign_last_modified")
+                    Campaign.objects.filter(
+                        branch__merchant__url_hash=request.user.profile.merchant.url_hash
+                    )
+                    .filter(branch__pk__in=selected_branches)
+                    .filter(Q(start_date__lte=end_date) & Q(end_date__gte=start_date))
+                    .values("group_id")
+                    .annotate(
+                        campaign_name=Min("name"),
+                        campaign_start_date=Min("start_date"),
+                        campaign_end_date=Max("end_date"),
+                        campaign_cost=Sum("cost"),
+                        campaign_type=Min("campaign_type"),
+                        campaign_last_modified=Max("last_modified"),
+                        campaign_group_id=Min("group_id"),
+                    )
+                    .order_by("-campaign_last_modified")
                 )
             else:
                 permitted_branches = (
-                PermissionToViewBranch.objects.defer("date_created", "last_modified")
-                .select_related("branch")
-                .filter(user__pk=request.user.profile.pk)
+                    PermissionToViewBranch.objects.defer(
+                        "date_created", "last_modified"
+                    )
+                    .select_related("branch")
+                    .filter(user__pk=request.user.profile.pk)
                 )
                 permitted_branches_list = []
                 for permitted_branch in permitted_branches:
@@ -256,7 +259,7 @@ def people_counter(request, url_hash):
                 campaign_list.append(dictionary)
             entry_totals = [float(row["total_entry"]) for row in queryset]
             exit_totals = []
-            
+
         except Exception as e:
             print(e)
 
@@ -406,9 +409,9 @@ def home(request, url_hash):
         "date_created", "last_modified", "exit"
     ).filter(merchant__url_hash=url_hash)
     # invoice queryset
-    invoice_queryset = Invoice.objects.defer(
-        "date_created", "last_modified"
-    ).filter(branch__merchant__url_hash=url_hash)
+    invoice_queryset = Invoice.objects.defer("date_created", "last_modified").filter(
+        branch__merchant__url_hash=url_hash
+    )
     # 7 days
     today = timezone.now().today()
     last_7_days_start = today - timedelta(days=8)
@@ -424,14 +427,26 @@ def home(request, url_hash):
         date__range=(previous_7_days_start, previous_7_days_end)
     ).aggregate(total_entry=Sum("entry"))
     # invoice number
-    last_7_days_invoice_number = invoice_queryset.filter(date__range=(last_7_days_start, last_7_days_end)).aggregate(total_number=Sum("total_items"))
-    previous_7_days_invoice_number = invoice_queryset.filter(date__range=(previous_7_days_start, previous_7_days_end)).aggregate(total_number=Sum("total_items"))
+    last_7_days_invoice_number = invoice_queryset.filter(
+        date__range=(last_7_days_start, last_7_days_end)
+    ).aggregate(total_number=Sum("total_items"))
+    previous_7_days_invoice_number = invoice_queryset.filter(
+        date__range=(previous_7_days_start, previous_7_days_end)
+    ).aggregate(total_number=Sum("total_items"))
     # invoice amount
-    last_7_days_invoice_amount = invoice_queryset.filter(date__range=(last_7_days_start, last_7_days_end)).aggregate(total_amount=Sum("total_amount")) 
-    previous_7_days_invoice_amount = invoice_queryset.filter(date__range=(previous_7_days_start, previous_7_days_end)).aggregate(total_amount=Sum("total_amount")) 
+    last_7_days_invoice_amount = invoice_queryset.filter(
+        date__range=(last_7_days_start, last_7_days_end)
+    ).aggregate(total_amount=Sum("total_amount"))
+    previous_7_days_invoice_amount = invoice_queryset.filter(
+        date__range=(previous_7_days_start, previous_7_days_end)
+    ).aggregate(total_amount=Sum("total_amount"))
     # invoice product count
-    last_7_days_invoice_product = invoice_queryset.filter(date__range=(last_7_days_start, last_7_days_end)).aggregate(total_product=Sum("total_product"))
-    previous_7_days_invoice_product = invoice_queryset.filter(date__range=(previous_7_days_start, previous_7_days_end)).aggregate(total_product=Sum("total_product"))
+    last_7_days_invoice_product = invoice_queryset.filter(
+        date__range=(last_7_days_start, last_7_days_end)
+    ).aggregate(total_product=Sum("total_product"))
+    previous_7_days_invoice_product = invoice_queryset.filter(
+        date__range=(previous_7_days_start, previous_7_days_end)
+    ).aggregate(total_product=Sum("total_product"))
     try:
         # people counting difference percentage
         diff_7_per = (
@@ -446,7 +461,10 @@ def home(request, url_hash):
     try:
         # invoice number difference percentage
         diff_7_invoice_num = (
-            (last_7_days_invoice_number["total_number"] - previous_7_days_invoice_number["total_number"])
+            (
+                last_7_days_invoice_number["total_number"]
+                - previous_7_days_invoice_number["total_number"]
+            )
             / previous_7_days_invoice_number["total_number"]
         ) * 100
         rounded_diff_7_invoice_num = round(diff_7_invoice_num, 2)
@@ -457,22 +475,28 @@ def home(request, url_hash):
     try:
         # invoice amount difference percentage
         diff_7_invoice_amount = (
-            (last_7_days_invoice_amount["total_amount"] - previous_7_days_invoice_amount["total_amount"])
+            (
+                last_7_days_invoice_amount["total_amount"]
+                - previous_7_days_invoice_amount["total_amount"]
+            )
             / previous_7_days_invoice_amount["total_amount"]
         ) * 100
         rounded_diff_7_invoice_amount = round(diff_7_invoice_amount, 2)
     except:
-        diff_7_invoice_amount = 0 
+        diff_7_invoice_amount = 0
         rounded_diff_7_invoice_amount = 0
 
     try:
         # invoice product count difference
         diff_7_invoice_product = (
-            (last_7_days_invoice_product["total_product"] - previous_7_days_invoice_product["total_product"])
+            (
+                last_7_days_invoice_product["total_product"]
+                - previous_7_days_invoice_product["total_product"]
+            )
             / previous_7_days_invoice_product["total_product"]
         ) * 100
         rounded_diff_7_invoice_product = round(diff_7_invoice_product, 2)
-    except: 
+    except:
         diff_7_invoice_product = 0
         rounded_diff_7_invoice_product = 0
 
@@ -502,7 +526,9 @@ def home(request, url_hash):
             .order_by("-total_entry")
         )
         for item in branch_7_day_ranks:
-            branch_7_days_traffic_share.append({"name": item["branch__name"], "y": float(item["total_entry"])})
+            branch_7_days_traffic_share.append(
+                {"name": item["branch__name"], "y": float(item["total_entry"])}
+            )
     except:
         branch_7_day_ranks = []
 
@@ -519,15 +545,27 @@ def home(request, url_hash):
     previous_30_days_entry = queryset.filter(
         date__range=(previous_30_days_start, previous_30_days_end)
     ).aggregate(total_entry=Sum("entry"))
-        # invoice number
-    last_30_days_invoice_number = invoice_queryset.filter(date__range=(last_30_days_start, last_30_days_end)).aggregate(total_number=Sum("total_items"))
-    previous_30_days_invoice_number = invoice_queryset.filter(date__range=(previous_30_days_start, previous_30_days_end)).aggregate(total_number=Sum("total_items"))
+    # invoice number
+    last_30_days_invoice_number = invoice_queryset.filter(
+        date__range=(last_30_days_start, last_30_days_end)
+    ).aggregate(total_number=Sum("total_items"))
+    previous_30_days_invoice_number = invoice_queryset.filter(
+        date__range=(previous_30_days_start, previous_30_days_end)
+    ).aggregate(total_number=Sum("total_items"))
     # invoice amount
-    last_30_days_invoice_amount = invoice_queryset.filter(date__range=(last_30_days_start, last_30_days_end)).aggregate(total_amount=Sum("total_amount")) 
-    previous_30_days_invoice_amount = invoice_queryset.filter(date__range=(previous_30_days_start, previous_30_days_end)).aggregate(total_amount=Sum("total_amount")) 
+    last_30_days_invoice_amount = invoice_queryset.filter(
+        date__range=(last_30_days_start, last_30_days_end)
+    ).aggregate(total_amount=Sum("total_amount"))
+    previous_30_days_invoice_amount = invoice_queryset.filter(
+        date__range=(previous_30_days_start, previous_30_days_end)
+    ).aggregate(total_amount=Sum("total_amount"))
     # invoice product count
-    last_30_days_invoice_product = invoice_queryset.filter(date__range=(last_30_days_start, last_30_days_end)).aggregate(total_product=Sum("total_product"))
-    previous_30_days_invoice_product = invoice_queryset.filter(date__range=(previous_30_days_start, previous_30_days_end)).aggregate(total_product=Sum("total_product"))
+    last_30_days_invoice_product = invoice_queryset.filter(
+        date__range=(last_30_days_start, last_30_days_end)
+    ).aggregate(total_product=Sum("total_product"))
+    previous_30_days_invoice_product = invoice_queryset.filter(
+        date__range=(previous_30_days_start, previous_30_days_end)
+    ).aggregate(total_product=Sum("total_product"))
     try:
         diff_30_per = (
             (last_30_days_entry["total_entry"] - previous_30_days_entry["total_entry"])
@@ -541,7 +579,10 @@ def home(request, url_hash):
     try:
         # invoice number difference percentage
         diff_30_invoice_num = (
-            (last_30_days_invoice_number["total_number"] - previous_30_days_invoice_number["total_number"])
+            (
+                last_30_days_invoice_number["total_number"]
+                - previous_30_days_invoice_number["total_number"]
+            )
             / previous_30_days_invoice_number["total_number"]
         ) * 100
         rounded_diff_30_invoice_num = round(diff_30_invoice_num, 2)
@@ -552,7 +593,10 @@ def home(request, url_hash):
     try:
         # invoice amount difference percentage
         diff_30_invoice_amount = (
-            (last_30_days_invoice_amount["total_amount"] - previous_30_days_invoice_amount["total_amount"])
+            (
+                last_30_days_invoice_amount["total_amount"]
+                - previous_30_days_invoice_amount["total_amount"]
+            )
             / previous_30_days_invoice_amount["total_amount"]
         ) * 100
         rounded_diff_30_invoice_amount = round(diff_30_invoice_amount, 2)
@@ -563,15 +607,16 @@ def home(request, url_hash):
     try:
         # invoice product count difference
         diff_30_invoice_product = (
-            (last_30_days_invoice_product["total_product"] - previous_30_days_invoice_product["total_product"])
+            (
+                last_30_days_invoice_product["total_product"]
+                - previous_30_days_invoice_product["total_product"]
+            )
             / previous_30_days_invoice_product["total_product"]
         ) * 100
         rounded_diff_30_invoice_product = round(diff_30_invoice_product, 2)
     except:
         diff_30_invoice_product = 0
         rounded_diff_30_invoice_product = 0
-
-
 
     # branches
     last_30_days_best_branch_name = (
@@ -598,7 +643,9 @@ def home(request, url_hash):
             .order_by("-total_entry")
         )
         for item in branch_30_day_ranks:
-            branch_30_days_traffic_share.append({"name": item["branch__name"], "y": float(item["total_entry"])})
+            branch_30_days_traffic_share.append(
+                {"name": item["branch__name"], "y": float(item["total_entry"])}
+            )
     except:
         branch_30_day_ranks = []
     # online data
@@ -640,19 +687,24 @@ def home(request, url_hash):
             "previous_30_days_entry_total": previous_30_days_entry["total_entry"],
             "online_map_data": json.dumps(today_data),
             "last_7_days_invoice_number": last_7_days_invoice_number["total_number"],
-            "last_7_days_invoice_amount": last_7_days_invoice_amount["total_amount"] / 10,
+            "last_7_days_invoice_amount": last_7_days_invoice_amount["total_amount"]
+            / 10,
             "last_7_days_invoice_product": last_7_days_invoice_product["total_product"],
             "rounded_diff_7_invoice_num": rounded_diff_7_invoice_num,
             "rounded_diff_7_invoice_amount": rounded_diff_7_invoice_amount,
             "rounded_diff_7_invoice_product": rounded_diff_7_invoice_product,
             "last_30_days_invoice_number": last_30_days_invoice_number["total_number"],
-            "last_30_days_invoice_amount": last_30_days_invoice_amount["total_amount"] / 10,
-            "last_30_days_invoice_product": last_30_days_invoice_product["total_product"],
+            "last_30_days_invoice_amount": last_30_days_invoice_amount["total_amount"]
+            / 10,
+            "last_30_days_invoice_product": last_30_days_invoice_product[
+                "total_product"
+            ],
             "rounded_diff_30_invoice_num": rounded_diff_30_invoice_num,
             "rounded_diff_30_invoice_amount": rounded_diff_30_invoice_amount,
-            "rounded_diff_30_invoice_product": rounded_diff_30_invoice_product
+            "rounded_diff_30_invoice_product": rounded_diff_30_invoice_product,
         },
     )
+
 
 @login_required
 def profile(request, user_id):
@@ -771,8 +823,10 @@ def create_campaign(request, url_hash):
                     )
                 messages.success(request, "کمپین با موفقیت ساخته شد")
                 return render(
-                        request, "create-campaign.html", {"form": form, "branches": branches}
-                    )
+                    request,
+                    "create-campaign.html",
+                    {"form": form, "branches": branches},
+                )
             else:
                 messages.error(request, f"{form.errors}")
         return render(
@@ -928,7 +982,9 @@ def upload_excel_file_invoice(request, url_hash):
                 wb = openpyxl.load_workbook(excel_file)
                 sheet = wb.active
                 for row in sheet.iter_rows(min_row=2, values_only=True):
-                    date, branch, total_amount, total_items, total_product = row[:2] + row[3:]
+                    date, branch, total_amount, total_items, total_product = (
+                        row[:2] + row[3:]
+                    )
                     if isinstance(date, str):
                         if date:
                             first_two = date[:2]
@@ -938,7 +994,12 @@ def upload_excel_file_invoice(request, url_hash):
                                 date = jalali_date.togregorian()
                             else:
                                 date = datetime.strptime(date, "%Y-%m-%d").date()
-                    if branch is not None and total_amount is not None and total_items is not None and total_product is not None:
+                    if (
+                        branch is not None
+                        and total_amount is not None
+                        and total_items is not None
+                        and total_product is not None
+                    ):
                         if int(branch) not in allowed_branches:
                             messages.warning(
                                 request,
@@ -957,10 +1018,10 @@ def upload_excel_file_invoice(request, url_hash):
                             date=date,
                             branch=branch,
                             defaults={
-                            "total_amount":int(total_amount),
-                            "total_items":int(total_items),
-                            "total_product":int(total_product)
-                            }
+                                "total_amount": int(total_amount),
+                                "total_items": int(total_items),
+                                "total_product": int(total_product),
+                            },
                         )
                 messages.success(request, "اطلاعات فروش با موفقیت آپلود شدند")
                 return redirect(reverse("upload_excel_file_invoice", args=[url_hash]))
@@ -1135,7 +1196,9 @@ def create_excel_template(start_date: str, end_date: str, branch_list: dict):
         color_mapper[item] = random.sample(colors, 1)[0]
     ws = wb.active
     ws.title = "تمپلیت آپلود اطلاعات فروش شعب"
-    ws.append(["تاریخ", "کد شعبه", "نام شعبه", "مبلغ فاکتور", "تعداد فاکتور", "تعداد کالا"])
+    ws.append(
+        ["تاریخ", "کد شعبه", "نام شعبه", "مبلغ فاکتور", "تعداد فاکتور", "تعداد کالا"]
+    )
     branches = branch_list
     dates = get_dates(start_date, end_date)
     for branch_id, branch_name in branches.items():
@@ -1251,7 +1314,9 @@ def invoice_counter(request, url_hash):
         .filter(branch__pk__in=allowed_branches)
         .values("date")
         .annotate(
-            sum_total_amount=Sum("total_amount"), sum_total_items=Sum("total_items"), sum_total_products=Sum("total_product")
+            sum_total_amount=Sum("total_amount"),
+            sum_total_items=Sum("total_items"),
+            sum_total_products=Sum("total_product"),
         )
         .order_by("date")
     )
@@ -1303,24 +1368,24 @@ def invoice_counter(request, url_hash):
             if branches:
                 invoices = invoices.filter(branch__pk__in=branches)
                 campaigns = (
-                Campaign.objects.filter(
-                    branch__merchant__url_hash=request.user.profile.merchant.url_hash
+                    Campaign.objects.filter(
+                        branch__merchant__url_hash=request.user.profile.merchant.url_hash
+                    )
+                    .filter(branch__pk__in=allowed_branches)
+                    .filter(branch__pk__in=branches)
+                    .filter(Q(start_date__lte=end_date) & Q(end_date__gte=start_date))
+                    .values("group_id")
+                    .annotate(
+                        campaign_name=Min("name"),
+                        campaign_start_date=Min("start_date"),
+                        campaign_end_date=Max("end_date"),
+                        campaign_cost=Sum("cost"),
+                        campaign_type=Min("campaign_type"),
+                        campaign_last_modified=Max("last_modified"),
+                        campaign_group_id=Min("group_id"),
+                    )
+                    .order_by("-campaign_last_modified")
                 )
-                .filter(branch__pk__in=allowed_branches)
-                .filter(branch__pk__in=branches)
-                .filter(Q(start_date__lte=end_date) & Q(end_date__gte=start_date))
-                .values("group_id")
-                .annotate(
-                    campaign_name=Min("name"),
-                    campaign_start_date=Min("start_date"),
-                    campaign_end_date=Max("end_date"),
-                    campaign_cost=Sum("cost"),
-                    campaign_type=Min("campaign_type"),
-                    campaign_last_modified=Max("last_modified"),
-                    campaign_group_id=Min("group_id"),
-                )
-                .order_by("-campaign_last_modified")
-            )
         dates = [str(row["date"].strftime("%Y-%m-%d")) for row in invoices]
         total_items = [float(row["sum_total_items"]) for row in invoices]
         total_amount = [float(row["sum_total_amount"] // 10000000) for row in invoices]
@@ -1345,7 +1410,7 @@ def invoice_counter(request, url_hash):
                     "total_items": total_items,
                     "total_amount": total_amount,
                     "campaigns": campaign_list,
-                    "total_products": total_products
+                    "total_products": total_products,
                 }
             )
     if not profile.is_manager:
@@ -1360,7 +1425,7 @@ def invoice_counter(request, url_hash):
             "dates": json.dumps(dates),
             "total_amount": json.dumps(total_amount),
             "total_items": json.dumps(total_items),
-            "total_products": json.dumps(total_products)
+            "total_products": json.dumps(total_products),
         },
     )
 
@@ -1408,7 +1473,7 @@ def analysis(request, url_hash):
                 .annotate(
                     sum_total_amount=Sum("total_amount"),
                     sum_total_items=Sum("total_items"),
-                    sum_total_products=Sum("total_product")
+                    sum_total_products=Sum("total_product"),
                 )
                 .order_by("date")
             )
@@ -1460,7 +1525,10 @@ def analysis(request, url_hash):
         total_items = [float(row["sum_total_items"]) for row in invoices]
         total_amount = [float(row["sum_total_amount"]) for row in invoices]
         total_products = [row["sum_total_products"] for row in invoices]
-        total_products_avg = [round(float(a / b if b != 0 else 0), 1) for a, b in zip(total_products, total_items)]
+        total_products_avg = [
+            round(float(a / b if b != 0 else 0), 1)
+            for a, b in zip(total_products, total_items)
+        ]
         entry_totals = [float(row["total_entry"]) for row in queryset]
         entry_overalls = [
             float(row["total_entry"]) for row in queryset_no_branch_filter
@@ -1502,7 +1570,7 @@ def analysis(request, url_hash):
             "total_amount": json.dumps(total_amount),
             "total_items": json.dumps(total_items),
             "entry_overalls": json.dumps(entry_overalls),
-            "total_products_avg": json.dumps(total_products_avg)
+            "total_products_avg": json.dumps(total_products_avg),
         },
     )
 
@@ -1687,7 +1755,7 @@ def ping_ip(ip, timeout=15):
             ["ping", "-c", "1", "-W", str(timeout), ip],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
-            timeout=timeout + 2  
+            timeout=timeout + 2,
         )
         return result.returncode == 0
     except subprocess.TimeoutExpired:
@@ -1705,12 +1773,14 @@ def camera_list(request, url_hash):
         return render(request, "401.html", status=401)
     if not request.user.profile.is_manager:
         return render(request, "401.html", status=401)
-    cameras = Cam.objects.filter(merchant__url_hash=request.user.profile.merchant.url_hash)
+    cameras = Cam.objects.filter(
+        merchant__url_hash=request.user.profile.merchant.url_hash
+    )
     for camera in cameras:
         camera.status = ping_ip(camera.ip)
         camera.save()
     return render(request, "camera-list.html", {"cameras": cameras})
-    
+
 
 def holiday_spotter(request, year, month, day):
     response = requests.get(f"https://holidayapi.ir/jalali/{year}/{month}/{day}")
@@ -1743,7 +1813,11 @@ def alert_form_sms(request, url_hash):
             messages.success(request, "مخاطب با موفقیت ساخته شد")
         else:
             messages.error(request, f"{form.errors}")
-            return render(request, "alert-form-sms.html", {"form": form, "error": f"{form.errors}"})
+            return render(
+                request,
+                "alert-form-sms.html",
+                {"form": form, "error": f"{form.errors}"},
+            )
     return render(request, "alert-form-sms.html", {"form": form})
 
 
@@ -1752,7 +1826,9 @@ def alert_from_sms_contact_list(request, url_hash):
     # Rights
     if not perm_to_open(request, url_hash):
         return render(request, "401.html", status=401)
-    contacts = AlertCameraMalfunction.objects.filter(merchant__url_hash=url_hash).order_by("-pk")
+    contacts = AlertCameraMalfunction.objects.filter(
+        merchant__url_hash=url_hash
+    ).order_by("-pk")
     return render(request, "alert_from_sms_contact_list.html", {"contacts": contacts})
 
 
@@ -1761,8 +1837,12 @@ def alert_from_sms_contact_list_detail(request, contact_id):
     if not request.user.profile.mobile:
         return render(request, "401.html", status=401)
     contact = get_object_or_404(AlertCameraMalfunction, pk=contact_id)
-    messages = AlertCameraMalfunctionMessage.objects.filter(contact=contact).order_by("-pk")
-    return render(request, "alert_from_sms_contact_list_detail.html", {"messages": messages})
+    messages = AlertCameraMalfunctionMessage.objects.filter(contact=contact).order_by(
+        "-pk"
+    )
+    return render(
+        request, "alert_from_sms_contact_list_detail.html", {"messages": messages}
+    )
 
 
 @login_required
@@ -1780,8 +1860,14 @@ def alert_form_sms_edit(request, contact_id):
             messages.success(request, "مخاطب با موفقیت تغییر یافت")
     else:
         messages.error(request, f"{form.errors}")
-        return render(request, "alert_form_sms_edit.html", {"contact": contact, "form": form, "error": f"{form.errors}"})
-    return render(request, "alert_form_sms_edit.html", {"form": form, "contact": contact})
+        return render(
+            request,
+            "alert_form_sms_edit.html",
+            {"contact": contact, "form": form, "error": f"{form.errors}"},
+        )
+    return render(
+        request, "alert_form_sms_edit.html", {"form": form, "contact": contact}
+    )
 
 
 def alert_form_social(request, url_hash):
@@ -1789,3 +1875,36 @@ def alert_form_social(request, url_hash):
     if not perm_to_open(request, url_hash):
         return render(request, "401.html", status=401)
     return render(request, "alert-form-social.html")
+
+
+def campaign_search_as_type(request):
+    q = request.GET.get("q", "").strip()
+    if q == "":
+        return JsonResponse([], safe=False)
+    grouped_campaigns = (
+        Campaign.objects.defer("last_modified", "date_created")
+        .filter(
+            branch__merchant__url_hash=request.user.profile.merchant.url_hash,
+            name__icontains=q
+        )
+        .values("group_id")
+        .annotate(
+            campaign_name=Min("name"),
+            campaign_start_date=Min("start_date"),
+            campaign_end_date=Max("end_date"),
+            campaign_cost=Sum("cost"),
+            campaign_type=Min("campaign_type"),
+            campaign_last_modified=Max("last_modified"),
+            campaign_group_id=Min("group_id"),
+        )
+        .order_by("-campaign_last_modified")
+    )
+    names = list(grouped_campaigns.values("name"))
+    loop_index = 0
+    for item in names:
+        loop_index += 1
+        name_value = item.pop("name")
+        item["id"] = loop_index
+        item["text"] = name_value
+    print(names)
+    return JsonResponse(names, safe=False)
