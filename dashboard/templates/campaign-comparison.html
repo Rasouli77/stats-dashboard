@@ -11,11 +11,13 @@
 <link rel="stylesheet" href="{% static 'assets/vendor/libs/fullcalendar/fullcalendar.css' %}">
 <link rel="stylesheet" href="{% static 'assets/vendor/libs/flatpickr/flatpickr.css' %}">
 <link rel="stylesheet" href="{% static 'assets/vendor/css/pages/app-calendar.css' %}">
-<link rel="stylesheet" href="{% static 'assets/vendor/libs/toastr/toastr.css' %}" />
 <!-- Shepherd -->
 <link rel="stylesheet" href="{% static 'assets/vendor/libs/shepherd/shepherd.css' %}">
+<!-- Stepper -->
+<link rel="stylesheet" href="{% static 'assets/vendor/libs/bs-stepper/bs-stepper.css' %}">
 <!-- Search as type style -->
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="{% static 'assets/vendor/libs/bootstrap-select/bootstrap-select.css' %}">
 <!-- Custom Style for FlatPicker Calendar -->
 <style>
     .light-style .flatpickr-calendar {
@@ -71,7 +73,11 @@
         flex-direction: column;
     }
 
-    #add-input-field {
+    #add-input-field-single {
+        width: 100%;
+    }
+
+    #add-input-field-grouped {
         width: 100%;
     }
 
@@ -118,42 +124,128 @@
 </div>
 <div class="container">
     <div class="row" id="search-filters" style="margin-bottom: 20px;">
-        <!-- Name Search -->
-        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12" id="search-by-name" style="margin-bottom: 10px; display: flex; justify-content: center; align-items: center; flex-direction: column;">
-            <div id="search">
-                <div id="input-container">
-                    <div style="width: 100%;">
-                        <p style="width: 100%; color: #f9f9f9;">در این قسمت میتوانید نام کمپین مورد نظر خود را وارد کنید</p>
+        <!-- Default Wizard -->
+        <div class="col-12 mb-4">
+            <div class="bs-stepper wizard-numbered mt-2">
+            <div class="bs-stepper-header">
+                <div class="step" data-target="#account-details">
+                <button type="button" class="step-trigger">
+                    <span class="bs-stepper-circle">1</span>
+                    <span class="bs-stepper-label">
+                    <span class="bs-stepper-title">نمایش</span>
+                    <span class="bs-stepper-subtitle"> تجمیعی یا تفکیکی</span>
+                    </span>
+                </button>
+                </div>
+                <div class="line"></div>
+                <div class="step" data-target="#personal-info">
+                <button type="button" class="step-trigger">
+                    <span class="bs-stepper-circle">2</span>
+                    <span class="bs-stepper-label">
+                    <span class="bs-stepper-title">انتخاب</span>
+                    <span class="bs-stepper-subtitle">انتخاب کمپین ها</span>
+                    </span>
+                </button>
+                </div>
+            </div>
+            <div class="bs-stepper-content">
+                <!-- accumulated or separated -->
+                <div id="account-details" class="content">
+                    <div class="content-header mb-3">
+                    <h6 class="mb-1">نمایش</h6>
+                    <small>در صورت انتخاب تجمیعی می توانید کمپین ها را به صورت کلی مقابسه کنید و اگر تفکیکی را انتخاب کنید کمپین ها را می توانید به تفکیک شعب انتخاب و مقایسه نمایید.</small>
                     </div>
-                    <div class="select-wrapper" style="margin-top: 30px; margin-bottom: 30px; width: 100%; display: flex;">
-                        <select class="form-control campaign-select" style="width:90%;"></select>
-                        <button class="btn btn-danger" style="width: 10%; margin-right: 10px;"><i class='bx bx-trash'></i></button>
+                    <div class="row g-3">
+                    <div class="col-sm-4" style="margin-bottom: 50px; margin-top: 50px;">
+                        <label for="select2Icons" class="form-label">نمایش کمپین ها</label>
+                        <select id="select2Icons" class="select2-icons form-select">
+                            <option>------</option>
+                            <option value="aggregate" data-icon="bx bx-layer">تجمیعی</option>
+                            <option value="separated" data-icon="bx bx-collection">تفکیکی</option>
+                        </select>
                     </div>
-                    
-                    <div class="select-wrapper" style="margin-top: 30px; margin-bottom: 30px; width: 100%; display: flex;">
-                        <select class="form-control campaign-select" style="width:90%;"></select>
-                        <button class="btn btn-danger" style="width: 10%; margin-right: 10px;"><i class='bx bx-trash'></i></button>
+                    <div class="col-12 d-flex justify-content-between">
+                        <button class="btn btn-label-secondary btn-prev" disabled>
+                        <i class="bx bx-chevron-left bx-sm ms-sm-n2"></i>
+                        <span class="d-sm-inline-block d-none">قبلی</span>
+                        </button>
+                        <button class="btn btn-primary btn-next" id="btn-next">
+                        <span class="d-sm-inline-block d-none">بعدی</span>
+                        <i class="bx bx-chevron-right bx-sm me-sm-n2"></i>
+                        </button>
+                    </div>
                     </div>
                 </div>
-                <button id="add-input-field" class="btn btn-success"><i class='bx bx-plus-circle' style="margin-left: 10px;"></i> افزودن کمپین</button>
+                <!-- Personal Info -->
+                <div id="personal-info" class="content">
+                    <div class="content-header mb-3">
+                    <h6 class="mb-1">انتخاب کمپین</h6>
+                    <small>در این قسمت می توانید کمپین ها را برای مقایسه انتخاب کنید.</small>
+                    </div>
+                    <div class="row g-3">
+                    <!-- Name Search -->
+                    <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12" id="search-by-name" style="margin-bottom: 10px; display: flex; justify-content: center; align-items: center; flex-direction: column;">
+                        <div id="search">
+                            <div id="input-container">
+                                <div style="width: 100%;">
+                                    <p style="width: 100%; height: 0px; color: #f9f9f9;">در این قسمت میتوانید نام کمپین مورد نظر خود را وارد کنید</p>
+                                </div>
+                                <!-- <div class="select-wrapper single-campaign" style="margin-top: 30px; margin-bottom: 30px; width: 100%; display: flex;">
+                                    <select class="form-control campaign-select-single" style="width:90%;"></select>
+                                    <button class="btn btn-danger" style="width: 10%; margin-right: 10px;"><i class='bx bx-trash'></i></button>
+                                </div>
+                                <div class="select-wrapper single-campaign" style="margin-top: 30px; margin-bottom: 30px; width: 100%; display: flex;">
+                                    <select class="form-control campaign-select-single" style="width:90%;"></select>
+                                    <button class="btn btn-danger" style="width: 10%; margin-right: 10px;"><i class='bx bx-trash'></i></button>
+                                </div>
+                                <div class="select-wrapper grouped-campaign" style="margin-top: 30px; margin-bottom: 30px; width: 100%; display: flex;">
+                                    <select class="form-control campaign-select-grouped" style="width:90%;"></select>
+                                    <button class="btn btn-danger" style="width: 10%; margin-right: 10px;"><i class='bx bx-trash'></i></button>
+                                </div>
+                                <div class="select-wrapper grouped-campaign" style="margin-top: 30px; margin-bottom: 30px; width: 100%; display: flex;">
+                                    <select class="form-control campaign-select-grouped" style="width:90%;"></select>
+                                    <button class="btn btn-danger" style="width: 10%; margin-right: 10px;"><i class='bx bx-trash'></i></button>
+                                </div> -->
+                            </div>
+                            <button id="add-input-field-single" class="btn btn-success"><i class='bx bx-plus-circle' style="margin-left: 10px;"></i> افزودن کمپین</button>
+                            <button id="add-input-field-grouped" class="btn btn-success"><i class='bx bx-plus-circle' style="margin-left: 10px;"></i> افزودن کمپین</button>
+                        </div>
+                    </div>
+                    <!-- Filter Button -->
+                    <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12" style="margin-top: 20px; display: flex; align-items: center; flex-direction: column;">
+                        <form action="" method="get" id="filter-form">
+                            <label style="display: none;" for="start-date">از تاریخ</label>
+                            <input type="text" name="start-date" id="start-date" style="display: none;">
+                            <label style="display: none;" for="end-date">تا</label>
+                            <input type="text" name="end-date" id="end-date" style="display: none;">
+                            {% for branch in branches %}
+                            <div class="form-check mt-3" style="display: none;">
+                                <input class="form-check-input real-check" type="checkbox" value="{{ branch.pk }}" name="branch">
+                                <label class="form-check-label" for="defaultCheck1">{{ branch.name }}</label>
+                            </div>
+                            {% endfor %}
+                            <button class="btn btn-primary btn-md" type="submit" id="filter-proxy-button"><i class='bx bx-info-circle' style="margin-left: 10px;"></i>مشاهده اطلاعات</button>
+                        </form>
+                    </div>
+                    <!-- Ignore the select -->
+                    <select style="display: none;" class="selectpicker w-auto" id="language" data-style="btn-transparent" data-icon-base="bx" data-tick-icon="bx-check text-white" multiple>
+                    </select>
+                    <!--/ Ignore the select -->
+                    <div class="col-12 d-flex justify-content-between">
+                        <button class="btn btn-primary btn-prev">
+                        <i class="bx bx-chevron-left bx-sm ms-sm-n2"></i>
+                        <span class="d-sm-inline-block d-none">قبلی</span>
+                        </button>
+                        <button class="btn btn-success btn-submit">ثبت</button>
+                    </div>
+                    </div>
+                </div>
+            </div>
             </div>
         </div>
-        <!-- Filter Button -->
-        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12" style="margin-top: 20px; display: flex; align-items: center; flex-direction: column;">
-            <form action="" method="get" id="filter-form">
-                <label style="display: none;" for="start-date">از تاریخ</label>
-                <input type="text" name="start-date" id="start-date" style="display: none;">
-                <label style="display: none;" for="end-date">تا</label>
-                <input type="text" name="end-date" id="end-date" style="display: none;">
-                {% for branch in branches %}
-                <div class="form-check mt-3" style="display: none;">
-                    <input class="form-check-input real-check" type="checkbox" value="{{ branch.pk }}" name="branch">
-                    <label class="form-check-label" for="defaultCheck1">{{ branch.name }}</label>
-                </div>
-                {% endfor %}
-                <button class="btn btn-primary btn-md" type="submit" id="filter-proxy-button"><i class='bx bx-info-circle' style="margin-left: 10px;"></i>مشاهده اطلاعات</button>
-            </form>
-        </div>
+        <!-- /Default Wizard -->
+        <!-- Name Search -->
+        
     </div>
 </div>
 <div id="result-container" class="card" style="padding-bottom: 50px; padding-left: 15px; padding-right: 15px; display: none; padding-top: 50px;">
@@ -267,12 +359,12 @@
 <script src="{% static 'assets/js/price-separator.js' %}"></script>
 <!-- Add Text Input / Search Form -->
 <script>
-    document.getElementById("add-input-field").addEventListener("click", () => {
+    function createSingleCampaignSearch() {
         const newSelect = document.createElement("select");
         newSelect.name = "name";
         newSelect.style.width = "90%";
         newSelect.classList.add("form-control");
-        newSelect.classList.add("campaign-select");
+        newSelect.classList.add("campaign-select-single");
         const inputContainer = document.getElementById("input-container");
         const selectWrapper = document.createElement("div");
         selectWrapper.classList.add("select-wrapper");
@@ -295,7 +387,7 @@
         $(newSelect).select2({
             placeholder: 'نام کمپین مورد نظر را وارد کنید...',
             ajax: {
-                url: '/dashboard/search/campaign_search_as_type/',
+                url: '/dashboard/search/single-campaign-search-as-type/',
                 dataType: 'json',
                 delay: 250,
                 data: params => ({ q: params.term }),
@@ -318,13 +410,74 @@
             const newInput = document.createElement("input");
             newInput.name = "name";
             newInput.classList.add("form-control");
-            newInput.classList.add("campaign-select");
+            newInput.classList.add("-single");
             newInput.value = selectData.text;
             newInput.style.display = "none";
             const inputContainer = document.getElementById("input-container");
             inputContainer.appendChild(newInput);
         });
-    });
+    }
+    function createGroupedCampaignSearch() {
+        const newSelect = document.createElement("select");
+        newSelect.name = "name";
+        newSelect.style.width = "90%";
+        newSelect.classList.add("form-control");
+        newSelect.classList.add("campaign-select-grouped");
+        const inputContainer = document.getElementById("input-container");
+        const selectWrapper = document.createElement("div");
+        selectWrapper.classList.add("select-wrapper");
+        selectWrapper.style.marginTop = "30px";
+        selectWrapper.style.marginBottom = "30px";
+        selectWrapper.style.width = "100%";
+        selectWrapper.style.display = "flex";
+        const deleteBtn = document.createElement("button");
+        deleteBtn.classList.add("btn");
+        deleteBtn.classList.add("btn-danger");
+        deleteBtn.style.width = "10%";
+        deleteBtn.style.marginRight = "10px";
+        const i = document.createElement("i");
+        i.classList.add("bx");
+        i.classList.add("bx-trash");
+        deleteBtn.appendChild(i) 
+        selectWrapper.appendChild(newSelect);
+        selectWrapper.appendChild(deleteBtn);
+        inputContainer.appendChild(selectWrapper);
+        $(newSelect).select2({
+            placeholder: 'نام کمپین مورد نظر را وارد کنید...',
+            ajax: {
+                url: '/dashboard/search/grouped-campaign-search-as-type/',
+                dataType: 'json',
+                delay: 250,
+                data: params => ({ q: params.term }),
+                processResults: (data) => ({
+                    results: data
+                }),
+                cache: true
+            },
+            minimumInputLength: 1,
+            width: '100%',
+            language: {
+                inputTooShort: function (args) {
+                    const remaining = args.minimum - args.input.length;
+                    return `حداقل ${remaining} کاراکتر دیگر وارد کنید`; 
+                }
+            }
+        });
+        $(newSelect).on('select2:select', function (e) {
+            selectData = e.params.data;
+            const newInput = document.createElement("input");
+            newInput.name = "name";
+            newInput.classList.add("form-control");
+            newInput.classList.add("campaign-select-grouped");
+            newInput.value = selectData.text;
+            newInput.style.display = "none";
+            const inputContainer = document.getElementById("input-container");
+            inputContainer.appendChild(newInput);
+        });
+    }
+    document.getElementById("add-input-field-single").addEventListener("click", createSingleCampaignSearch);
+
+    document.getElementById("add-input-field-grouped").addEventListener("click", createGroupedCampaignSearch);
 </script>
 <!-- Display Toggle -->
 <script>
@@ -360,8 +513,6 @@
 <script src="https://cdn.jsdelivr.net/npm/jalaali-js/dist/jalaali.min.js"></script>
 <!-- JQuery and Toastr Scripts -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="{% static 'assets/vendor/libs/toastr/toastr.js' %}"></script>
-<script src="{% static 'assets/js/ui-toasts.js' %}"></script>
 <!-- FlatPicker JS (Calendar) -->
 <script src="{% static 'assets/vendor/libs/jdate/jdate.js' %}"></script>
 <script src="{% static 'assets/vendor/libs/flatpickr/flatpickr-jdate.js' %}"></script>
@@ -376,7 +527,6 @@
 <!-- Button Collapse -->
 <script src="{% static 'assets/js/accordion-collapse-toggle.js' %}"></script>
 <!-- Button Color and Background -->
-<script src="{% static 'assets/js/accordion-color-and-background.js' %}"></script>
 <script src="{% static 'assets/vendor/libs/shepherd/shepherd.js' %}"></script>
 <!-- Campaign Display Filter / Error Handling-->
 <script>
@@ -552,12 +702,6 @@
         setTimeout(jalaliDateConvertor, 500);
         setTimeout(priceSeparator, 500);
     });
-    document.getElementById("select-all").addEventListener("change", () => {
-        const isChecked = document.getElementById("select-all").checked;
-        document.querySelectorAll(".fake-check").forEach((item) => {
-            item.checked = isChecked
-        });
-    });
 </script>
 <!-- Campaign Comparison Form JQuery -->
 <script>
@@ -730,74 +874,178 @@
 </script>
 <!-- Search as type functionality -->
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<!-- Stepper -->
+<script src="{% static 'assets/vendor/libs/bs-stepper/bs-stepper.js' %}"></script>
+<!-- Accumulated vs Separated Display Toggle Fields -->
 <script>
-$('.campaign-select').select2({
-    placeholder: 'نام کمپین مورد نظر را وارد کنید...',
-    ajax: {
-        url: '/dashboard/search/campaign_search_as_type/',
-        dataType: 'json',
-        delay: 250,
-        data: params => ({ q: params.term }),
-        processResults: (data) => ({
-            results: data
-        }),
-        cache: true
-    },
-    minimumInputLength: 1,
-    width: '100%',
-    language: {
-        inputTooShort: function (args) {
-            // args.minimum is your minimumInputLength
-            // args.input.length is the length of what the user typed
-            const remaining = args.minimum - args.input.length;
-            return `حداقل ${remaining} کاراکتر دیگر وارد کنید`; // Persian example
-            // or for English:
-            // return `Please type ${remaining} more character${remaining !== 1 ? 's' : ''}`;
+    document.addEventListener("DOMContentLoaded", () => {
+        const fieldsDisplayToggle = document.getElementById("select2Icons");
+        const btnNext = document.getElementById("btn-next");
+        const singleCampaignWrappers = document.querySelectorAll(".single-campaign");
+        const groupedCampaignWrappers = document.querySelectorAll(".grouped-campaign");
+        btnNext.addEventListener("click", () => {
+        if (fieldsDisplayToggle.value === "aggregate") {
+
+            singleCampaignWrappers.forEach(item => {
+                item.style.display = "none";
+            });
+
+            groupedCampaignWrappers.forEach(item => {
+                item.style.display = "";
+            });
+
+            document.getElementById("add-input-field-single").style.display = "none";
+
+            document.getElementById("add-input-field-grouped").style.display = "";
+
+        } else {
+
+            singleCampaignWrappers.forEach(item => {
+                item.style.display = "";
+            });
+
+            groupedCampaignWrappers.forEach(item => {
+                item.style.display = "none";
+            });
+
+            document.getElementById("add-input-field-single").style.display = "";
+            
+            document.getElementById("add-input-field-grouped").style.display = "none"
         }
-    }
-});
-$('.campaign-select').on('select2:select', function (e) {
-    selectData = e.params.data;
-    const newInput = document.createElement("input");
-    newInput.name = "name";
-    newInput.classList.add("form-control");
-    newInput.classList.add("campaign-select");
-    newInput.value = selectData.text;
-    newInput.style.display = "none";
-    const inputContainer = document.getElementById("input-container");
-    inputContainer.appendChild(newInput);
-});
+        });
+    });
+</script>
+<script src="{% static 'assets/js/form-wizard-numbered.js' %}"></script>
+<!-- Search as type logic -->
+<script>
+    $('.campaign-select-single').select2({
+        placeholder: 'نام کمپین مورد نظر را وارد کنید...',
+        ajax: {
+            url: '/dashboard/search/single-campaign-search-as-type/',
+            dataType: 'json',
+            delay: 250,
+            data: params => ({ q: params.term }),
+            processResults: (data) => ({
+                results: data
+            }),
+            cache: true
+        },
+        minimumInputLength: 1,
+        width: '100%',
+        language: {
+            inputTooShort: function (args) {
+                const remaining = args.minimum - args.input.length;
+                return `حداقل ${remaining} کاراکتر دیگر وارد کنید`;
+            }
+        }
+    });
+    $('.campaign-select-single').on('select2:select', function (e) {
+        selectData = e.params.data;
+        const newInput = document.createElement("input");
+        newInput.name = "name";
+        newInput.classList.add("form-control");
+        newInput.classList.add("campaign-select-single");
+        newInput.value = selectData.text;
+        newInput.style.display = "none";
+        const inputContainer = document.getElementById("input-container");
+        inputContainer.appendChild(newInput);
+    });
+    $('.campaign-select-grouped').select2({
+        placeholder: 'نام کمپین مورد نظر را وارد کنید...',
+        ajax: {
+            url: '/dashboard/search/grouped-campaign-search-as-type/',
+            dataType: 'json',
+            delay: 250,
+            data: params => ({ q: params.term }),
+            processResults: (data) => ({
+                results: data
+            }),
+            cache: true
+        },
+        minimumInputLength: 1,
+        width: '100%',
+        language: {
+            inputTooShort: function (args) {
+                const remaining = args.minimum - args.input.length;
+                return `حداقل ${remaining} کاراکتر دیگر وارد کنید`;
+            }
+        }
+    });
+    $('.campaign-select-grouped').on('select2:select', function (e) {
+        selectData = e.params.data;
+        const newInput = document.createElement("input");
+        newInput.name = "name";
+        newInput.classList.add("form-control");
+        newInput.classList.add("campaign-select-single");
+        newInput.value = selectData.text;
+        newInput.style.display = "none";
+        const inputContainer = document.getElementById("input-container");
+        inputContainer.appendChild(newInput);
+    });
 </script>
 <!-- Delete Element -->
 <script>
     document.getElementById('input-container').addEventListener('click', function(e) {
-    if (e.target.closest('.btn-danger')) {
-        const wrapper = e.target.closest('.select-wrapper');
-        if (!wrapper) return;
+        if (e.target.closest('.btn-danger')) {
+            const wrapper = e.target.closest('.select-wrapper');
+            if (!wrapper) return;
 
-        // Get the select inside this wrapper
-        const select = wrapper.querySelector('select');
+            // Get the select inside this wrapper
+            const select = wrapper.querySelector('select');
 
-        // Get the currently selected value
-        const selectValue = $(select).val();
-        const selectText  = $(select).find('option:selected').text(); 
+            // Get the currently selected value
+            const selectValue = $(select).val();
+            const selectText  = $(select).find('option:selected').text(); 
 
-        console.log('Selected id:', selectValue);
-        console.log('Selected text:', selectText);
-        const inputs = document.querySelectorAll('input');
-        if (inputs) {
-            inputs.forEach(input => {
-                if (input.value === selectText) {
-                    input.remove();
+            const inputs = document.querySelectorAll('input');
+            if (inputs) {
+                inputs.forEach(input => {
+                    if (input.value === selectText) {
+                        input.remove();
+                    }
+                });
+            }
+
+            const input = wrapper.querySelector('input');
+            if (input) input.remove();
+
+            wrapper.remove();
+        }
+    });
+</script>
+<!-- Icon JS -->
+<script>
+    $(document).ready(function() {
+        // Function to format icons in dropdown results
+        function formatIcon(option) {
+            // Return the text for optgroups
+            if (option.element && option.element.parentElement.tagName === 'OPTGROUP') {
+                var icon = $(option.element).data('icon');
+                if (icon) {
+                    return $('<span><i class="' + icon + '"></i> ' + option.text + '</span>');
                 }
-            });
+            }
+            return option.text;
         }
 
-        const input = wrapper.querySelector('input');
-        if (input) input.remove();
+        // Function to format selected item
+        function formatSelection(option) {
+            if (option.element && $(option.element).data('icon')) {
+                var icon = $(option.element).data('icon');
+                return $('<span><i class="' + icon + '"></i> ' + option.text + '</span>');
+            }
+            return option.text;
+        }
 
-        wrapper.remove();
-    }
-});
+        // Initialize Select2
+        $('#select2Icons').select2({
+            templateResult: formatIcon,
+            templateSelection: formatSelection,
+            width: '100%',
+            placeholder: "انتخاب کنید...",
+            allowClear: false,
+            dir: 'rtl'
+        });
+    });
 </script>
 {% endblock %}

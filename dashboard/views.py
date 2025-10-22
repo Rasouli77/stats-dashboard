@@ -1877,7 +1877,7 @@ def alert_form_social(request, url_hash):
     return render(request, "alert-form-social.html")
 
 
-def campaign_search_as_type(request):
+def grouped_campaign_search_as_type(request):
     q = request.GET.get("q", "").strip()
     if q == "":
         return JsonResponse([], safe=False)
@@ -1908,3 +1908,24 @@ def campaign_search_as_type(request):
         item["text"] = name_value
     print(names)
     return JsonResponse(names, safe=False)
+
+
+def single_campaign_search_as_type(request):
+    q = request.GET.get("q", "").strip()
+    if q == "":
+        return JsonResponse([], safe=False)
+    campaigns = Campaign.objects.filter(branch__merchant__url_hash=request.user.profile.merchant.url_hash, name__icontains=q).order_by("-pk")[:10]
+    names_with_branches = list(campaigns.values("name", "branch__name"))
+    print(names_with_branches)
+    # [{'name': 'تست 15', 'branch__name': 'اقدسیه'}]
+    loop_index = 0
+    for item in names_with_branches:
+        campaign_name = item.pop("name")
+        branch_name = item.pop("branch__name")
+        text = f"{campaign_name} {branch_name}"
+        loop_index += 1
+        item["id"] = loop_index
+        item["text"] = text
+    print(names_with_branches)
+    return JsonResponse(names_with_branches, safe=False)
+

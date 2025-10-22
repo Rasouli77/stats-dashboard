@@ -60,96 +60,96 @@ $(function () {
 
   // Vertical Wizard
   // --------------------------------------------------------------------
-  const wizardVertical = document.querySelector('.wizard-vertical'),
-    wizardVerticalBtnNextList = [].slice.call(wizardVertical.querySelectorAll('.btn-next')),
-    wizardVerticalBtnPrevList = [].slice.call(wizardVertical.querySelectorAll('.btn-prev')),
-    wizardVerticalBtnSubmit = wizardVertical.querySelector('.btn-submit');
+  // const wizardVertical = document.querySelector('.wizard-vertical'),
+  //   wizardVerticalBtnNextList = [].slice.call(wizardVertical.querySelectorAll('.btn-next')),
+  //   wizardVerticalBtnPrevList = [].slice.call(wizardVertical.querySelectorAll('.btn-prev')),
+  //   wizardVerticalBtnSubmit = wizardVertical.querySelector('.btn-submit');
 
-  if (typeof wizardVertical !== undefined && wizardVertical !== null) {
-    const verticalStepper = new Stepper(wizardVertical, {
-      linear: false
-    });
-    if (wizardVerticalBtnNextList) {
-      wizardVerticalBtnNextList.forEach(wizardVerticalBtnNext => {
-        wizardVerticalBtnNext.addEventListener('click', event => {
-          verticalStepper.next();
-        });
-      });
-    }
-    if (wizardVerticalBtnPrevList) {
-      wizardVerticalBtnPrevList.forEach(wizardVerticalBtnPrev => {
-        wizardVerticalBtnPrev.addEventListener('click', event => {
-          verticalStepper.previous();
-        });
-      });
-    }
+  // if (typeof wizardVertical !== undefined && wizardVertical !== null) {
+  //   const verticalStepper = new Stepper(wizardVertical, {
+  //     linear: false
+  //   });
+  //   if (wizardVerticalBtnNextList) {
+  //     wizardVerticalBtnNextList.forEach(wizardVerticalBtnNext => {
+  //       wizardVerticalBtnNext.addEventListener('click', event => {
+  //         verticalStepper.next();
+  //       });
+  //     });
+  //   }
+  //   if (wizardVerticalBtnPrevList) {
+  //     wizardVerticalBtnPrevList.forEach(wizardVerticalBtnPrev => {
+  //       wizardVerticalBtnPrev.addEventListener('click', event => {
+  //         verticalStepper.previous();
+  //       });
+  //     });
+  //   }
 
-    if (wizardVerticalBtnSubmit) {
-      wizardVerticalBtnSubmit.addEventListener('click', event => {
-        alert('ثبت شد ...!!');
-      });
-    }
-  }
+  //   if (wizardVerticalBtnSubmit) {
+  //     wizardVerticalBtnSubmit.addEventListener('click', event => {
+  //       alert('ثبت شد ...!!');
+  //     });
+  //   }
+  // }
 
   // Modern Wizard
   // --------------------------------------------------------------------
-  const wizardModern = document.querySelector('.wizard-modern-example'),
-    wizardModernBtnNextList = [].slice.call(wizardModern.querySelectorAll('.btn-next')),
-    wizardModernBtnPrevList = [].slice.call(wizardModern.querySelectorAll('.btn-prev')),
-    wizardModernBtnSubmit = wizardModern.querySelector('.btn-submit');
-  if (typeof wizardModern !== undefined && wizardModern !== null) {
-    const modernStepper = new Stepper(wizardModern, {
-      linear: false
-    });
-    if (wizardModernBtnNextList) {
-      wizardModernBtnNextList.forEach(wizardModernBtnNext => {
-        wizardModernBtnNext.addEventListener('click', event => {
-          modernStepper.next();
-        });
-      });
-    }
-    if (wizardModernBtnPrevList) {
-      wizardModernBtnPrevList.forEach(wizardModernBtnPrev => {
-        wizardModernBtnPrev.addEventListener('click', event => {
-          modernStepper.previous();
-        });
-      });
-    }
-    if (wizardModernBtnSubmit) {
-      wizardModernBtnSubmit.addEventListener('click', event => {
-        alert('ثبت شد ...!!');
-      });
-    }
-  }
+  // const wizardModern = document.querySelector('.wizard-modern-example'),
+  //   wizardModernBtnNextList = [].slice.call(wizardModern.querySelectorAll('.btn-next')),
+  //   wizardModernBtnPrevList = [].slice.call(wizardModern.querySelectorAll('.btn-prev')),
+  //   wizardModernBtnSubmit = wizardModern.querySelector('.btn-submit');
+  // if (typeof wizardModern !== undefined && wizardModern !== null) {
+  //   const modernStepper = new Stepper(wizardModern, {
+  //     linear: false
+  //   });
+  //   if (wizardModernBtnNextList) {
+  //     wizardModernBtnNextList.forEach(wizardModernBtnNext => {
+  //       wizardModernBtnNext.addEventListener('click', event => {
+  //         modernStepper.next();
+  //       });
+  //     });
+  //   }
+  //   if (wizardModernBtnPrevList) {
+  //     wizardModernBtnPrevList.forEach(wizardModernBtnPrev => {
+  //       wizardModernBtnPrev.addEventListener('click', event => {
+  //         modernStepper.previous();
+  //       });
+  //     });
+  //   }
+  //   if (wizardModernBtnSubmit) {
+  //     wizardModernBtnSubmit.addEventListener('click', event => {
+  //       alert('ثبت شد ...!!');
+  //     });
+  //   }
+  // }
 
   // Modern Vertical Wizard
   // --------------------------------------------------------------------
-  const wizardModernVertical = document.querySelector('.wizard-modern-vertical'),
-    wizardModernVerticalBtnNextList = [].slice.call(wizardModernVertical.querySelectorAll('.btn-next')),
-    wizardModernVerticalBtnPrevList = [].slice.call(wizardModernVertical.querySelectorAll('.btn-prev')),
-    wizardModernVerticalBtnSubmit = wizardModernVertical.querySelector('.btn-submit');
-  if (typeof wizardModernVertical !== undefined && wizardModernVertical !== null) {
-    const modernVerticalStepper = new Stepper(wizardModernVertical, {
-      linear: false
-    });
-    if (wizardModernVerticalBtnNextList) {
-      wizardModernVerticalBtnNextList.forEach(wizardModernVerticalBtnNext => {
-        wizardModernVerticalBtnNext.addEventListener('click', event => {
-          modernVerticalStepper.next();
-        });
-      });
-    }
-    if (wizardModernVerticalBtnPrevList) {
-      wizardModernVerticalBtnPrevList.forEach(wizardModernVerticalBtnPrev => {
-        wizardModernVerticalBtnPrev.addEventListener('click', event => {
-          modernVerticalStepper.previous();
-        });
-      });
-    }
-    if (wizardModernVerticalBtnSubmit) {
-      wizardModernVerticalBtnSubmit.addEventListener('click', event => {
-        alert('ثبت شد ...!!');
-      });
-    }
-  }
+  // const wizardModernVertical = document.querySelector('.wizard-modern-vertical'),
+  //   wizardModernVerticalBtnNextList = [].slice.call(wizardModernVertical.querySelectorAll('.btn-next')),
+  //   wizardModernVerticalBtnPrevList = [].slice.call(wizardModernVertical.querySelectorAll('.btn-prev')),
+  //   wizardModernVerticalBtnSubmit = wizardModernVertical.querySelector('.btn-submit');
+  // if (typeof wizardModernVertical !== undefined && wizardModernVertical !== null) {
+  //   const modernVerticalStepper = new Stepper(wizardModernVertical, {
+  //     linear: false
+  //   });
+  //   if (wizardModernVerticalBtnNextList) {
+  //     wizardModernVerticalBtnNextList.forEach(wizardModernVerticalBtnNext => {
+  //       wizardModernVerticalBtnNext.addEventListener('click', event => {
+  //         modernVerticalStepper.next();
+  //       });
+  //     });
+  //   }
+  //   if (wizardModernVerticalBtnPrevList) {
+  //     wizardModernVerticalBtnPrevList.forEach(wizardModernVerticalBtnPrev => {
+  //       wizardModernVerticalBtnPrev.addEventListener('click', event => {
+  //         modernVerticalStepper.previous();
+  //       });
+  //     });
+  //   }
+  //   if (wizardModernVerticalBtnSubmit) {
+  //     wizardModernVerticalBtnSubmit.addEventListener('click', event => {
+  //       alert('ثبت شد ...!!');
+  //     });
+  //   }
+  // }
 })();
