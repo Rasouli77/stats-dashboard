@@ -190,49 +190,22 @@
                                 <div style="width: 100%;">
                                     <p style="width: 100%; height: 0px; color: #f9f9f9;">در این قسمت میتوانید نام کمپین مورد نظر خود را وارد کنید</p>
                                 </div>
-                                <!-- <div class="select-wrapper single-campaign" style="margin-top: 30px; margin-bottom: 30px; width: 100%; display: flex;">
-                                    <select class="form-control campaign-select-single" style="width:90%;"></select>
-                                    <button class="btn btn-danger" style="width: 10%; margin-right: 10px;"><i class='bx bx-trash'></i></button>
-                                </div>
-                                <div class="select-wrapper single-campaign" style="margin-top: 30px; margin-bottom: 30px; width: 100%; display: flex;">
-                                    <select class="form-control campaign-select-single" style="width:90%;"></select>
-                                    <button class="btn btn-danger" style="width: 10%; margin-right: 10px;"><i class='bx bx-trash'></i></button>
-                                </div>
-                                <div class="select-wrapper grouped-campaign" style="margin-top: 30px; margin-bottom: 30px; width: 100%; display: flex;">
-                                    <select class="form-control campaign-select-grouped" style="width:90%;"></select>
-                                    <button class="btn btn-danger" style="width: 10%; margin-right: 10px;"><i class='bx bx-trash'></i></button>
-                                </div>
-                                <div class="select-wrapper grouped-campaign" style="margin-top: 30px; margin-bottom: 30px; width: 100%; display: flex;">
-                                    <select class="form-control campaign-select-grouped" style="width:90%;"></select>
-                                    <button class="btn btn-danger" style="width: 10%; margin-right: 10px;"><i class='bx bx-trash'></i></button>
-                                </div> -->
                             </div>
-                            <button id="add-input-field-single" class="btn btn-success"><i class='bx bx-plus-circle' style="margin-left: 10px;"></i> افزودن کمپین</button>
-                            <button id="add-input-field-grouped" class="btn btn-success"><i class='bx bx-plus-circle' style="margin-left: 10px;"></i> افزودن کمپین</button>
+                            <button id="add-input-field-single" style="display: none;" class="btn btn-success"><i class='bx bx-plus-circle' style="margin-left: 10px;"></i> افزودن کمپین</button>
+                            <button id="add-input-field-grouped" style="display: none;" class="btn btn-success"><i class='bx bx-plus-circle' style="margin-left: 10px;"></i> افزودن کمپین</button>
                         </div>
                     </div>
                     <!-- Filter Button -->
                     <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12" style="margin-top: 20px; display: flex; align-items: center; flex-direction: column;">
-                        <form action="" method="get" id="filter-form">
-                            <label style="display: none;" for="start-date">از تاریخ</label>
-                            <input type="text" name="start-date" id="start-date" style="display: none;">
-                            <label style="display: none;" for="end-date">تا</label>
-                            <input type="text" name="end-date" id="end-date" style="display: none;">
-                            {% for branch in branches %}
-                            <div class="form-check mt-3" style="display: none;">
-                                <input class="form-check-input real-check" type="checkbox" value="{{ branch.pk }}" name="branch">
-                                <label class="form-check-label" for="defaultCheck1">{{ branch.name }}</label>
-                            </div>
-                            {% endfor %}
-                            <button class="btn btn-primary btn-md" type="submit" id="filter-proxy-button"><i class='bx bx-info-circle' style="margin-left: 10px;"></i>مشاهده اطلاعات</button>
-                        </form>
+                        <button class="btn btn-primary btn-md" type="submit" id="compare-separate-campaign"><i class='bx bx-transfer-alt' style="margin-left: 10px;"></i>مقایسه</button>
+                        <button class="btn btn-primary btn-md" type="submit" id="compare-grouped-campaign"><i class='bx bx-transfer-alt' style="margin-left: 10px;"></i>مقایسه</button>
                     </div>
                     <!-- Ignore the select -->
                     <select style="display: none;" class="selectpicker w-auto" id="language" data-style="btn-transparent" data-icon-base="bx" data-tick-icon="bx-check text-white" multiple>
                     </select>
                     <!--/ Ignore the select -->
                     <div class="col-12 d-flex justify-content-between">
-                        <button class="btn btn-primary btn-prev">
+                        <button class="btn btn-primary btn-prev" id="btn-previous">
                         <i class="bx bx-chevron-left bx-sm ms-sm-n2"></i>
                         <span class="d-sm-inline-block d-none">قبلی</span>
                         </button>
@@ -245,93 +218,10 @@
         </div>
         <!-- /Default Wizard -->
         <!-- Name Search -->
-        
     </div>
 </div>
 <div id="result-container" class="card" style="padding-bottom: 50px; padding-left: 15px; padding-right: 15px; display: none; padding-top: 50px;">
-    <small style="margin-right: 20px;"><i style="margin-left: 5px;" class='bx bx-show-alt blink-icon ms-1'></i> نمایش</small>
-    <select class="form-select" id="table-display" style="margin-bottom: 40px; margin-right: 20px; width: 200px; margin-top: 7px;">
-        <option value="1" selected>تجمیعی</option>
-        <option value="2">تفکیکی</option>
-    </select>
-    <div style="display: flex; justify-content: center; align-items: center;">
-        <button class="btn btn-primary" type="button" id="compare" style="width: 200px; margin-bottom: 40px; margin-right: 20px;">
-            <i style="margin-left: 10px;" class='bx bx-sidebar'></i> مقایسه کمپین ها
-        </button>
-    </div>
     <div class="table-responsive text-nowrap">
-    <form id="grouped-campaign-form" method="get">
-        <table class="table table-hover" id="grouped-campaign">
-            <thead>
-            <tr>
-                <th class="blink-icon" id="select-campaign" style="font-size: 15px;"><strong>انتخاب</strong></th>
-                <th>نام کمپین</th>
-                <th>تاریخ شروع</th>
-                <th>تاریخ پایان</th>
-                <th>شعبه</th>
-                <th>هزینه (تومان)</th>
-                <th>نوع کمپین</th>
-            </tr>
-            </thead>
-            <tbody class="table-border-bottom-0">
-                {% for campaign in grouped_campaigns %}
-                <tr>
-                    <td><input type="checkbox" name="grouped-campaign" class="grouped-campaign-check-box" value="{{ campaign.group_id }}"></td>
-                    <td><i class="align-middle fab fa-angular fa-lg text-danger me-3"></i><strong>{{ campaign.campaign_name }}</strong></td>
-                    <td class="date">{{ campaign.campaign_start_date|date:"Y-m-d" }}</td>
-                    <td class="date">
-                        {{ campaign.campaign_end_date|date:"Y-m-d"}}
-                    </td>
-                    <td>
-                        شعب انتخابی
-                    </td>
-                    <td class="price">
-                    {{ campaign.campaign_cost|floatformat:0 }}
-                    </td>
-                    <td>
-                    {{ campaign.campaign_type }}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </form>
-    <form id="campaign-form" method="get">
-        <table class="table table-hover" id="campaign" style="display: none;">
-            <thead>
-                <tr>
-                <th class="blink-icon" style="font-size: 15px;"><strong>انتخاب</strong></th>
-                <th>نام کمپین</th>
-                <th>تاریخ شروع</th>
-                <th>تاریخ پایان</th>
-                <th>شعبه</th>
-                <th>هزینه (تومان)</th>
-                <th>نوع کمپین</th>
-                </tr>
-            </thead>
-            <tbody class="table-border-bottom-0">
-                {% for campaign in campaigns %}
-                <tr>
-                <td><input type="checkbox" name="campaign" class="campaign-check-box" value="{{ campaign.pk }}"></td>
-                <td><i class="align-middle fab fa-angular fa-lg text-danger me-3"></i><strong>{{ campaign.name }}</strong></td>
-                <td class="date">{{ campaign.start_date|date:"Y-m-d" }}</td>
-                <td class="date">
-                    {{ campaign.end_date|date:"Y-m-d"}}
-                </td>
-                <td>
-                    {{ campaign.branch.name }}
-                </td>
-                <td class="price">
-                    {{ campaign.cost|floatformat:0 }}
-                </td>
-                <td>
-                    {{ campaign.campaign_type }}
-                </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </form>
         <table class="table table-hover" id="result" style="display: none; margin-top: 100px;">
             <thead>
                 <tr>
@@ -410,11 +300,12 @@
             const newInput = document.createElement("input");
             newInput.name = "name";
             newInput.classList.add("form-control");
-            newInput.classList.add("-single");
+            newInput.classList.add("campaign-form-single");
             newInput.value = selectData.text;
+            console.log(newInput.value);
             newInput.style.display = "none";
-            const inputContainer = document.getElementById("input-container");
-            inputContainer.appendChild(newInput);
+            const form = document.getElementById("campaign-form");
+            form.appendChild(newInput);
         });
     }
     function createGroupedCampaignSearch() {
@@ -470,48 +361,34 @@
             newInput.classList.add("form-control");
             newInput.classList.add("campaign-select-grouped");
             newInput.value = selectData.text;
+            console.log(newInput.value);
             newInput.style.display = "none";
-            const inputContainer = document.getElementById("input-container");
-            inputContainer.appendChild(newInput);
+            const form = document.getElementById("grouped-campaign-form");
+            form.appendChild(newInput);
         });
     }
+    function deleteAllSearchFields() {
+        if (document.querySelector(".select-wrapper")) {
+         const searchFileds = document.querySelectorAll(".select-wrapper");
+         searchFileds.forEach(item => {
+            item.remove();
+         });
+        }
+    }
+    function deleteAllForms() {
+        if (document.querySelector("form")) {
+            const forms = document.querySelectorAll("form");
+            forms.forEach(form => {
+                form.remove();
+            });
+        }
+    }
+    // Button Event Listener For Search Field Creation
     document.getElementById("add-input-field-single").addEventListener("click", createSingleCampaignSearch);
-
     document.getElementById("add-input-field-grouped").addEventListener("click", createGroupedCampaignSearch);
 </script>
-<!-- Display Toggle -->
-<script>
-    const tableDisplay = document.getElementById("table-display");
-    const groupedCampaign = document.getElementById("grouped-campaign");
-    const campaign = document.getElementById("campaign");
-    tableDisplay.addEventListener("change", () => {
-        let value = tableDisplay.value;
-        if (value == 1) {
-        campaign.style.display = "none";
-        groupedCampaign.style.display = "";
-        } else {
-            campaign.style.display = "";
-            groupedCampaign.style.display = "none";
-        }
-    });
-</script>
-<!-- Comparison Button -->
-<script>
-    const compare = document.getElementById("compare");
-    const groupedCampaignForm = document.getElementById("grouped-campaign-form");
-    const campaignForm = document.getElementById("campaign-form");
-    compare.addEventListener("click", () => {
-        
-        if (document.getElementById("grouped-campaign").style.display !== "none") {
-            groupedCampaignForm.dispatchEvent(new Event('submit', { cancelable: true }));
-        }
-        if (document.getElementById("campaign").style.display !== "none") {
-            campaignForm.dispatchEvent(new Event('submit', { cancelable: true }));
-        }
-    });
-</script>
 <script src="https://cdn.jsdelivr.net/npm/jalaali-js/dist/jalaali.min.js"></script>
-<!-- JQuery and Toastr Scripts -->
+<!-- JQuery Scripts -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <!-- FlatPicker JS (Calendar) -->
 <script src="{% static 'assets/vendor/libs/jdate/jdate.js' %}"></script>
@@ -524,192 +401,79 @@
 <script src="{% static 'assets/js/persian-flatpicker-and-form-checks.js' %}"></script>
 <!-- Sweet Alert CDN -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<!-- Button Collapse -->
-<script src="{% static 'assets/js/accordion-collapse-toggle.js' %}"></script>
 <!-- Button Color and Background -->
 <script src="{% static 'assets/vendor/libs/shepherd/shepherd.js' %}"></script>
-<!-- Campaign Display Filter / Error Handling-->
+<!-- Search as type functionality -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<!-- Stepper -->
+<script src="{% static 'assets/vendor/libs/bs-stepper/bs-stepper.js' %}"></script>
+<!-- Accumulated vs Separated Display Toggle Fields -->
 <script>
-    document.getElementById("filter-form").addEventListener("submit", (event) => {
-        event.preventDefault();
-        const form = document.getElementById("filter-form");
-        const formData = new FormData(form);
-        document.querySelector("#search").querySelectorAll("input").forEach((input) => {
-            if (input.value.trim() !== "") {
-                formData.append(input.name, input.value.trim());
-            }
-        });
-        const loadingOverlay = document.getElementById("loading-overlay");
-        loadingOverlay.style.display = "flex";
-        const startDateUrl = formData.get("start-date");
-        const endDateUrl = formData.get("end-date");
-        const branchUrl = formData.getAll("branch");
-        const names = formData.getAll("name");
-        if (document.getElementById("search-by-name").style.display !== "none") {
-            if (startDateUrl && endDateUrl) {
-                formData.delete("start-date");
-                formData.delete("end-date");
-                formData.delete("branch");
-            }
-        }
-        const queryString = new URLSearchParams(formData).toString();
-        const selectedBranches = $(".real-check:checked").map(function () {
-            return $(this).val();
-        }).get();
-        if (names.length === 0 && document.getElementById("search-by-name").style.display !== "none") {
-            Swal.fire({
-                icon: "error",
-                title: "خطا",
-                text: "نام کمپین نمی تواند خالی باشد.",
-                confirmButtonColor: '#5a8dee',
-                confirmButtonText: 'بستن' 
-            });
-            loadingOverlay.style.display = "none";
-            return; 
-        }
-        document.getElementById("search-by-name").style.display = "none";
-        document.getElementById("filter-proxy-button").style.display = "none";
-        document.getElementById("result-container").style.display = "";
-        // Tour Logic here starts
-        const tour = new Shepherd.Tour({
-            defaultStepOptions: {
-            scrollTo: { behavior: 'smooth', block: 'center' },
-            cancelIcon: { enabled: true },
-            classes: 'shadow-md bg-purple-dark',
-            buttons: [
-                { text: 'بعدی', action: () => tour.next() },
-                { text: 'قبلی', action: () => tour.back() },
-                { text: 'پایان', action: () => tour.complete() }
-            ]
-            }
-        });
+    document.addEventListener("DOMContentLoaded", () => {
+        const fieldsDisplayToggle = document.getElementById("select2Icons");
+        const btnNext = document.getElementById("btn-next");
+        const singleCampaignWrappers = document.querySelectorAll(".single-campaign");
+        const groupedCampaignWrappers = document.querySelectorAll(".grouped-campaign");
+        btnNext.addEventListener("click", () => {
+        if (fieldsDisplayToggle.value === "aggregate") {
 
-        // Step 1
-        tour.addStep({
-            title: 'مرحله ۱: مشاهده تجمیعی یا تفکیکی',
-            text: 'می توانید از این قسمت نحوه نمایش را به تفکیکی یا تجمیعی تغییر دهید.',
-            attachTo: { element: '#table-display', on: 'bottom' }
-        });
+            // create 2 grouped search fields
+            createGroupedCampaignSearch();
+            createGroupedCampaignSearch();
 
-        // Step 2
-        tour.addStep({
-            title: 'مرحله ۲: انتخاب کمپین',
-            text: 'در این جدول اطلاعات همه کمپین ها نمایش داده می شود و می توانید آنها را انتخاب کنید.',
-            attachTo: { element: '#select-campaign', on: 'top' }
-        });
+            // create a form
+            const form = document.createElement("form");
+            form.id = "grouped-campaign-form";
+            form.method = "get";
+            const inputContainer = document.getElementById("input-container");
+            inputContainer.appendChild(form);
 
-        // Step 3
-        tour.addStep({
-            title: 'مرحله ۳: مقایسه کمپین ها',
-            text: 'یک کمپین در شعب مختلف و یا دو یا چند کمپین را می توانید مقایسه کنید.',
-            attachTo: { element: '#compare', on: 'bottom' }
-        });
+            document.getElementById("add-input-field-single").style.display = "none";
 
-        tour.start();
-        // Tour Logic here ends
-        fetch(`{% url 'campaign_comparison' url_hash=request.user.profile.merchant.url_hash %}?${queryString}`, {
-        method: "GET",
-        headers: {"X-Requested-With": "XMLHttpRequest"}
-        })
-        .then(response => {
-            if (!response.ok) throw new Error('Network response was not ok');
-            loadingOverlay.style.display = "none";
-            return response.json()
-        })
-        .then(data => {
-        // Grouped Campaign
-        console.log(data)
-        let campaignCount = data.grouped_campaigns.length;
-        if (campaignCount === 0) {
-            Swal.fire({
-            icon: "error",
-            title: "خطا",
-            text: "کمپین یافت نشد",
-            confirmButtonColor: '#5a8dee',
-            confirmButtonText: 'بستن' 
-            });
+            document.getElementById("add-input-field-grouped").style.display = "";
+
+            document.getElementById("compare-separate-campaign").style.display = "none";
+
+            document.getElementById("compare-grouped-campaign").style.display = "";
+
+        } 
+        if (fieldsDisplayToggle.value  === "separated" ) {
+
+            // create 2 single search fields
+            createSingleCampaignSearch();
+            createSingleCampaignSearch();
+
+            // create a form
+            const form = document.createElement("form");
+            form.id = "campaign-form";
+            form.method = "get";
+            const inputContainer = document.getElementById("input-container");
+            inputContainer.appendChild(form);
+
+            document.getElementById("add-input-field-single").style.display = "";
+            
+            document.getElementById("add-input-field-grouped").style.display = "none";
+
+            document.getElementById("compare-separate-campaign").style.display = "";
+
+            document.getElementById("compare-grouped-campaign").style.display = "none";
         }
-        document.querySelectorAll(".table-border-bottom-0")[0].innerHTML = "";
-        data.grouped_campaigns.forEach(campaign => {
-            const rowhtml = `
-                <tr>
-                    <td><input type="checkbox" name="grouped-campaign" class="grouped-campaign-check-box" value="${ campaign.group_id }"></td>
-                    <td><i class="align-middle fab fa-angular fa-lg text-danger me-3"></i><strong>${ campaign.campaign_name }</strong></td>
-                    <td class="greg-date">${ campaign.campaign_start_date }</td>
-                    <td class="greg-date">
-                        ${ campaign.campaign_end_date }
-                    </td>
-                    <td>
-                        شعب انتخابی
-                    </td>
-                    <td class="price">
-                        ${ campaign.campaign_cost }
-                    </td>
-                    <td>
-                        ${ campaign.campaign_type }
-                    </td>
-                </tr>
-                `
-                document.querySelectorAll(".table-border-bottom-0")[0].insertAdjacentHTML("beforeend", rowhtml);
-            });
-            // Campaign
-            document.querySelectorAll(".table-border-bottom-0")[1].innerHTML = "";
-            data.campaigns.forEach(campaign => {
-            const rowhtml = `
-                <tr>
-                    <td><input type="checkbox" name="campaign" class="grouped-campaign-check-box" value="${ campaign.id }"></td>
-                    <td><i class="align-middle fab fa-angular fa-lg text-danger me-3"></i><strong>${ campaign.name }</strong></td>
-                    <td class="greg-date">${ campaign.start_date }</td>
-                    <td class="greg-date">
-                        ${ campaign.end_date }
-                    </td>
-                    <td>
-                        ${ campaign.branch_name }
-                    </td>
-                    <td class="price">
-                        ${ campaign.cost }
-                    </td>
-                    <td>
-                        ${ campaign.campaign_type }
-                    </td>
-                </tr>
-                `
-            document.querySelectorAll(".table-border-bottom-0")[1].insertAdjacentHTML("beforeend", rowhtml);
         });
-        },
-        )      
-        .catch((error) => {
-        loadingOverlay.style.display = "none";
-        return; 
-        }
-        );
-        function jalaliDateConvertor() {
-        document.querySelectorAll(".greg-date").forEach(el => {
-        const gregorian = el.innerHTML.split("-");
-        const gYear = parseInt(gregorian[0]);
-        const gMonth = parseInt(gregorian[1]);
-        const gDay = parseInt(gregorian[2]);
-        const jdate = jalaali.toJalaali(gYear, gMonth, gDay);
-        el.innerText = `${jdate.jy}/${String(jdate.jm).padStart(2, '0')}/${String(jdate.jd).padStart(2, '0')}`;
-        });
-        }
-        function priceSeparator() {
-            document.querySelectorAll(".price").forEach(el => {
-                const rowPrice = Number(el.innerText.trim());
-                el.innerText = rowPrice.toLocaleString("fa-IR");
-            });
-        }
-        setTimeout(jalaliDateConvertor, 500);
-        setTimeout(priceSeparator, 500);
     });
 </script>
-<!-- Campaign Comparison Form JQuery -->
+<script src="{% static 'assets/js/form-wizard-numbered.js' %}"></script>
+<!-- Comparison Form Event Listener -->
 <script>
-    $("#campaign-form").on("submit", function (e) {
+    const compareSeparateCampaign = document.getElementById("compare-separate-campaign");
+    const compareGroupedCampaign = document.getElementById("compare-grouped-campaign");
+    compareSeparateCampaign.addEventListener("click", () => {
+        // Event Listener on form for Separate Campaign Comparison
+        $("#campaign-form").on("submit", function (e) {
         e.preventDefault();
         const form = document.querySelector("#campaign-form");
         const formData = new FormData(form);
-        const campaign = formData.getAll("campaign");
+        const campaign = formData.getAll("name");
+        console.log(campaign);
         const loadingOverlay = document.getElementById("loading-overlay");
         loadingOverlay.style.display = "flex";
         if (campaign.length <= 1) {
@@ -731,7 +495,7 @@
             traditional: true,
             method: "GET",
             success: function (data) {
-                document.querySelectorAll(".table-border-bottom-0")[2].innerHTML = "";
+                document.querySelector(".table-border-bottom-0").innerHTML = "";
                 data.forEach(campaign => {
                 const rowhtml = `
                     <tr>
@@ -764,7 +528,7 @@
                         </td>
                     </tr>
                     `
-                document.querySelectorAll(".table-border-bottom-0")[2].insertAdjacentHTML("beforeend", rowhtml);
+                document.querySelector(".table-border-bottom-0").insertAdjacentHTML("beforeend", rowhtml);
                 document.getElementById("result").style.display = "";
                 loadingOverlay.style.display = "none";
                 window.scrollTo({
@@ -785,14 +549,19 @@
             });
         }
         setTimeout(priceSeparator, 500);
-        document.querySelectorAll("thead")[2].classList.add("blink-border");
-        setTimeout(() => {document.querySelectorAll("thead")[2].classList.remove("blink-border")}, 2000);
+        document.querySelector("thead").classList.add("blink-border");
+        setTimeout(() => {document.querySelector("thead").classList.remove("blink-border")}, 2000);
     });
-    $("#grouped-campaign-form").on("submit", function (e) {
+    $("#campaign-form").submit();
+    });
+    compareGroupedCampaign.addEventListener("click", () => {
+        // Event Listener on form for Grouped Campaign Comparison
+        $("#grouped-campaign-form").on("submit", function (e) {
         e.preventDefault();
         const form = document.querySelector("#grouped-campaign-form");
         const formData = new FormData(form);
-        const campaign = formData.getAll("grouped-campaign");
+        const campaign = formData.getAll("name");
+        console.log(campaign)
         const loadingOverlay = document.getElementById("loading-overlay");
         loadingOverlay.style.display = "flex";
         if (campaign.length <= 1) {
@@ -814,7 +583,7 @@
             traditional: true,
             method: "GET",
             success: function (data) {
-                document.querySelectorAll(".table-border-bottom-0")[2].innerHTML = "";
+                document.querySelector(".table-border-bottom-0").innerHTML = "";
                 data.forEach(campaign => {
                 const rowhtml = `
                     <tr>
@@ -847,7 +616,7 @@
                         </td>
                     </tr>
                     `
-                document.querySelectorAll(".table-border-bottom-0")[2].insertAdjacentHTML("beforeend", rowhtml);
+                document.querySelector(".table-border-bottom-0").insertAdjacentHTML("beforeend", rowhtml);
                 document.getElementById("result").style.display = "";
                 loadingOverlay.style.display = "none";
                 window.scrollTo({
@@ -868,123 +637,19 @@
             });
         }
         setTimeout(priceSeparator, 500);
-        document.querySelectorAll("thead")[2].classList.add("blink-border");
-        setTimeout(() => {document.querySelectorAll("thead")[2].classList.remove("blink-border")}, 2000);
+        document.querySelector("thead").classList.add("blink-border");
+        setTimeout(() => {document.querySelector("thead").classList.remove("blink-border")}, 2000);
     });
-</script>
-<!-- Search as type functionality -->
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-<!-- Stepper -->
-<script src="{% static 'assets/vendor/libs/bs-stepper/bs-stepper.js' %}"></script>
-<!-- Accumulated vs Separated Display Toggle Fields -->
-<script>
-    document.addEventListener("DOMContentLoaded", () => {
-        const fieldsDisplayToggle = document.getElementById("select2Icons");
-        const btnNext = document.getElementById("btn-next");
-        const singleCampaignWrappers = document.querySelectorAll(".single-campaign");
-        const groupedCampaignWrappers = document.querySelectorAll(".grouped-campaign");
-        btnNext.addEventListener("click", () => {
-        if (fieldsDisplayToggle.value === "aggregate") {
-
-            singleCampaignWrappers.forEach(item => {
-                item.style.display = "none";
-            });
-
-            groupedCampaignWrappers.forEach(item => {
-                item.style.display = "";
-            });
-
-            document.getElementById("add-input-field-single").style.display = "none";
-
-            document.getElementById("add-input-field-grouped").style.display = "";
-
-        } else {
-
-            singleCampaignWrappers.forEach(item => {
-                item.style.display = "";
-            });
-
-            groupedCampaignWrappers.forEach(item => {
-                item.style.display = "none";
-            });
-
-            document.getElementById("add-input-field-single").style.display = "";
-            
-            document.getElementById("add-input-field-grouped").style.display = "none"
-        }
-        });
-    });
-</script>
-<script src="{% static 'assets/js/form-wizard-numbered.js' %}"></script>
-<!-- Search as type logic -->
-<script>
-    $('.campaign-select-single').select2({
-        placeholder: 'نام کمپین مورد نظر را وارد کنید...',
-        ajax: {
-            url: '/dashboard/search/single-campaign-search-as-type/',
-            dataType: 'json',
-            delay: 250,
-            data: params => ({ q: params.term }),
-            processResults: (data) => ({
-                results: data
-            }),
-            cache: true
-        },
-        minimumInputLength: 1,
-        width: '100%',
-        language: {
-            inputTooShort: function (args) {
-                const remaining = args.minimum - args.input.length;
-                return `حداقل ${remaining} کاراکتر دیگر وارد کنید`;
-            }
-        }
-    });
-    $('.campaign-select-single').on('select2:select', function (e) {
-        selectData = e.params.data;
-        const newInput = document.createElement("input");
-        newInput.name = "name";
-        newInput.classList.add("form-control");
-        newInput.classList.add("campaign-select-single");
-        newInput.value = selectData.text;
-        newInput.style.display = "none";
-        const inputContainer = document.getElementById("input-container");
-        inputContainer.appendChild(newInput);
-    });
-    $('.campaign-select-grouped').select2({
-        placeholder: 'نام کمپین مورد نظر را وارد کنید...',
-        ajax: {
-            url: '/dashboard/search/grouped-campaign-search-as-type/',
-            dataType: 'json',
-            delay: 250,
-            data: params => ({ q: params.term }),
-            processResults: (data) => ({
-                results: data
-            }),
-            cache: true
-        },
-        minimumInputLength: 1,
-        width: '100%',
-        language: {
-            inputTooShort: function (args) {
-                const remaining = args.minimum - args.input.length;
-                return `حداقل ${remaining} کاراکتر دیگر وارد کنید`;
-            }
-        }
-    });
-    $('.campaign-select-grouped').on('select2:select', function (e) {
-        selectData = e.params.data;
-        const newInput = document.createElement("input");
-        newInput.name = "name";
-        newInput.classList.add("form-control");
-        newInput.classList.add("campaign-select-single");
-        newInput.value = selectData.text;
-        newInput.style.display = "none";
-        const inputContainer = document.getElementById("input-container");
-        inputContainer.appendChild(newInput);
+    $("#grouped-campaign-form").submit();
     });
 </script>
 <!-- Delete Element -->
 <script>
+    const btnPrevious = document.querySelector("#btn-previous");
+    btnPrevious.addEventListener("click", () => {
+        deleteAllSearchFields();
+        deleteAllForms();
+    });
     document.getElementById('input-container').addEventListener('click', function(e) {
         if (e.target.closest('.btn-danger')) {
             const wrapper = e.target.closest('.select-wrapper');

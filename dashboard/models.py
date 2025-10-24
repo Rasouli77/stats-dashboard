@@ -121,7 +121,7 @@ class Branch(models.Model):
     district = models.ForeignKey(
         District, on_delete=models.CASCADE, verbose_name="منطقه", null=True, blank=True
     )
-    name = models.CharField(max_length=255, verbose_name="نام", db_index=True)
+    name = models.CharField(max_length=255, verbose_name="نام", db_index=True, unique=True)
     date_created = models.DateTimeField(
         null=True, default=datetime.now, verbose_name="تاریخ ساخت"
     )

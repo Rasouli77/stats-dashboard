@@ -322,12 +322,14 @@ class GroupedCampaigns(APIView):
 class GroupedCampaignComparison(APIView):
     def get(self, request):
         selected_grouped_campaigns = request.GET.getlist("grouped-campaign")
+        print(selected_grouped_campaigns)
         if len(selected_grouped_campaigns) > 1:
+            # each item looks like this: "تست""
             grouped_campaigns = (
                 Campaign.objects.defer("last_modified", "date_created")
                 .filter(
                     branch__merchant__url_hash=request.user.profile.merchant.url_hash,
-                    group_id__in=selected_grouped_campaigns,
+                    name__in=selected_grouped_campaigns,
                 )
                 .values("group_id")
                 .annotate(
@@ -384,23 +386,29 @@ class GroupedCampaignComparison(APIView):
                 campaign["invoice_amount_avg"] = math.floor(invoice_amount_avg) // 10
                 campaign["conversion_rate"] = math.floor(conversion_rate)
                 campaign["value_per_visitor"] = math.floor(value_per_visitor) // 10
+            print(list(grouped_campaigns))
             return Response(list(grouped_campaigns))
 
 
 class CampaignComparison(APIView):
     def get(self, request):
-        selected_grouped_campaigns = request.GET.getlist("campaign")
-        if len(selected_grouped_campaigns) > 1:
-            selected_grouped_campaigns = [
-                int(item) for item in selected_grouped_campaigns
-            ]
+        selected_single_campaigns = request.GET.getlist("campaign")
+        print(selected_single_campaigns)
+        q_object = Q()
+        if len(selected_single_campaigns) > 1:
+            # each item looks like this: "تست - اقدسیه"
+            for item in selected_single_campaigns:
+                name, branch_name = item.split("-", 1)
+                name = name.strip()
+                branch_name = branch_name.strip()
+                q_object |= Q(name=name, branch__name=branch_name)
             campaigns = (
                 Campaign.objects.defer("last_modified", "date_created")
                 .values("pk", "name", "start_date", "end_date", "cost", "campaign_type")
                 .filter(
                     branch__merchant__url_hash=request.user.profile.merchant.url_hash,
-                    pk__in=selected_grouped_campaigns,
                 )
+                .filter(q_object)
                 .annotate(branch_name=F("branch__name"), branch_pk=F("branch__pk"))
             )
             for campaign in campaigns:
@@ -432,6 +440,7 @@ class CampaignComparison(APIView):
                 campaign["invoice_amount_avg"] = math.floor(invoice_amount_avg) // 10
                 campaign["conversion_rate"] = math.floor(conversion_rate)
                 campaign["value_per_visitor"] = math.floor(value_per_visitor) // 10
+            print(list(campaigns))
             return Response(list(campaigns))
 
 
