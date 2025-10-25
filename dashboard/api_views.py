@@ -369,22 +369,28 @@ class GroupedCampaignComparison(APIView):
                     ),
                 ).aggregate(
                     invoice_number_avg=Avg("total_items"),
+                    product=Avg("total_product"),
                     invoice_amount_avg=Avg("total_amount"),
                 )
                 invoice_number_avg = invoice["invoice_number_avg"] or 0
+                product = invoice["product"] or 0
                 invoice_amount_avg = invoice["invoice_amount_avg"] or 0
                 try:
                     conversion_rate = (invoice_number_avg / people_counting_avg) * 100
                     value_per_visitor = invoice_amount_avg / people_counting_avg
+                    cart = product / invoice_number_avg 
                 except ZeroDivisionError as e:
                     print(e)
                     conversion_rate = 0
                     value_per_visitor = 0
+                    cart = 0
                 campaign["branch_names"] = ", ".join(branch_names)
                 campaign["people_counting_avg"] = math.floor(people_counting_avg)
                 campaign["invoice_number_avg"] = math.floor(invoice_number_avg)
+                campaign["product"] = math.floor(product)
                 campaign["invoice_amount_avg"] = math.floor(invoice_amount_avg) // 10
                 campaign["conversion_rate"] = math.floor(conversion_rate)
+                campaign["cart"] = math.floor(cart)
                 campaign["value_per_visitor"] = math.floor(value_per_visitor) // 10
             print(list(grouped_campaigns))
             return Response(list(grouped_campaigns))
@@ -424,22 +430,28 @@ class CampaignComparison(APIView):
                     date__range=(campaign["start_date"], campaign["end_date"]),
                 ).aggregate(
                     invoice_number_avg=Avg("total_items"),
+                    product=Avg("total_product"),
                     invoice_amount_avg=Avg("total_amount"),
                 )
                 invoice_number_avg = invoice["invoice_number_avg"] or 0
+                product = invoice["product"] or 0
                 invoice_amount_avg = invoice["invoice_amount_avg"] or 0
                 try:
                     conversion_rate = (invoice_number_avg / people_counting_avg) * 100
                     value_per_visitor = invoice_amount_avg / people_counting_avg
+                    cart = product / invoice_number_avg
                 except ZeroDivisionError as e:
                     print(e)
                     conversion_rate = 0
                     value_per_visitor = 0
+                    cart = 0
                 campaign["people_counting_avg"] = math.floor(people_counting_avg)
                 campaign["invoice_number_avg"] = math.floor(invoice_number_avg)
+                campaign["product"] = math.floor(product)
                 campaign["invoice_amount_avg"] = math.floor(invoice_amount_avg) // 10
                 campaign["conversion_rate"] = math.floor(conversion_rate)
                 campaign["value_per_visitor"] = math.floor(value_per_visitor) // 10
+                campaign["cart"] = math.floor(cart)
             print(list(campaigns))
             return Response(list(campaigns))
 

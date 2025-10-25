@@ -108,7 +108,15 @@
         animation: pulseColor 1.5s infinite;
     }
 
-
+    .light-style .bs-stepper {
+        background-clip: padding-box;
+        border-style: solid;
+        box-shadow: none !important;
+        border-width: 1px;
+        border-color: #e5e5e5;
+        border-radius: 12px;
+        background-color: #fff;
+    }
 </style>
 {% endblock %}
 {% block content %}
@@ -129,7 +137,7 @@
             <div class="bs-stepper wizard-numbered mt-2">
             <div class="bs-stepper-header">
                 <div class="step" data-target="#account-details">
-                <button type="button" class="step-trigger">
+                <button type="button" class="step-trigger" id="step-one">
                     <span class="bs-stepper-circle">1</span>
                     <span class="bs-stepper-label">
                     <span class="bs-stepper-title">نمایش</span>
@@ -139,7 +147,7 @@
                 </div>
                 <div class="line"></div>
                 <div class="step" data-target="#personal-info">
-                <button type="button" class="step-trigger">
+                <button type="button" class="step-trigger" id="step-two"> 
                     <span class="bs-stepper-circle">2</span>
                     <span class="bs-stepper-label">
                     <span class="bs-stepper-title">انتخاب</span>
@@ -159,7 +167,7 @@
                     <div class="col-sm-4" style="margin-bottom: 50px; margin-top: 50px;">
                         <label for="select2Icons" class="form-label">نمایش کمپین ها</label>
                         <select id="select2Icons" class="select2-icons form-select">
-                            <option>------</option>
+                            <option value="">------</option>
                             <option value="aggregate" data-icon="bx bx-layer">تجمیعی</option>
                             <option value="separated" data-icon="bx bx-collection">تفکیکی</option>
                         </select>
@@ -197,8 +205,8 @@
                     </div>
                     <!-- Filter Button -->
                     <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12" style="margin-top: 20px; display: flex; align-items: center; flex-direction: column;">
-                        <button class="btn btn-primary btn-md" type="submit" id="compare-separate-campaign"><i class='bx bx-transfer-alt' style="margin-left: 10px;"></i>مقایسه</button>
-                        <button class="btn btn-primary btn-md" type="submit" id="compare-grouped-campaign"><i class='bx bx-transfer-alt' style="margin-left: 10px;"></i>مقایسه</button>
+                        <button class="btn btn-primary btn-md" style="display: none;" type="submit" id="compare-separate-campaign"><i class='bx bx-transfer-alt' style="margin-left: 10px;"></i>مقایسه</button>
+                        <button class="btn btn-primary btn-md" style="display: none;" type="submit" id="compare-grouped-campaign"><i class='bx bx-transfer-alt' style="margin-left: 10px;"></i>مقایسه</button>
                     </div>
                     <!-- Ignore the select -->
                     <select style="display: none;" class="selectpicker w-auto" id="language" data-style="btn-transparent" data-icon-base="bx" data-tick-icon="bx-check text-white" multiple>
@@ -209,7 +217,7 @@
                         <i class="bx bx-chevron-left bx-sm ms-sm-n2"></i>
                         <span class="d-sm-inline-block d-none">قبلی</span>
                         </button>
-                        <button class="btn btn-success btn-submit">ثبت</button>
+                        <button class="btn btn-secondary" onclick="window.location.reload()"><i style="margin-left: 10px;" class='bx bx-arrow-back me-2'></i> بازگشت</button>
                     </div>
                     </div>
                 </div>
@@ -220,25 +228,50 @@
         <!-- Name Search -->
     </div>
 </div>
-<div id="result-container" class="card" style="padding-bottom: 50px; padding-left: 15px; padding-right: 15px; display: none; padding-top: 50px;">
+<div id="result-container" class="card" style="padding-bottom: 50px; padding-left: 15px; padding-right: 15px; padding-top: 50px; display: none;">
     <div class="table-responsive text-nowrap">
-        <table class="table table-hover" id="result" style="display: none; margin-top: 100px;">
+        <table class="table table-hover" id="result" style=" margin-top: 20px;">
             <thead>
-                <tr>
-                <th>نام کمپین</th>
-                <th>شعبه</th>
-                <th>هزینه (تومان)</th>
-                <th>نوع</th>
-                <th>میانگین ترافیک</th>
-                <th>میانگین فروش (تومان)</th>
-                <th>میانگین تعداد فاکتور</th>
-                <th>میانگین نرخ تبدیل (درصد)</th>
-                <th>میانگین ارزش ورود (تومان)</th>
-                </tr>
+            <tr id="campaign-name">
+                <th><i style="margin-left: 10px;" class='bx bx-text'></i> نام کمپین</th>
+            </tr>
             </thead>
-            <tbody class="table-border-bottom-0">
+            <tbody>
+            <tr id="campaign-branch">
+                <td><i style="margin-left: 10px;" class='bx bx-store'></i> شعبه</td>
+            </tr>
+            <tr id="campaign-cost">
+                <td><i style="margin-left: 10px;" class='bx bx-dollar'></i> هزینه</td>
+            </tr>
+            <tr id="campaign-type">
+                <td><i style="margin-left: 10px;" class='bx bx-purchase-tag'></i> نوع</td>
+            </tr>
+            <tr id="campaign-avg-traffic">
+                <td><i style="margin-left: 10px;" class='bx bx-line-chart'></i> میانگین ترافیک</td>
+            </tr>
+            <tr id="campaign-avg-sales">
+                <td><i style="margin-left: 10px;" class='bx bx-bar-chart-alt'></i> میانگین فروش (تومان)</td>
+            </tr>
+            <tr id="campaign-avg-invoice">
+                <td><i style="margin-left: 10px;" class='bx bx-receipt'></i> میانگین تعداد فاکتور</td>
+            </tr>
+            <tr id="campaign-avg-conversion">
+                <td><i style="margin-left: 10px;" class='bx bx-transfer-alt'></i> میانگین درصد تبدیل (%)</td>
+            </tr>
+            <tr id="campaign-avg-cart">
+                <td><i style="margin-left: 10px;" class='bx bx-box'></i> میانگین محصول</td>
+            </tr>
+            <tr id="campaign-each-cart">
+                <td><i style="margin-left: 10px;" class='bx bx-cart'></i>میانگین تعداد سبد</td>
+            </tr>
+            <tr id="campaign-avg-value">
+                <td><i style="margin-left: 10px;" class='bx bx-log-in'></i>میانگین ارزش ورود (تومان)</td>
+            </tr>
             </tbody>
         </table>
+    </div>
+    <div style="display: flex; justify-content: center; align-items: center;">
+        <a class="btn btn-secondary" style="color: white; width: 18%; margin-top: 50px;" onclick="window.location.reload()"><i style="margin-left: 10px;" class='bx bx-arrow-back me-2'></i> بازگشت</a>
     </div>
 </div>
 {% endblock %}
@@ -412,9 +445,55 @@
     document.addEventListener("DOMContentLoaded", () => {
         const fieldsDisplayToggle = document.getElementById("select2Icons");
         const btnNext = document.getElementById("btn-next");
+        const stepTwo = document.getElementById("step-two");
         const singleCampaignWrappers = document.querySelectorAll(".single-campaign");
         const groupedCampaignWrappers = document.querySelectorAll(".grouped-campaign");
         btnNext.addEventListener("click", () => {
+        if (fieldsDisplayToggle.value === "aggregate") {
+
+            // create 2 grouped search fields
+            createGroupedCampaignSearch();
+            createGroupedCampaignSearch();
+
+            // create a form
+            const form = document.createElement("form");
+            form.id = "grouped-campaign-form";
+            form.method = "get";
+            const inputContainer = document.getElementById("input-container");
+            inputContainer.appendChild(form);
+
+            document.getElementById("add-input-field-single").style.display = "none";
+
+            document.getElementById("add-input-field-grouped").style.display = "";
+
+            document.getElementById("compare-separate-campaign").style.display = "none";
+
+            document.getElementById("compare-grouped-campaign").style.display = "";
+
+        } 
+        if (fieldsDisplayToggle.value  === "separated" ) {
+
+            // create 2 single search fields
+            createSingleCampaignSearch();
+            createSingleCampaignSearch();
+
+            // create a form
+            const form = document.createElement("form");
+            form.id = "campaign-form";
+            form.method = "get";
+            const inputContainer = document.getElementById("input-container");
+            inputContainer.appendChild(form);
+
+            document.getElementById("add-input-field-single").style.display = "";
+            
+            document.getElementById("add-input-field-grouped").style.display = "none";
+
+            document.getElementById("compare-separate-campaign").style.display = "";
+
+            document.getElementById("compare-grouped-campaign").style.display = "none";
+        }
+        });
+        stepTwo.addEventListener("click", () => {
         if (fieldsDisplayToggle.value === "aggregate") {
 
             // create 2 grouped search fields
@@ -466,6 +545,25 @@
 <script>
     const compareSeparateCampaign = document.getElementById("compare-separate-campaign");
     const compareGroupedCampaign = document.getElementById("compare-grouped-campaign");
+
+    // Table Items
+    const campaignName = document.getElementById("campaign-name");
+    const campaignBranch = document.getElementById("campaign-branch");
+    const campaignCost = document.getElementById("campaign-cost");
+    const campaignType = document.getElementById("campaign-type");
+    const campaignAvgTraffic = document.getElementById("campaign-avg-traffic");
+    const campaignAvgSales = document.getElementById("campaign-avg-sales");
+    const campaignAvgInvoice = document.getElementById("campaign-avg-invoice");
+    const campaignAvgConversion = document.getElementById("campaign-avg-conversion");
+    const campaignAvgCart = document.getElementById("campaign-avg-cart");
+    const campaignAvgValue = document.getElementById("campaign-avg-value");
+    const campaignEachCart = document.getElementById("campaign-each-cart");
+
+    // Search Fields
+    const searchFields = document.getElementById("search-filters");
+    // Result Container
+    const resultContainer = document.getElementById("result-container");
+
     compareSeparateCampaign.addEventListener("click", () => {
         // Event Listener on form for Separate Campaign Comparison
         $("#campaign-form").on("submit", function (e) {
@@ -473,7 +571,6 @@
         const form = document.querySelector("#campaign-form");
         const formData = new FormData(form);
         const campaign = formData.getAll("name");
-        console.log(campaign);
         const loadingOverlay = document.getElementById("loading-overlay");
         loadingOverlay.style.display = "flex";
         if (campaign.length <= 1) {
@@ -487,6 +584,10 @@
             loadingOverlay.style.display = "none";
             return;
         }
+        // hide search fields if successful
+        searchFields.style.display = "none";
+        // show the result
+        resultContainer.style.display = "";
         $.ajax({
             url: "/api/single-campaigns-comparison",
             data: {
@@ -495,41 +596,55 @@
             traditional: true,
             method: "GET",
             success: function (data) {
-                document.querySelector(".table-border-bottom-0").innerHTML = "";
                 data.forEach(campaign => {
-                const rowhtml = `
-                    <tr>
-                        <td>
-                            ${campaign.name} 
-                        </td>
-                        <td>
-                            ${campaign.branch_name}
-                        </td>
-                        <td class="cprice">
-                            ${campaign.cost}
-                        </td>
-                        <td>
-                            ${campaign.campaign_type}
-                        </td>
-                        <td>
-                            ${campaign.people_counting_avg}
-                        </td>
-                        <td class="cprice">
-                            ${campaign.invoice_amount_avg}
-                        </td>
-                        <td>
-                            ${campaign.invoice_number_avg}
-                        </td>
-                        <td>
-                            ${campaign.conversion_rate}
-                        </td>
-                        <td class="cprice">
-                            ${campaign.value_per_visitor}
-                        </td>
-                    </tr>
-                    `
-                document.querySelector(".table-border-bottom-0").insertAdjacentHTML("beforeend", rowhtml);
-                document.getElementById("result").style.display = "";
+                // campaign name
+                const nameTd = document.createElement("td");
+                nameTd.innerText = `${campaign.name}`;
+                campaignName.appendChild(nameTd);
+                // campaign branch
+                const branchNameTd = document.createElement("td");
+                branchNameTd.innerText = `${campaign.branch_name}`;
+                campaignBranch.appendChild(branchNameTd);
+                // campaign cost
+                const costTd = document.createElement("td");
+                costTd.innerText = `${campaign.cost}`;
+                campaignCost.appendChild(costTd);
+                // campaign type
+                const typeTd = document.createElement("td");
+                typeTd.innerText = `${campaign.campaign_type}`;
+                campaignType.appendChild(typeTd);
+                // average traffic
+                const peopleCountingAvgTd = document.createElement("td");
+                peopleCountingAvgTd.innerText = `${campaign.people_counting_avg}`;
+                campaignAvgTraffic.appendChild(peopleCountingAvgTd);
+                // average sales
+                const invoiceAmountAvgTd = document.createElement("td");
+                invoiceAmountAvgTd.classList.add("cprice");
+                invoiceAmountAvgTd.innerText = `${campaign.invoice_amount_avg}`;
+                campaignAvgSales.appendChild(invoiceAmountAvgTd);
+                // average invoice
+                const campaignAvgInvoiceTd = document.createElement("td");
+                campaignAvgInvoiceTd.innerText = `${campaign.invoice_number_avg}`;
+                campaignAvgInvoice.append(campaignAvgInvoiceTd);
+                // average conversion rate
+                const conversionTd = document.createElement("td");
+                conversionTd.classList.add("cprice");
+                conversionTd.innerText = `${campaign.conversion_rate}`;
+                campaignAvgConversion.appendChild(conversionTd);
+                // average product
+                const productTd = document.createElement("td");
+                productTd.innerText = `${campaign.product}`;
+                campaignAvgCart.appendChild(productTd);
+                // average cart
+                const cartTd = document.createElement("td");
+                cartTd.innerText = `${campaign.cart}`;
+                campaignEachCart.appendChild(cartTd);
+                // value per person
+                const valueTd = document.createElement("td");
+                valueTd.classList.add("cprice");
+                valueTd.innerText = `${campaign.value_per_visitor}`;
+                campaignAvgValue.appendChild(valueTd);
+
                 loadingOverlay.style.display = "none";
                 window.scrollTo({
                     top: document.body.scrollHeight,
@@ -575,6 +690,10 @@
             loadingOverlay.style.display = "none";
             return;
         }
+        // hide search fields if successful
+        searchFields.style.display = "none";
+        // show the result
+        resultContainer.style.display = "";
         $.ajax({
             url: "/api/grouped-campaigns-comparison",
             data: {
@@ -583,41 +702,56 @@
             traditional: true,
             method: "GET",
             success: function (data) {
-                document.querySelector(".table-border-bottom-0").innerHTML = "";
                 data.forEach(campaign => {
-                const rowhtml = `
-                    <tr>
-                        <td>
-                            ${campaign.campaign_name} 
-                        </td>
-                        <td>
-                            شعب انتخابی
-                        </td>
-                        <td class="cprice">
-                            ${campaign.campaign_cost}
-                        </td>
-                        <td>
-                            ${campaign.campaign_type}
-                        </td>
-                        <td>
-                            ${campaign.people_counting_avg}
-                        </td>
-                        <td class="cprice">
-                            ${campaign.invoice_amount_avg}
-                        </td>
-                        <td>
-                            ${campaign.invoice_number_avg}
-                        </td>
-                        <td>
-                            ${campaign.conversion_rate}
-                        </td>
-                        <td class="cprice">
-                            ${campaign.value_per_visitor}
-                        </td>
-                    </tr>
-                    `
-                document.querySelector(".table-border-bottom-0").insertAdjacentHTML("beforeend", rowhtml);
-                document.getElementById("result").style.display = "";
+                // campaign name
+                const nameTd = document.createElement("td");
+                nameTd.innerText = `${campaign.campaign_name}`;
+                campaignName.appendChild(nameTd);
+                // campaign branch
+                const branchNameTd = document.createElement("td");
+                branchNameTd.innerText = `شعب منتخب`;
+                branchNameTd.title = `${campaign.branch_names}`;
+                campaignBranch.appendChild(branchNameTd);
+                // campaign cost
+                const costTd = document.createElement("td");
+                costTd.innerText = `${campaign.campaign_cost}`;
+                campaignCost.appendChild(costTd);
+                // campaign type
+                const typeTd = document.createElement("td");
+                typeTd.innerText = `${campaign.campaign_type}`;
+                campaignType.appendChild(typeTd);
+                // average traffic
+                const peopleCountingAvgTd = document.createElement("td");
+                peopleCountingAvgTd.innerText = `${campaign.people_counting_avg}`;
+                campaignAvgTraffic.appendChild(peopleCountingAvgTd);
+                // average sales
+                const invoiceAmountAvgTd = document.createElement("td");
+                invoiceAmountAvgTd.classList.add("cprice");
+                invoiceAmountAvgTd.innerText = `${campaign.invoice_amount_avg}`;
+                campaignAvgSales.appendChild(invoiceAmountAvgTd);
+                // average invoice
+                const campaignAvgInvoiceTd = document.createElement("td");
+                campaignAvgInvoiceTd.innerText = `${campaign.invoice_number_avg}`;
+                campaignAvgInvoice.append(campaignAvgInvoiceTd);
+                // average conversion rate
+                const conversionTd = document.createElement("td");
+                conversionTd.classList.add("cprice");
+                conversionTd.innerText = `${campaign.conversion_rate}`;
+                campaignAvgConversion.appendChild(conversionTd);
+                // average product
+                const productTd = document.createElement("td");
+                productTd.innerText = `${campaign.product}`;
+                campaignAvgCart.appendChild(productTd);
+                // average cart
+                const cartTd = document.createElement("td");
+                cartTd.innerText = `${campaign.cart}`;
+                campaignEachCart.appendChild(cartTd);
+                // value per person
+                const valueTd = document.createElement("td");
+                valueTd.classList.add("cprice");
+                valueTd.innerText = `${campaign.value_per_visitor}`;
+                campaignAvgValue.appendChild(valueTd);
+                
                 loadingOverlay.style.display = "none";
                 window.scrollTo({
                     top: document.body.scrollHeight,
@@ -647,6 +781,11 @@
 <script>
     const btnPrevious = document.querySelector("#btn-previous");
     btnPrevious.addEventListener("click", () => {
+        deleteAllSearchFields();
+        deleteAllForms();
+    });
+    const stepOne = document.querySelector("#step-one");
+    stepOne.addEventListener("click", () => {
         deleteAllSearchFields();
         deleteAllForms();
     });
