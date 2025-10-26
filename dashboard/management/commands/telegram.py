@@ -6,9 +6,14 @@ from dashboard.models import PeopleCounting, Invoice
 from django.db.models import Sum, F
 import math
 import jdatetime
+import os
+from dotenv import load_dotenv
 
-BOT_TOKEN = "8078497152:AAHitT8RjfQ-jaO4gVk_zWjnW5_B_hAOmMs"
-CHAT_ID = "-4834300305"
+# Load Environment Variables
+load_dotenv()
+
+BOT_TOKEN = os.environ.get("BOT_TOKEN")
+CHAT_ID = os.environ.get("CHAT_ID")
 HASH_KEY = "4CbCwLRPAJ5B"
 
 class Command(BaseCommand):
