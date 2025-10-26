@@ -38,7 +38,7 @@
                 </div>
                 <div style="display: flex; justify-content: center; align-items: center; flex-direction: row;">
                   <button class="btn btn-primary" type="submit" style="margin: 20px; width: 40%;"><i style="margin-left: 10px;" class='bx bx-save me-2'></i> ثبت</button>
-                  <a href="{% url 'alert-from-sms-contact-list' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="btn btn-secondary" type="button" style="margin: 20px; width: 40%;"><i style="margin-left: 10px;" class='bx bx-arrow-back me-2'></i> بازگشت</a>
+                  <a onclick="window.history.back()" class="btn btn-secondary" type="button" style="margin: 20px; width: 40%; color: white;"><i style="margin-left: 10px;" class='bx bx-arrow-back me-2'></i> بازگشت</a>
                 </div>
               </div>
             </div>

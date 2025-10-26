@@ -52,7 +52,7 @@
                     {% if perms.dashboard.delete_invoice %}
                     <a href="javascript:;" class="btn btn-danger me-3" data-bs-target="#deleteInvoice" data-bs-toggle="modal" style="width: 25%;">حذف</a>
                     {% endif %}
-                    <a href="{% url 'invoices' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="btn btn-dark me-3" style="width: 25%;">بازگشت</a>
+                    <a onclick="window.history.back()" class="btn btn-dark me-3" style="width: 25%; color: white;">بازگشت</a>
                 </div> 
             </div>
         </div>

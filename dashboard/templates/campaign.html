@@ -63,7 +63,7 @@
         </tbody>
     </table>
   </div>
-  <a href="{% url 'home' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="btn btn-secondary" type="button" style="margin: 30px; width: 100px;"><i style="margin-left: 10px;" class='bx bx-arrow-back me-2'></i> بازگشت</a>
+  <a onclick="window.history.back()" class="btn btn-secondary" type="button" style="margin: 30px; width: 100px; color: white;"><i style="margin-left: 10px;" class='bx bx-arrow-back me-2'></i> بازگشت</a>
 </div>
 {% endblock %}
 {% block extra_js %}

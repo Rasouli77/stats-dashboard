@@ -45,7 +45,6 @@ def find_broken_ips(merchant_hash):
 
 def send_camera_malfunction_alert(mobile: str, broken_cam_ips: list):
     broken_cam_ips = [item.replace(" ", "_") for item in broken_cam_ips if item is not None]
-    print(broken_cam_ips)
     token = ",".join(broken_cam_ips)
     contact = []
     try:

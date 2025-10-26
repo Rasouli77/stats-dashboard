@@ -116,7 +116,7 @@
 
                 <div style="margin-top: 35px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
                     <button class="btn btn-primary" id="submit-btn" style="width: 40%;;"><i style="margin-left: 10px;" class='bx bx-save me-2'></i> ثبت</button>
-                    <a href="{% url 'campaign' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="btn btn-secondary" style="width: 40%; margin-top: 30px;"><i style="margin-left: 10px;" class='bx bx-arrow-back me-2'></i> بازگشت</a>
+                    <a onclick="window.history.back()" class="btn btn-secondary" style="width: 40%; margin-top: 30px; color: white;"><i style="margin-left: 10px;" class='bx bx-arrow-back me-2'></i> بازگشت</a>
                 </div>
             </form>
             

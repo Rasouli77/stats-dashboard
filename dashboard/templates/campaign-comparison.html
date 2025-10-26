@@ -165,11 +165,11 @@
                     </div>
                     <div class="row g-3">
                     <div class="col-sm-4" style="margin-bottom: 50px; margin-top: 50px;">
-                        <label for="select2Icons" class="form-label">نمایش کمپین ها</label>
-                        <select id="select2Icons" class="select2-icons form-select">
+                        <label for="displaySelect" class="form-label">نمایش کمپین ها</label>
+                        <select id="displaySelect" class="form-select">
                             <option value="">------</option>
-                            <option value="aggregate" data-icon="bx bx-layer">تجمیعی</option>
-                            <option value="separated" data-icon="bx bx-collection">تفکیکی</option>
+                            <option value="aggregate">تجمیعی</option>
+                            <option value="separated">تفکیکی</option>
                         </select>
                     </div>
                     <div class="col-12 d-flex justify-content-between">
@@ -203,11 +203,6 @@
                             <button id="add-input-field-grouped" style="display: none;" class="btn btn-success"><i class='bx bx-plus-circle' style="margin-left: 10px;"></i> افزودن کمپین</button>
                         </div>
                     </div>
-                    <!-- Filter Button -->
-                    <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12" style="margin-top: 20px; display: flex; align-items: center; flex-direction: column;">
-                        <button class="btn btn-primary btn-md" style="display: none;" type="submit" id="compare-separate-campaign"><i class='bx bx-transfer-alt' style="margin-left: 10px;"></i>مقایسه</button>
-                        <button class="btn btn-primary btn-md" style="display: none;" type="submit" id="compare-grouped-campaign"><i class='bx bx-transfer-alt' style="margin-left: 10px;"></i>مقایسه</button>
-                    </div>
                     <!-- Ignore the select -->
                     <select style="display: none;" class="selectpicker w-auto" id="language" data-style="btn-transparent" data-icon-base="bx" data-tick-icon="bx-check text-white" multiple>
                     </select>
@@ -217,7 +212,8 @@
                         <i class="bx bx-chevron-left bx-sm ms-sm-n2"></i>
                         <span class="d-sm-inline-block d-none">قبلی</span>
                         </button>
-                        <button class="btn btn-secondary" onclick="window.location.reload()"><i style="margin-left: 10px;" class='bx bx-arrow-back me-2'></i> بازگشت</button>
+                        <button class="btn btn-primary btn-md" style="display: none;" type="submit" id="compare-separate-campaign"><i class='bx bx-transfer-alt' style="margin-left: 10px;"></i>مقایسه</button>
+                        <button class="btn btn-primary btn-md" style="display: none;" type="submit" id="compare-grouped-campaign"><i class='bx bx-transfer-alt' style="margin-left: 10px;"></i>مقایسه</button>
                     </div>
                     </div>
                 </div>
@@ -430,8 +426,6 @@
 <script src="{% static 'assets/vendor/libs/flatpickr/l10n/fa-jdate.js' %}"></script>
 <script src="{% static 'assets/js/app-calendar-events.js' %}"></script>
 <script src="{% static 'assets/js/app-calendar.js' %}"></script>
-<!-- FlatPicker (JS Calendar) Persian Configuration / Form Checks -->
-<script src="{% static 'assets/js/persian-flatpicker-and-form-checks.js' %}"></script>
 <!-- Sweet Alert CDN -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <!-- Button Color and Background -->
@@ -443,11 +437,22 @@
 <!-- Accumulated vs Separated Display Toggle Fields -->
 <script>
     document.addEventListener("DOMContentLoaded", () => {
-        const fieldsDisplayToggle = document.getElementById("select2Icons");
+        const fieldsDisplayToggle = document.getElementById("displaySelect");
         const btnNext = document.getElementById("btn-next");
         const stepTwo = document.getElementById("step-two");
         const singleCampaignWrappers = document.querySelectorAll(".single-campaign");
         const groupedCampaignWrappers = document.querySelectorAll(".grouped-campaign");
+
+        function makeNextDisabled() {
+            const displaySelectIsEmpty = !fieldsDisplayToggle.value;
+            btnNext.disabled = displaySelectIsEmpty;
+            stepTwo.disabled = displaySelectIsEmpty;
+        }
+        
+        makeNextDisabled();
+
+        fieldsDisplayToggle.addEventListener("change", makeNextDisabled);
+
         btnNext.addEventListener("click", () => {
         if (fieldsDisplayToggle.value === "aggregate") {
 
@@ -815,41 +820,6 @@
 
             wrapper.remove();
         }
-    });
-</script>
-<!-- Icon JS -->
-<script>
-    $(document).ready(function() {
-        // Function to format icons in dropdown results
-        function formatIcon(option) {
-            // Return the text for optgroups
-            if (option.element && option.element.parentElement.tagName === 'OPTGROUP') {
-                var icon = $(option.element).data('icon');
-                if (icon) {
-                    return $('<span><i class="' + icon + '"></i> ' + option.text + '</span>');
-                }
-            }
-            return option.text;
-        }
-
-        // Function to format selected item
-        function formatSelection(option) {
-            if (option.element && $(option.element).data('icon')) {
-                var icon = $(option.element).data('icon');
-                return $('<span><i class="' + icon + '"></i> ' + option.text + '</span>');
-            }
-            return option.text;
-        }
-
-        // Initialize Select2
-        $('#select2Icons').select2({
-            templateResult: formatIcon,
-            templateSelection: formatSelection,
-            width: '100%',
-            placeholder: "انتخاب کنید...",
-            allowClear: false,
-            dir: 'rtl'
-        });
     });
 </script>
 {% endblock %}

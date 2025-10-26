@@ -61,7 +61,7 @@
         {% endfor %}
         </tbody>
     </table>
-    <a href="{% url 'alert-from-sms-contact-list' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="btn btn-secondary" type="button" style="margin: 30px;">بازگشت</a>
+    <a onclick="window.history.back()" class="btn btn-secondary" type="button" style="margin: 30px; color: white;">بازگشت</a>
   </div>
 </div>
 {% endblock %}

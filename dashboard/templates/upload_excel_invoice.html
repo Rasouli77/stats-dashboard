@@ -61,7 +61,7 @@
         <p>{{ branch.pk }} - {{ branch.name }}</p>
         {% endfor %}
     {% endif %}
-    <a href="{% url 'upload_excel_file_invoice' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="btn btn-primary">بازگشت</a>
+    <a href="{% url 'upload_excel_file_invoice' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="btn btn-primary"><i style="margin-left: 10px;" class='bx bx-arrow-back me-2'></i> بازگشت</a>
     </div>
 </div>
 <!-- /Error -->
@@ -88,7 +88,7 @@
             </form>
             <button class="btn btn-primary" id="submit-invoice-upload" style="margin-top: 25px; width: 15%;"><i style="margin-left: 10px;" class='bx bx-cloud-upload me-2'></i> آپلود</button>
             <button class="btn btn-danger" id="remove-invoice-file" style="margin-top: 25px; width: 15%;">حذف فایل</button>
-            <a href="{% url 'home' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="btn btn-secondary" type="button" style="margin-top: 25px; width: 15%;"><i style="margin-left: 10px;" class='bx bx-arrow-back me-2'></i> بازگشت</a>
+            <a onclick="window.history.back()" class="btn btn-secondary" type="button" style="margin-top: 25px; width: 15%; color: white;"><i style="margin-left: 10px;" class='bx bx-arrow-back me-2'></i> بازگشت</a>
         </div> 
     </div>
 </div>
