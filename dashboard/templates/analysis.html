@@ -11,7 +11,6 @@
 <link rel="stylesheet" href="{% static 'assets/vendor/libs/fullcalendar/fullcalendar.css' %}">
 <link rel="stylesheet" href="{% static 'assets/vendor/libs/flatpickr/flatpickr.css' %}">
 <link rel="stylesheet" href="{% static 'assets/vendor/css/pages/app-calendar.css' %}">
-<link rel="stylesheet" href="{% static 'assets/vendor/libs/toastr/toastr.css' %}" />
 <!-- Custom Style for FlatPicker Calendar -->
 <style>
     .light-style .flatpickr-calendar {
@@ -518,10 +517,8 @@
 {% endblock %}
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/jalaali-js/dist/jalaali.min.js"></script>
-<!-- JQuery and Toastr Scripts -->
+<!-- JQuery Scripts -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="{% static 'assets/vendor/libs/toastr/toastr.js' %}"></script>
-<script src="{% static 'assets/js/ui-toasts.js' %}"></script>
 <!-- HighChart JS -->
 <script src="{% static 'assets/js/highcharts.js' %}"></script>
 <script src="{% static 'assets/js/exporting.js' %}"></script>
@@ -2989,28 +2986,6 @@
             });
             return;
         }
-        if (document.getElementById("second-one-to-all-container").style.display === "none" && document.getElementById("second-one-to-all-container-pie-chart").style.display === "none" && selectedBranches.length === 0 && startDate && document.getElementById("ratio-container").style.display === "block" && document.getElementById("ratio-container-bar-chart").style.display === "block" && document.getElementById("product-counter").style.display === "block" && document.getElementById("product-counter-bar-chart").style.display === "block") {
-            toastr.options = {
-                positionClass: 'toast-top-center',
-            }
-            toastr.warning("هیچ شعبه ای انتخاب نشد");
-            toastr.warning("همه شعب به صورت پیش فرض در نمودار نمایش داده میشوند");
-            document.querySelector("#select-all").checked = true;
-            document.querySelectorAll(".fake-check").forEach((el) => {
-                el.checked = true; 
-            });
-        }
-        if (document.getElementById("second-one-to-all-container").style.display === "none" && document.getElementById("second-one-to-all-container-pie-chart").style.display === "none" && selectedBranches.length === 0 && startDate && document.getElementById("second-ratio-container").style.display === "block" && document.getElementById("second-ratio-container-bar-chart").style.display === "block") {
-            toastr.options = {
-                positionClass: 'toast-top-center',
-            }
-            toastr.warning("هیچ شعبه ای انتخاب نشد");
-            toastr.warning("همه شعب به صورت پیش فرض در نمودار نمایش داده میشوند");
-            document.querySelector("#select-all").checked = true;
-            document.querySelectorAll(".fake-check").forEach((el) => {
-                el.checked = true; 
-            });
-        }
         if (document.getElementById("one-to-all-container").style.display === "block" && document.getElementById("one-to-all-container-bar-chart").style.display === "block" && branchUrl.length !== 1) {
             Swal.fire({
             icon: "error",
@@ -3867,6 +3842,18 @@
 <script src="{% static 'assets/js/flatpickr-initial-date-range.js' %}"></script>
 <!-- AI Buttons -->
 <script src="{% static 'assets/js/ai-analysis.js' %}"></script>
+<!-- Type 3 Warning -->
+<script>
+if (document.getElementById("one-to-all-container-bar-chart").style.display !== 'none') {
+    Swal.fire({
+        icon: "warning",
+        title: "نکته",
+        text: "برای استفاده از نمودار سهم ترافیک شعبه باید فقط یک شعبه انتخاب شود",
+        confirmButtonColor: '#5a8dee',
+        confirmButtonText: 'بستن' 
+    });
+}
+</script>
 {% endblock %}
 
 

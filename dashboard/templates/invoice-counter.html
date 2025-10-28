@@ -813,7 +813,7 @@
             function initialHandleMonthlyFirstChart () {
                 const apiUrl = "/api/normal-monthly-display";
                 const x = newCategories;
-                const y = data.entry_totals;
+                const y = data.total_amount;
                 const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
                 fetch(apiUrl, {
                     method: "POST",
@@ -874,7 +874,7 @@
             function initialHandleMonthlyThirdChart () {
                 const apiUrl = "/api/normal-monthly-display";
                 const x = newCategories;
-                const y = data.entry_totals;
+                const y = data.total_items;
                 const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
                 fetch(apiUrl, {
                     method: "POST",
@@ -933,7 +933,7 @@
             function initialHandleMonthlyFifthChart () {
                 const apiUrl = "/api/normal-monthly-display";
                 const x = newCategories;
-                const y = data.entry_totals;
+                const y = data.total_products;
                 const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
                 fetch(apiUrl, {
                     method: "POST",
@@ -995,6 +995,329 @@
             $("#third-container-bar-chart-tools .month").off("click").on("click", initialHandleMonthlyThirdChart);
             $("#fifth-container-tools .month").off("click").on("click", initialHandleMonthlyFifthChart);
             $("#fifth-container-bar-chart-tools .month").off("click").on("click", initialHandleMonthlyFifthChart);
+            // Initial Line Chart Weekly Display Button Logic
+            // Initial Line Chart Weekly Display Button Functions
+            function initialHandleWeeklyFirstChart () {
+                const apiUrl = "/api/normal-weekly-display";
+                const x = newCategories;
+                const y = data.total_amount;
+                const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                fetch(apiUrl, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": csrftoken,
+                    },
+                    body: JSON.stringify({x: x, y: y})
+                }).then(response => {
+                    if (!response.ok) throw new Error("Invalid Response");
+                    return response.json()
+                }).then(d => {
+                    // Line Chart Update
+                    lineChart.update({
+                        xAxis: { 
+                            categories: d.weeks, 
+                            labels: {
+                                useHTML: true,  
+                                formatter: function () {
+                                        const value = this.value; 
+                                        if (holidayDates.includes(value)) {
+                                            return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                        }
+                                        if (fridays.includes(value)) {
+                                            return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                        }
+                                        return value; 
+                                    }
+                                } 
+                        },
+                        series: [{name: `فروش (${Number(totalAmount).toLocaleString('fa-IR')})`, data: d.values}
+                        ],
+                    });
+                    //  Bar Chart Update
+                    barChart.update({
+                        xAxis: { 
+                            categories: d.weeks, 
+                            labels: {
+                                useHTML: true,  
+                                formatter: function () {
+                                        const value = this.value; 
+                                        if (holidayDates.includes(value)) {
+                                            return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                        }
+                                        if (fridays.includes(value)) {
+                                            return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                        }
+                                        return value; 
+                                    }
+                                } 
+                        },
+                        series: [{name: `فروش (${Number(totalAmount).toLocaleString('fa-IR')})`, data: d.values}
+                        ],
+                    });
+                });
+            }
+
+            function initialHandleWeeklyThirdChart () {
+                const apiUrl = "/api/normal-weekly-display";
+                const x = newCategories;
+                const y = data.total_items;
+                const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                fetch(apiUrl, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": csrftoken,
+                    },
+                    body: JSON.stringify({x: x, y: y})
+                }).then(response => {
+                    if (!response.ok) throw new Error("Invalid Response");
+                    return response.json()
+                }).then(d => {
+                    // Third Line Chart
+                    thirdLineChart.update({
+                        xAxis: { 
+                            categories: d.weeks,
+                            labels: {
+                                useHTML: true,  
+                                formatter: function () {
+                                        const value = this.value; 
+                                        if (holidayDates.includes(value)) {
+                                            return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                        }
+                                        if (fridays.includes(value)) {
+                                            return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                        }
+                                        return value; 
+                                    }
+                                } 
+                        },
+                        series: [{ data: d.values }]
+                    });
+                    // Third Bar Chart
+                    thirdBarChart.update({
+                        xAxis: { 
+                            categories: d.weeks,
+                            labels: {
+                                useHTML: true,  
+                                formatter: function () {
+                                        const value = this.value; 
+                                        if (holidayDates.includes(value)) {
+                                            return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                        }
+                                        if (fridays.includes(value)) {
+                                            return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                        }
+                                        return value; 
+                                    }
+                                } 
+                        },
+                        series: [{ data: d.values }]
+                    });
+                });
+            }
+
+            function initialHandleWeeklyFifthChart () {
+                const apiUrl = "/api/normal-weekly-display";
+                const x = newCategories;
+                const y = data.total_products;
+                const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                fetch(apiUrl, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": csrftoken,
+                    },
+                    body: JSON.stringify({x: x, y: y})
+                }).then(response => {
+                    if (!response.ok) throw new Error("Invalid Response");
+                    return response.json()
+                }).then(d => {
+                    // Fifth Line Chart
+                    fifthLineChart.update({
+                        xAxis: { 
+                            categories: d.weeks,
+                            labels: {
+                                useHTML: true,  
+                                formatter: function () {
+                                        const value = this.value; 
+                                        if (holidayDates.includes(value)) {
+                                            return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                        }
+                                        if (fridays.includes(value)) {
+                                            return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                        }
+                                        return value; 
+                                    }
+                                } 
+                        },
+                        series: [{ data: d.values }]
+                    });
+                    // Fifth Bar Chart
+                    fifthBarChart.update({
+                        xAxis: { 
+                            categories: d.weeks,
+                            labels: {
+                                useHTML: true,  
+                                formatter: function () {
+                                        const value = this.value; 
+                                        if (holidayDates.includes(value)) {
+                                            return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                        }
+                                        if (fridays.includes(value)) {
+                                            return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                        }
+                                        return value; 
+                                    }
+                                } 
+                        },
+                        series: [{ data: d.values }]
+                    });
+                });
+            }
+            // Initial Line Chart Weekly Event Listeners
+            $("#container-tools .week").off("click").on("click", initialHandleWeeklyFirstChart);
+            $("#container-bar-chart-tools .week").off("click").on("click", initialHandleWeeklyFirstChart);
+            $("#third-container-tools .week").off("click").on("click", initialHandleWeeklyThirdChart);
+            $("#third-container-bar-chart-tools .week").off("click").on("click", initialHandleWeeklyThirdChart);
+            $("#fifth-container-tools .week").off("click").on("click", initialHandleWeeklyFifthChart);
+            $("#fifth-container-bar-chart-tools .week").off("click").on("click", initialHandleWeeklyFifthChart);
+            // Initial Line Chart Daily Display Button Logic
+            // Initial Line Chart Daily Display Function
+            function initialHandleDailyFirstChart () {
+                lineChart.update({
+                    xAxis: { 
+                        categories: newCategories, 
+                        labels: {
+                            useHTML: true,  
+                            formatter: function () {
+                                    const value = this.value; 
+                                    if (holidayDates.includes(value)) {
+                                        return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                    }
+                                    if (fridays.includes(value)) {
+                                        return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                    }
+                                    return value; 
+                                }
+                            } 
+                    },
+                    series: [{name: `فروش (${Number(totalAmount).toLocaleString('fa-IR')})`, data: data.total_amount}
+                    ],
+                });
+
+                barChart.update({
+                    xAxis: { 
+                        categories: newCategories, 
+                        labels: {
+                            useHTML: true,  
+                            formatter: function () {
+                                    const value = this.value; 
+                                    if (holidayDates.includes(value)) {
+                                        return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                    }
+                                    if (fridays.includes(value)) {
+                                        return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                    }
+                                    return value; 
+                                }
+                            } 
+                    },
+                    series: [{name: `فروش (${Number(totalAmount).toLocaleString('fa-IR')})`, data: data.total_amount}
+                    ],
+                });
+            }
+
+            function initialHandleDailyThirdChart () {
+                thirdLineChart.update({
+                    xAxis: { 
+                        categories: newCategories,
+                        labels: {
+                            useHTML: true,  
+                            formatter: function () {
+                                    const value = this.value; 
+                                    if (holidayDates.includes(value)) {
+                                        return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                    }
+                                    if (fridays.includes(value)) {
+                                        return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                    }
+                                    return value; 
+                                }
+                            } 
+                    },
+                    series: [{ data: data.total_items }]
+                });
+
+                thirdBarChart.update({
+                    xAxis: { 
+                        categories: newCategories,
+                        labels: {
+                            useHTML: true,  
+                            formatter: function () {
+                                    const value = this.value; 
+                                    if (holidayDates.includes(value)) {
+                                        return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                    }
+                                    if (fridays.includes(value)) {
+                                        return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                    }
+                                    return value; 
+                                }
+                            } 
+                    },
+                    series: [{ data: data.total_items }]
+                });
+            }
+
+            function initialHandleDailyFifthChart () {
+                fifthLineChart.update({
+                    xAxis: { 
+                        categories: newCategories,
+                        labels: {
+                            useHTML: true,  
+                            formatter: function () {
+                                    const value = this.value; 
+                                    if (holidayDates.includes(value)) {
+                                        return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                    }
+                                    if (fridays.includes(value)) {
+                                        return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                    }
+                                    return value; 
+                                }
+                            } 
+                    },
+                    series: [{ data: data.total_products }]
+                });
+
+                fifthBarChart.update({
+                    xAxis: { 
+                        categories: newCategories,
+                        labels: {
+                            useHTML: true,  
+                            formatter: function () {
+                                    const value = this.value; 
+                                    if (holidayDates.includes(value)) {
+                                        return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                    }
+                                    if (fridays.includes(value)) {
+                                        return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                    }
+                                    return value; 
+                                }
+                            } 
+                    },
+                    series: [{ data: data.total_products }]
+                });
+            }
+            // Initial Line Chart Daily Event Listeners
+            $("#container-tools .day").off("click").on("click", initialHandleDailyFirstChart);
+            $("#container-bar-chart-tools .day").off("click").on("click", initialHandleDailyFirstChart);
+            $("#third-container-tools .day").off("click").on("click", initialHandleDailyThirdChart);
+            $("#third-container-bar-chart-tools .day").off("click").on("click", initialHandleDailyThirdChart);
+            $("#fifth-container-tools .week").off("day").on("click", initialHandleDailyFifthChart);
+            $("#fifth-container-bar-chart-tools .day").off("click").on("click", initialHandleDailyFifthChart);
             
             lineChart.update({
                 xAxis: { 
@@ -1407,6 +1730,252 @@
                     const total = branchItem.data.reduce((sum, val) => sum + val, 0);
                     return {name: branchItem.name, y: total}
                 });
+
+                // Initial Line Chart By Branch Monthly Display Button Logic
+                // Initial Line Chart By Branch Monthly Display Button Function
+                function initialHandleBranchMonthlySecondChart() {
+                    const apiUrl = "/api/abnormal-monthly-display";
+                    const x = categories;
+                    const y = series;
+                    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                    fetch(apiUrl, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": csrftoken,
+                        },
+                        body: JSON.stringify({x: x, y: y})
+                    }).then(response => {
+                        if (!response.ok) throw new Error("Invalid Response");
+                        return response.json()
+                    }).then(data => {
+                        Highcharts.chart("second-container", {
+                            chart: { 
+                                type: "line",
+                                borderColor: '#e5e5e5',  
+                                borderWidth: 1,           
+                                borderRadius: 12,         
+                                spacing: [30, 20, 30, 20],
+                                backgroundColor: '#ffffff',
+                                style: {
+                                    fontFamily: 'Vazirmatn, sans-serif',
+                                    fontSize: '20px'
+                                }
+                                },
+                            title: { text: "فروش تفکیکی",
+                                style: {
+                                    fontSize: '25px',
+                                    color: '#333'
+                                } 
+                            },
+                            xAxis: {
+                                categories: data.months,
+                                title: {
+                                text: "تاریخ",
+                                style: {
+                                fontSize: '20px',
+                                fontWeight: 'bold'
+                                }
+                            },
+                            labels: {
+                                useHTML: true,  
+                                formatter: function () {
+                                        const value = this.value; 
+                                        if (holidayDates.includes(value)) {
+                                            return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                        }
+                                        if (fridays.includes(value)) {
+                                            return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                        }
+                                        return value; 
+                                    }
+                                } 
+                            },
+                            yAxis: { title: { text: "فروش",
+                                style: {
+                                    fontSize: '20px',
+                                    fontWeight: 'bold'
+                                    } 
+                                } 
+                            },
+                            series: data.values
+                        });
+                    });
+                }
+                // Initial Line Chart By Branch Monthly Display Event Listener
+                $("#second-container-tools .month").off("click").on("click", initialHandleBranchMonthlySecondChart);
+                // Initial Line Chart By Branch Weekly Display Button Logic
+                // Initial Line Chart By Branch Weekly Display Button Function
+                function initialHandleBranchWeeklySecondChart() {
+                    const apiUrl = "/api/abnormal-weekly-display";
+                    const x = categories;
+                    const y = series;
+                    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                    fetch(apiUrl, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": csrftoken,
+                        },
+                        body: JSON.stringify({x: x, y: y})
+                    }).then(response => {
+                        if (!response.ok) throw new Error("Invalid Response");
+                        return response.json()
+                    }).then(data => {
+                        Highcharts.chart("second-container", {
+                            chart: { 
+                                type: "line",
+                                borderColor: '#e5e5e5',  
+                                borderWidth: 1,           
+                                borderRadius: 12,         
+                                spacing: [30, 20, 30, 20],
+                                backgroundColor: '#ffffff',
+                                style: {
+                                    fontFamily: 'Vazirmatn, sans-serif',
+                                    fontSize: '20px'
+                                }
+                                },
+                            title: { text: "فروش تفکیکی",
+                                style: {
+                                    fontSize: '25px',
+                                    color: '#333'
+                                } 
+                            },
+                            xAxis: {
+                                categories: data.weeks,
+                                title: {
+                                text: "تاریخ",
+                                style: {
+                                fontSize: '20px',
+                                fontWeight: 'bold'
+                                }
+                            },
+                            labels: {
+                                useHTML: true,  
+                                formatter: function () {
+                                        const value = this.value; 
+                                        if (holidayDates.includes(value)) {
+                                            return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                        }
+                                        if (fridays.includes(value)) {
+                                            return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                        }
+                                        return value; 
+                                    }
+                                } 
+                            },
+                            yAxis: { title: { text: "فروش",
+                                style: {
+                                    fontSize: '20px',
+                                    fontWeight: 'bold'
+                                    } 
+                                } 
+                            },
+                            series: data.values
+                        });
+                    });
+                }
+                // Initial Line Chart By Branch Weekly Display Event Listener
+                $("#second-container-tools .week").off("click").on("click", initialHandleBranchWeeklySecondChart);
+                // Initial Line Chart By Branch Daily Display Button Logic
+                // Initial Line Chart By Branch Daily Display Button Function
+                function initialHandleBranchDailySecondChart() {
+                    Highcharts.chart("second-container", {
+                        chart: { 
+                            type: "line",
+                            borderColor: '#e5e5e5',  
+                            borderWidth: 1,           
+                            borderRadius: 12,         
+                            spacing: [30, 20, 30, 20],
+                            backgroundColor: '#ffffff',
+                            style: {
+                                fontFamily: 'Vazirmatn, sans-serif',
+                                fontSize: '20px'
+                            }
+                            },
+                        title: { text: "فروش تفکیکی",
+                            style: {
+                                fontSize: '25px',
+                                color: '#333'
+                            } 
+                        },
+                        xAxis: { categories,
+                            title: {
+                            text: "تاریخ",
+                            style: {
+                            fontSize: '20px',
+                            fontWeight: 'bold'
+                            }
+                        },
+                        labels: {
+                            useHTML: true,  
+                            formatter: function () {
+                                    const value = this.value; 
+                                    if (holidayDates.includes(value)) {
+                                        return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                    }
+                                    if (fridays.includes(value)) {
+                                        return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                    }
+                                    return value; 
+                                }
+                            } 
+                        },
+                        yAxis: { title: { text: "فروش",
+                            style: {
+                                fontSize: '20px',
+                                fontWeight: 'bold'
+                                } 
+                            } 
+                        },
+                        series: series,
+                        plotOptions: {
+                            series: {
+                                point: {
+                                    events: {
+                                        click: function () {
+                                            const apiUrl = "/api/get-campaign-each-point";
+                                            const date = this.category;
+                                            const branch = this.series.name;
+                                            const body = document.querySelector("body");
+                                            const infoModal = document.querySelector("#info-modal");
+                                            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                                            fetch(apiUrl, {
+                                                method: "POST",
+                                                headers: {
+                                                    "Content-Type": "application/json",
+                                                    "X-CSRFToken": csrftoken,
+                                                },
+                                                body: JSON.stringify({date: date, branch: branch.replace(/\(.*?\)/, "").trim()})
+                                            }).then(response => {
+                                                if (!response.ok) throw new Error("Invalid Response");
+                                                return response.json()
+                                            }).then(data => {
+                                                let htmlCampaigns = data.map((camp, index) =>
+                                                    `<p style='margin-bottom: 0px;' style='margin-bottom: 0px; margin-top: 0px;'>${index + 1}. ${camp.campaign_name}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${camp.campaign_type}</p>`
+                                                ).join('')
+                                                if (data.length === 0) {
+                                                    htmlCampaigns = `<p>هیچ کمپینی یافت نشد.</p>`
+                                                }
+                                                Swal.fire({
+                                                html: `<h3 style='margin-bottom: 0px;'>${this.y}</h3><p style='margin-bottom: 0px; margin-top: 0px;'>${this.series.name}</p><p style='margin-top: 0px;'>${this.category}</p>
+                                                <p style='margin-bottom: 0px;'>کمپین ها:</p>
+                                                ${htmlCampaigns}
+                                                `,
+                                                confirmButtonText: 'بستن',
+                                                confirmButtonColor: '#5a8dee'
+                                            });
+                                            })
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+                // Initial Line Chart By Branch Daily Display Event Listener
+                $("#second-container-tools .day").off("click").on("click", initialHandleBranchDailySecondChart);
+
                 Highcharts.chart("second-container", {
                     chart: { 
                         type: "line",
@@ -1552,7 +2121,6 @@
             },
             traditional: true, 
             success: function (data) {
-                console.log(data)
                 const rawCategories = data.dates;
                 const categories = rawCategories.map(dateStr => {
                 const date = new Date(dateStr);
@@ -1578,6 +2146,498 @@
                     const total = branchItem.data.reduce((sum, val) => sum + val, 0);
                     return {name: branchItem.name, y: total}
                 });
+
+                // Initial Line Chart By Branch Monthly Display Button Logic
+                // Initial Line Chart By Branch Monthly Display Button Function
+                function initialHandleBranchMonthlyForthChart() {
+                    const apiUrl = "/api/abnormal-monthly-display";
+                    const x = categories;
+                    const y = series;
+                    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                    fetch(apiUrl, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": csrftoken,
+                        },
+                        body: JSON.stringify({x: x, y: y})
+                    }).then(response => {
+                        if (!response.ok) throw new Error("Invalid Response");
+                        return response.json()
+                    }).then(data => {
+                        Highcharts.chart("forth-container", {
+                        chart: { 
+                            type: "line",
+                            borderColor: '#e5e5e5',  
+                            borderWidth: 1,           
+                            borderRadius: 12,         
+                            spacing: [30, 20, 30, 20],
+                            backgroundColor: '#ffffff',
+                            style: {
+                                fontFamily: 'Vazirmatn, sans-serif',
+                                fontSize: '20px'
+                            }
+                            },
+                        title: { text: "تعداد فاکتور تفکیکی",
+                            style: {
+                                fontSize: '25px',
+                                color: '#333'
+                            } 
+                        },
+                        xAxis: { 
+                            categories: data.months,
+                            title: {
+                            text: "تاریخ",
+                            style: {
+                            fontSize: '20px',
+                            fontWeight: 'bold'
+                            }
+                        },
+                        labels: {
+                            useHTML: true,  
+                            formatter: function () {
+                                    const value = this.value; 
+                                    if (holidayDates.includes(value)) {
+                                        return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                    }
+                                    if (fridays.includes(value)) {
+                                            return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                    }
+                                    return value; 
+                                }
+                            } 
+                        },
+                        yAxis: { title: { text: "تعداد فاکتور",
+                            style: {
+                                fontSize: '20px',
+                                fontWeight: 'bold'
+                                } 
+                            } 
+                        },
+                        series: data.values,
+                    });
+                    });
+                }
+                // Initial Line Chart By Branch Monthly Display Event Listener
+                $("#forth-container-tools .month").off("click").on("click", initialHandleBranchMonthlyForthChart);
+                // Initial Line Chart By Branch Weekly Display Button Logic
+                // Initial Line Chart By Branch Weekly Display Button Function
+                function initialHandleBranchWeeklyForthChart() {
+                    const apiUrl = "/api/abnormal-weekly-display";
+                    const x = categories;
+                    const y = series;
+                    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                    fetch(apiUrl, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": csrftoken,
+                        },
+                        body: JSON.stringify({x: x, y: y})
+                    }).then(response => {
+                        if (!response.ok) throw new Error("Invalid Response");
+                        return response.json()
+                    }).then(data => {
+                    Highcharts.chart("forth-container", {
+                        chart: { 
+                            type: "line",
+                            borderColor: '#e5e5e5',  
+                            borderWidth: 1,           
+                            borderRadius: 12,         
+                            spacing: [30, 20, 30, 20],
+                            backgroundColor: '#ffffff',
+                            style: {
+                                fontFamily: 'Vazirmatn, sans-serif',
+                                fontSize: '20px'
+                            }
+                            },
+                        title: { text: "تعداد فاکتور تفکیکی",
+                            style: {
+                                fontSize: '25px',
+                                color: '#333'
+                            } 
+                        },
+                        xAxis: { 
+                            categories: data.weeks,
+                            title: {
+                            text: "تاریخ",
+                            style: {
+                            fontSize: '20px',
+                            fontWeight: 'bold'
+                            }
+                        },
+                        labels: {
+                            useHTML: true,  
+                            formatter: function () {
+                                    const value = this.value; 
+                                    if (holidayDates.includes(value)) {
+                                        return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                    }
+                                    if (fridays.includes(value)) {
+                                            return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                    }
+                                    return value; 
+                                }
+                            } 
+                        },
+                        yAxis: { title: { text: "تعداد فاکتور",
+                            style: {
+                                fontSize: '20px',
+                                fontWeight: 'bold'
+                                } 
+                            } 
+                        },
+                        series: data.values,
+                    });
+                    });
+                }
+                // Initial Line Chart By Branch Weekly Display Event Listener
+                $("#forth-container-tools .week").off("click").on("click", initialHandleBranchWeeklyForthChart);
+                // Initial Line Chart By Branch Daily Display Button Logic
+                // Initial Line Chart By Branch Daily Display Button Function
+                function initialHandleBranchDailyForthChart() {
+                    Highcharts.chart("forth-container", {
+                    chart: { 
+                        type: "line",
+                        borderColor: '#e5e5e5',  
+                        borderWidth: 1,           
+                        borderRadius: 12,         
+                        spacing: [30, 20, 30, 20],
+                        backgroundColor: '#ffffff',
+                        style: {
+                            fontFamily: 'Vazirmatn, sans-serif',
+                            fontSize: '20px'
+                        }
+                        },
+                    title: { text: "تعداد فاکتور تفکیکی",
+                        style: {
+                            fontSize: '25px',
+                            color: '#333'
+                        } 
+                    },
+                    xAxis: { categories,
+                        title: {
+                        text: "تاریخ",
+                        style: {
+                        fontSize: '20px',
+                        fontWeight: 'bold'
+                        }
+                    },
+                    labels: {
+                        useHTML: true,  
+                        formatter: function () {
+                                const value = this.value; 
+                                if (holidayDates.includes(value)) {
+                                    return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                }
+                                if (fridays.includes(value)) {
+                                        return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                }
+                                return value; 
+                            }
+                        } 
+                    },
+                    yAxis: { title: { text: "تعداد فاکتور",
+                        style: {
+                            fontSize: '20px',
+                            fontWeight: 'bold'
+                            } 
+                        } 
+                    },
+                    series: series,
+                    plotOptions: {
+                        series: {
+                            point: {
+                                events: {
+                                    click: function () {
+                                        const apiUrl = "/api/get-campaign-each-point";
+                                        const date = this.category;
+                                        const branch = this.series.name;
+                                        const body = document.querySelector("body");
+                                        const infoModal = document.querySelector("#info-modal");
+                                        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                                        fetch(apiUrl, {
+                                            method: "POST",
+                                            headers: {
+                                                "Content-Type": "application/json",
+                                                "X-CSRFToken": csrftoken,
+                                            },
+                                            body: JSON.stringify({date: date, branch: branch})
+                                        }).then(response => {
+                                            if (!response.ok) throw new Error("Invalid Response");
+                                            return response.json()
+                                        }).then(data => {
+                                            let htmlCampaigns = data.map((camp, index) =>
+                                                `<p style='margin-bottom: 0px;' style='margin-bottom: 0px; margin-top: 0px;'>${index + 1}. ${camp.campaign_name}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${camp.campaign_type}</p>`
+                                            ).join('')
+                                            if (data.length === 0) {
+                                                htmlCampaigns = `<p>هیچ کمپینی یافت نشد.</p>`
+                                            }
+                                            Swal.fire({
+                                                html: `<h3 style='margin-bottom: 0px;'>${this.y}</h3><p style='margin-bottom: 0px; margin-top: 0px;'>${this.series.name}</p><p style='margin-top: 0px;'>${this.category}</p>
+                                                <p style='margin-bottom: 0px;'>کمپین ها:</p>
+                                                ${htmlCampaigns}
+                                                `,
+                                                confirmButtonText: 'بستن',
+                                                confirmButtonColor: '#5a8dee'
+                                            });
+                                        })
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+                }
+                // Initial Line Chart By Branch Daily Display Event Listener
+                $("#forth-container-tools .day").off("click").on("click", initialHandleBranchDailyForthChart);
+
+                // Initial Line Chart By Branch Monthly Display Button Logic
+                // Initial Line Chart By Branch Monthly Display Button Function
+                function initialHandleBranchMonthlySixthChart() {
+                    const apiUrl = "/api/abnormal-monthly-display";
+                    const x = categories;
+                    const y = seriesProduct;
+                    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                    fetch(apiUrl, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": csrftoken,
+                        },
+                        body: JSON.stringify({x: x, y: y})
+                    }).then(response => {
+                        if (!response.ok) throw new Error("Invalid Response");
+                        return response.json()
+                    }).then(data => {
+                        Highcharts.chart("sixth-container", {
+                        chart: { 
+                            type: "line",
+                            borderColor: '#e5e5e5',  
+                            borderWidth: 1,           
+                            borderRadius: 12,         
+                            spacing: [30, 20, 30, 20],
+                            backgroundColor: '#ffffff',
+                            style: {
+                                fontFamily: 'Vazirmatn, sans-serif',
+                                fontSize: '20px'
+                            }
+                            },
+                        title: { text: "تعداد محصول خریداری شده تفکیکی",
+                            style: {
+                                fontSize: '25px',
+                                color: '#333'
+                            } 
+                        },
+                        xAxis: { 
+                            categories: data.months,
+                            title: {
+                            text: "تاریخ",
+                            style: {
+                            fontSize: '20px',
+                            fontWeight: 'bold'
+                            }
+                        },
+                        labels: {
+                            useHTML: true,  
+                            formatter: function () {
+                                    const value = this.value; 
+                                    if (holidayDates.includes(value)) {
+                                        return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                    }
+                                    if (fridays.includes(value)) {
+                                            return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                    }
+                                    return value; 
+                                }
+                            } 
+                        },
+                        yAxis: { title: { text: "تعداد محصول",
+                            style: {
+                                fontSize: '20px',
+                                fontWeight: 'bold'
+                                } 
+                            } 
+                        },
+                        series: data.values,
+                    });
+                    });
+                }
+                // Initial Line Chart By Branch Monthly Display Event Listener
+                $("#sixth-container-tools .month").off("click").on("click", initialHandleBranchMonthlySixthChart);
+                // Initial Line Chart By Branch Weekly Display Button Logic
+                // Initial Line Chart By Branch Weekly Display Button Function
+                function initialHandleBranchWeeklySixthChart() {
+                    const apiUrl = "/api/abnormal-weekly-display";
+                    const x = categories;
+                    const y = seriesProduct;
+                    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                    fetch(apiUrl, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": csrftoken,
+                        },
+                        body: JSON.stringify({x: x, y: y})
+                    }).then(response => {
+                        if (!response.ok) throw new Error("Invalid Response");
+                        return response.json()
+                    }).then(data => {
+                        Highcharts.chart("sixth-container", {
+                        chart: { 
+                            type: "line",
+                            borderColor: '#e5e5e5',  
+                            borderWidth: 1,           
+                            borderRadius: 12,         
+                            spacing: [30, 20, 30, 20],
+                            backgroundColor: '#ffffff',
+                            style: {
+                                fontFamily: 'Vazirmatn, sans-serif',
+                                fontSize: '20px'
+                            }
+                            },
+                        title: { text: "تعداد محصول خریداری شده تفکیکی",
+                            style: {
+                                fontSize: '25px',
+                                color: '#333'
+                            } 
+                        },
+                        xAxis: { 
+                            categories: data.weeks,
+                            title: {
+                            text: "تاریخ",
+                            style: {
+                            fontSize: '20px',
+                            fontWeight: 'bold'
+                            }
+                        },
+                        labels: {
+                            useHTML: true,  
+                            formatter: function () {
+                                    const value = this.value; 
+                                    if (holidayDates.includes(value)) {
+                                        return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                    }
+                                    if (fridays.includes(value)) {
+                                            return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                    }
+                                    return value; 
+                                }
+                            } 
+                        },
+                        yAxis: { title: { text: "تعداد محصول",
+                            style: {
+                                fontSize: '20px',
+                                fontWeight: 'bold'
+                                } 
+                            } 
+                        },
+                        series: data.values,
+                    });
+                    });
+                }
+                // Initial Line Chart By Branch Weekly Display Event Listener
+                $("#sixth-container-tools .week").off("click").on("click", initialHandleBranchWeeklySixthChart);
+                // Initial Line Chart By Branch Daily Display Button Logic
+                // Initial Line Chart By Branch Daily Display Button Function
+                function initialHandleBranchDailySixthChart() {
+                    Highcharts.chart("sixth-container", {
+                    chart: { 
+                        type: "line",
+                        borderColor: '#e5e5e5',  
+                        borderWidth: 1,           
+                        borderRadius: 12,         
+                        spacing: [30, 20, 30, 20],
+                        backgroundColor: '#ffffff',
+                        style: {
+                            fontFamily: 'Vazirmatn, sans-serif',
+                            fontSize: '20px'
+                        }
+                        },
+                    title: { text: "تعداد محصول خریداری شده تفکیکی",
+                        style: {
+                            fontSize: '25px',
+                            color: '#333'
+                        } 
+                    },
+                    xAxis: { categories,
+                        title: {
+                        text: "تاریخ",
+                        style: {
+                        fontSize: '20px',
+                        fontWeight: 'bold'
+                        }
+                    },
+                    labels: {
+                        useHTML: true,  
+                        formatter: function () {
+                                const value = this.value; 
+                                if (holidayDates.includes(value)) {
+                                    return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                }
+                                if (fridays.includes(value)) {
+                                        return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                }
+                                return value; 
+                            }
+                        } 
+                    },
+                    yAxis: { title: { text: "تعداد محصول",
+                        style: {
+                            fontSize: '20px',
+                            fontWeight: 'bold'
+                            } 
+                        } 
+                    },
+                    series: seriesProduct,
+                    plotOptions: {
+                        series: {
+                            point: {
+                                events: {
+                                    click: function () {
+                                        const apiUrl = "/api/get-campaign-each-point";
+                                        const date = this.category;
+                                        const branch = this.series.name;
+                                        const body = document.querySelector("body");
+                                        const infoModal = document.querySelector("#info-modal");
+                                        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                                        fetch(apiUrl, {
+                                            method: "POST",
+                                            headers: {
+                                                "Content-Type": "application/json",
+                                                "X-CSRFToken": csrftoken,
+                                            },
+                                            body: JSON.stringify({date: date, branch: branch})
+                                        }).then(response => {
+                                            if (!response.ok) throw new Error("Invalid Response");
+                                            return response.json()
+                                        }).then(data => {
+                                            let htmlCampaigns = data.map((camp, index) =>
+                                                `<p style='margin-bottom: 0px;' style='margin-bottom: 0px; margin-top: 0px;'>${index + 1}. ${camp.campaign_name}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${camp.campaign_type}</p>`
+                                            ).join('')
+                                            if (data.length === 0) {
+                                                htmlCampaigns = `<p>هیچ کمپینی یافت نشد.</p>`
+                                            }
+                                            Swal.fire({
+                                                html: `<h3 style='margin-bottom: 0px;'>${this.y}</h3><p style='margin-bottom: 0px; margin-top: 0px;'>${this.series.name}</p><p style='margin-top: 0px;'>${this.category}</p>
+                                                <p style='margin-bottom: 0px;'>کمپین ها:</p>
+                                                ${htmlCampaigns}
+                                                `,
+                                                confirmButtonText: 'بستن',
+                                                confirmButtonColor: '#5a8dee'
+                                            });
+                                        })
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+                }
+                // Initial Line Chart By Branch Daily Display Event Listener
+                $("#sixth-container-tools .day").off("click").on("click", initialHandleBranchDailySixthChart);
+
+
                 Highcharts.chart("forth-container", {
                     chart: { 
                         type: "line",
@@ -2519,6 +3579,517 @@
                     });
                 });
 
+                // Initial Line Chart Monthly Display Button Logic
+                // Initial Line Chart Monthly Display Button Functions
+                function handleMonthlyFirstChart () {
+                    const apiUrl = "/api/normal-monthly-display";
+                    const x = newCategories;
+                    const y = data.total_amount;
+                    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                    fetch(apiUrl, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": csrftoken,
+                        },
+                        body: JSON.stringify({x: x, y: y})
+                    }).then(response => {
+                        if (!response.ok) throw new Error("Invalid Response");
+                        return response.json()
+                    }).then(d => {
+                        // Line Chart Update
+                        lineChart.update({
+                            xAxis: { 
+                                categories: d.months, 
+                                labels: {
+                                    useHTML: true,  
+                                    formatter: function () {
+                                            const value = this.value; 
+                                            if (holidayDates.includes(value)) {
+                                                return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                            }
+                                            if (fridays.includes(value)) {
+                                                return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                            }
+                                            return value; 
+                                        }
+                                    } 
+                            },
+                            series: [{name: `فروش (${Number(totalAmount).toLocaleString('fa-IR')})`, data: d.values}
+                            ],
+                        });
+                        //  Bar Chart Update
+                        barChart.update({
+                            xAxis: { 
+                                categories: d.months, 
+                                labels: {
+                                    useHTML: true,  
+                                    formatter: function () {
+                                            const value = this.value; 
+                                            if (holidayDates.includes(value)) {
+                                                return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                            }
+                                            if (fridays.includes(value)) {
+                                                return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                            }
+                                            return value; 
+                                        }
+                                    } 
+                            },
+                            series: [{name: `فروش (${Number(totalAmount).toLocaleString('fa-IR')})`, data: d.values}
+                            ],
+                        });
+                    });
+                }
+
+                function handleMonthlyThirdChart () {
+                    const apiUrl = "/api/normal-monthly-display";
+                    const x = newCategories;
+                    const y = data.total_items;
+                    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                    fetch(apiUrl, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": csrftoken,
+                        },
+                        body: JSON.stringify({x: x, y: y})
+                    }).then(response => {
+                        if (!response.ok) throw new Error("Invalid Response");
+                        return response.json()
+                    }).then(d => {
+                        // Third Line Chart
+                        thirdLineChart.update({
+                            xAxis: { 
+                                categories: d.months,
+                                labels: {
+                                    useHTML: true,  
+                                    formatter: function () {
+                                            const value = this.value; 
+                                            if (holidayDates.includes(value)) {
+                                                return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                            }
+                                            if (fridays.includes(value)) {
+                                                return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                            }
+                                            return value; 
+                                        }
+                                    } 
+                            },
+                            series: [{ data: d.values }]
+                        });
+                        // Third Bar Chart
+                        thirdBarChart.update({
+                            xAxis: { 
+                                categories: d.months,
+                                labels: {
+                                    useHTML: true,  
+                                    formatter: function () {
+                                            const value = this.value; 
+                                            if (holidayDates.includes(value)) {
+                                                return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                            }
+                                            if (fridays.includes(value)) {
+                                                return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                            }
+                                            return value; 
+                                        }
+                                    } 
+                            },
+                            series: [{ data: d.values }]
+                        });
+                    });
+                }
+
+                function handleMonthlyFifthChart () {
+                    const apiUrl = "/api/normal-monthly-display";
+                    const x = newCategories;
+                    const y = data.total_products;
+                    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                    fetch(apiUrl, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": csrftoken,
+                        },
+                        body: JSON.stringify({x: x, y: y})
+                    }).then(response => {
+                        if (!response.ok) throw new Error("Invalid Response");
+                        return response.json()
+                    }).then(d => {
+                        // Fifth Line Chart
+                        fifthLineChart.update({
+                            xAxis: { 
+                                categories: d.months,
+                                labels: {
+                                    useHTML: true,  
+                                    formatter: function () {
+                                            const value = this.value; 
+                                            if (holidayDates.includes(value)) {
+                                                return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                            }
+                                            if (fridays.includes(value)) {
+                                                return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                            }
+                                            return value; 
+                                        }
+                                    } 
+                            },
+                            series: [{ data: d.values }]
+                        });
+                        // Fifth Bar Chart
+                        fifthBarChart.update({
+                            xAxis: { 
+                                categories: d.months,
+                                labels: {
+                                    useHTML: true,  
+                                    formatter: function () {
+                                            const value = this.value; 
+                                            if (holidayDates.includes(value)) {
+                                                return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                            }
+                                            if (fridays.includes(value)) {
+                                                return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                            }
+                                            return value; 
+                                        }
+                                    } 
+                            },
+                            series: [{ data: d.values }]
+                        });
+                    });
+                }
+                // Initial Line Chart Monthly Event Listeners
+                $("#container-tools .month").off("click").on("click", handleMonthlyFirstChart);
+                $("#container-bar-chart-tools .month").off("click").on("click", handleMonthlyFirstChart);
+                $("#third-container-tools .month").off("click").on("click", handleMonthlyThirdChart);
+                $("#third-container-bar-chart-tools .month").off("click").on("click", handleMonthlyThirdChart);
+                $("#fifth-container-tools .month").off("click").on("click", handleMonthlyFifthChart);
+                $("#fifth-container-bar-chart-tools .month").off("click").on("click", handleMonthlyFifthChart);
+                // Initial Line Chart Weekly Display Button Logic
+                // Initial Line Chart Weekly Display Button Functions
+                function handleWeeklyFirstChart () {
+                    const apiUrl = "/api/normal-weekly-display";
+                    const x = newCategories;
+                    const y = data.total_amount;
+                    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                    fetch(apiUrl, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": csrftoken,
+                        },
+                        body: JSON.stringify({x: x, y: y})
+                    }).then(response => {
+                        if (!response.ok) throw new Error("Invalid Response");
+                        return response.json()
+                    }).then(d => {
+                        // Line Chart Update
+                        lineChart.update({
+                            xAxis: { 
+                                categories: d.weeks, 
+                                labels: {
+                                    useHTML: true,  
+                                    formatter: function () {
+                                            const value = this.value; 
+                                            if (holidayDates.includes(value)) {
+                                                return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                            }
+                                            if (fridays.includes(value)) {
+                                                return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                            }
+                                            return value; 
+                                        }
+                                    } 
+                            },
+                            series: [{name: `فروش (${Number(totalAmount).toLocaleString('fa-IR')})`, data: d.values}
+                            ],
+                        });
+                        //  Bar Chart Update
+                        barChart.update({
+                            xAxis: { 
+                                categories: d.weeks, 
+                                labels: {
+                                    useHTML: true,  
+                                    formatter: function () {
+                                            const value = this.value; 
+                                            if (holidayDates.includes(value)) {
+                                                return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                            }
+                                            if (fridays.includes(value)) {
+                                                return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                            }
+                                            return value; 
+                                        }
+                                    } 
+                            },
+                            series: [{name: `فروش (${Number(totalAmount).toLocaleString('fa-IR')})`, data: d.values}
+                            ],
+                        });
+                    });
+                }
+
+                function handleWeeklyThirdChart () {
+                    const apiUrl = "/api/normal-weekly-display";
+                    const x = newCategories;
+                    const y = data.total_items;
+                    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                    fetch(apiUrl, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": csrftoken,
+                        },
+                        body: JSON.stringify({x: x, y: y})
+                    }).then(response => {
+                        if (!response.ok) throw new Error("Invalid Response");
+                        return response.json()
+                    }).then(d => {
+                        // Third Line Chart
+                        thirdLineChart.update({
+                            xAxis: { 
+                                categories: d.weeks,
+                                labels: {
+                                    useHTML: true,  
+                                    formatter: function () {
+                                            const value = this.value; 
+                                            if (holidayDates.includes(value)) {
+                                                return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                            }
+                                            if (fridays.includes(value)) {
+                                                return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                            }
+                                            return value; 
+                                        }
+                                    } 
+                            },
+                            series: [{ data: d.values }]
+                        });
+                        // Third Bar Chart
+                        thirdBarChart.update({
+                            xAxis: { 
+                                categories: d.weeks,
+                                labels: {
+                                    useHTML: true,  
+                                    formatter: function () {
+                                            const value = this.value; 
+                                            if (holidayDates.includes(value)) {
+                                                return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                            }
+                                            if (fridays.includes(value)) {
+                                                return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                            }
+                                            return value; 
+                                        }
+                                    } 
+                            },
+                            series: [{ data: d.values }]
+                        });
+                    });
+                }
+
+                function handleWeeklyFifthChart () {
+                    const apiUrl = "/api/normal-weekly-display";
+                    const x = newCategories;
+                    const y = data.total_products;
+                    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                    fetch(apiUrl, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": csrftoken,
+                        },
+                        body: JSON.stringify({x: x, y: y})
+                    }).then(response => {
+                        if (!response.ok) throw new Error("Invalid Response");
+                        return response.json()
+                    }).then(d => {
+                        // Fifth Line Chart
+                        fifthLineChart.update({
+                            xAxis: { 
+                                categories: d.weeks,
+                                labels: {
+                                    useHTML: true,  
+                                    formatter: function () {
+                                            const value = this.value; 
+                                            if (holidayDates.includes(value)) {
+                                                return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                            }
+                                            if (fridays.includes(value)) {
+                                                return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                            }
+                                            return value; 
+                                        }
+                                    } 
+                            },
+                            series: [{ data: d.values }]
+                        });
+                        // Fifth Bar Chart
+                        fifthBarChart.update({
+                            xAxis: { 
+                                categories: d.weeks,
+                                labels: {
+                                    useHTML: true,  
+                                    formatter: function () {
+                                            const value = this.value; 
+                                            if (holidayDates.includes(value)) {
+                                                return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                            }
+                                            if (fridays.includes(value)) {
+                                                return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                            }
+                                            return value; 
+                                        }
+                                    } 
+                            },
+                            series: [{ data: d.values }]
+                        });
+                    });
+                }
+                // Initial Line Chart Weekly Event Listeners
+                $("#container-tools .week").off("click").on("click", handleWeeklyFirstChart);
+                $("#container-bar-chart-tools .week").off("click").on("click", handleWeeklyFirstChart);
+                $("#third-container-tools .week").off("click").on("click", handleWeeklyThirdChart);
+                $("#third-container-bar-chart-tools .week").off("click").on("click", handleWeeklyThirdChart);
+                $("#fifth-container-tools .week").off("click").on("click", handleWeeklyFifthChart);
+                $("#fifth-container-bar-chart-tools .week").off("click").on("click", handleWeeklyFifthChart);
+                // Initial Line Chart Daily Display Button Logic
+                // Initial Line Chart Daily Display Function
+                function handleDailyFirstChart () {
+                    lineChart.update({
+                        xAxis: { 
+                            categories: newCategories, 
+                            labels: {
+                                useHTML: true,  
+                                formatter: function () {
+                                        const value = this.value; 
+                                        if (holidayDates.includes(value)) {
+                                            return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                        }
+                                        if (fridays.includes(value)) {
+                                            return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                        }
+                                        return value; 
+                                    }
+                                } 
+                        },
+                        series: [{name: `فروش (${Number(totalAmount).toLocaleString('fa-IR')})`, data: data.total_amount}
+                        ],
+                    });
+
+                    barChart.update({
+                        xAxis: { 
+                            categories: newCategories, 
+                            labels: {
+                                useHTML: true,  
+                                formatter: function () {
+                                        const value = this.value; 
+                                        if (holidayDates.includes(value)) {
+                                            return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                        }
+                                        if (fridays.includes(value)) {
+                                            return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                        }
+                                        return value; 
+                                    }
+                                } 
+                        },
+                        series: [{name: `فروش (${Number(totalAmount).toLocaleString('fa-IR')})`, data: data.total_amount}
+                        ],
+                    });
+                }
+
+                function handleDailyThirdChart () {
+                    thirdLineChart.update({
+                        xAxis: { 
+                            categories: newCategories,
+                            labels: {
+                                useHTML: true,  
+                                formatter: function () {
+                                        const value = this.value; 
+                                        if (holidayDates.includes(value)) {
+                                            return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                        }
+                                        if (fridays.includes(value)) {
+                                            return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                        }
+                                        return value; 
+                                    }
+                                } 
+                        },
+                        series: [{ data: data.total_items }]
+                    });
+
+                    thirdBarChart.update({
+                        xAxis: { 
+                            categories: newCategories,
+                            labels: {
+                                useHTML: true,  
+                                formatter: function () {
+                                        const value = this.value; 
+                                        if (holidayDates.includes(value)) {
+                                            return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                        }
+                                        if (fridays.includes(value)) {
+                                            return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                        }
+                                        return value; 
+                                    }
+                                } 
+                        },
+                        series: [{ data: data.total_items }]
+                    });
+                }
+
+                function handleDailyFifthChart () {
+                    fifthLineChart.update({
+                        xAxis: { 
+                            categories: newCategories,
+                            labels: {
+                                useHTML: true,  
+                                formatter: function () {
+                                        const value = this.value; 
+                                        if (holidayDates.includes(value)) {
+                                            return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                        }
+                                        if (fridays.includes(value)) {
+                                            return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                        }
+                                        return value; 
+                                    }
+                                } 
+                        },
+                        series: [{ data: data.total_products }]
+                    });
+
+                    fifthBarChart.update({
+                        xAxis: { 
+                            categories: newCategories,
+                            labels: {
+                                useHTML: true,  
+                                formatter: function () {
+                                        const value = this.value; 
+                                        if (holidayDates.includes(value)) {
+                                            return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                        }
+                                        if (fridays.includes(value)) {
+                                            return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                        }
+                                        return value; 
+                                    }
+                                } 
+                        },
+                        series: [{ data: data.total_products }]
+                    });
+                }
+                // Initial Line Chart Daily Event Listeners
+                $("#container-tools .day").off("click").on("click", handleDailyFirstChart);
+                $("#container-bar-chart-tools .day").off("click").on("click", handleDailyFirstChart);
+                $("#third-container-tools .day").off("click").on("click", handleDailyThirdChart);
+                $("#third-container-bar-chart-tools .day").off("click").on("click", handleDailyThirdChart);
+                $("#fifth-container-tools .week").off("day").on("click", handleDailyFifthChart);
+                $("#fifth-container-bar-chart-tools .day").off("click").on("click", handleDailyFifthChart);
+
                 lineChart.update({
                     xAxis: { 
                         categories: newCategories, 
@@ -2841,6 +4412,250 @@
                     const total = branchItem.data.reduce((sum, val) => sum + val, 0);
                     return {name: branchItem.name, y: total}
                 });
+                // Initial Line Chart By Branch Monthly Display Button Logic
+                // Initial Line Chart By Branch Monthly Display Button Function
+                function handleBranchMonthlySecondChart() {
+                    const apiUrl = "/api/abnormal-monthly-display";
+                    const x = categories;
+                    const y = series;
+                    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                    fetch(apiUrl, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": csrftoken,
+                        },
+                        body: JSON.stringify({x: x, y: y})
+                    }).then(response => {
+                        if (!response.ok) throw new Error("Invalid Response");
+                        return response.json()
+                    }).then(data => {
+                        Highcharts.chart("second-container", {
+                            chart: { 
+                                type: "line",
+                                borderColor: '#e5e5e5',  
+                                borderWidth: 1,           
+                                borderRadius: 12,         
+                                spacing: [30, 20, 30, 20],
+                                backgroundColor: '#ffffff',
+                                style: {
+                                    fontFamily: 'Vazirmatn, sans-serif',
+                                    fontSize: '20px'
+                                }
+                                },
+                            title: { text: "فروش تفکیکی",
+                                style: {
+                                    fontSize: '25px',
+                                    color: '#333'
+                                } 
+                            },
+                            xAxis: {
+                                categories: data.months,
+                                title: {
+                                text: "تاریخ",
+                                style: {
+                                fontSize: '20px',
+                                fontWeight: 'bold'
+                                }
+                            },
+                            labels: {
+                                useHTML: true,  
+                                formatter: function () {
+                                        const value = this.value; 
+                                        if (holidayDates.includes(value)) {
+                                            return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                        }
+                                        if (fridays.includes(value)) {
+                                            return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                        }
+                                        return value; 
+                                    }
+                                } 
+                            },
+                            yAxis: { title: { text: "فروش",
+                                style: {
+                                    fontSize: '20px',
+                                    fontWeight: 'bold'
+                                    } 
+                                } 
+                            },
+                            series: data.values
+                        });
+                    });
+                }
+                // Initial Line Chart By Branch Monthly Display Event Listener
+                $("#second-container-tools .month").off("click").on("click", handleBranchMonthlySecondChart);
+                // Initial Line Chart By Branch Weekly Display Button Logic
+                // Initial Line Chart By Branch Weekly Display Button Function
+                function handleBranchWeeklySecondChart() {
+                    const apiUrl = "/api/abnormal-weekly-display";
+                    const x = categories;
+                    const y = series;
+                    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                    fetch(apiUrl, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": csrftoken,
+                        },
+                        body: JSON.stringify({x: x, y: y})
+                    }).then(response => {
+                        if (!response.ok) throw new Error("Invalid Response");
+                        return response.json()
+                    }).then(data => {
+                        Highcharts.chart("second-container", {
+                            chart: { 
+                                type: "line",
+                                borderColor: '#e5e5e5',  
+                                borderWidth: 1,           
+                                borderRadius: 12,         
+                                spacing: [30, 20, 30, 20],
+                                backgroundColor: '#ffffff',
+                                style: {
+                                    fontFamily: 'Vazirmatn, sans-serif',
+                                    fontSize: '20px'
+                                }
+                                },
+                            title: { text: "فروش تفکیکی",
+                                style: {
+                                    fontSize: '25px',
+                                    color: '#333'
+                                } 
+                            },
+                            xAxis: {
+                                categories: data.weeks,
+                                title: {
+                                text: "تاریخ",
+                                style: {
+                                fontSize: '20px',
+                                fontWeight: 'bold'
+                                }
+                            },
+                            labels: {
+                                useHTML: true,  
+                                formatter: function () {
+                                        const value = this.value; 
+                                        if (holidayDates.includes(value)) {
+                                            return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                        }
+                                        if (fridays.includes(value)) {
+                                            return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                        }
+                                        return value; 
+                                    }
+                                } 
+                            },
+                            yAxis: { title: { text: "فروش",
+                                style: {
+                                    fontSize: '20px',
+                                    fontWeight: 'bold'
+                                    } 
+                                } 
+                            },
+                            series: data.values
+                        });
+                    });
+                }
+                // Initial Line Chart By Branch Weekly Display Event Listener
+                $("#second-container-tools .week").off("click").on("click", handleBranchWeeklySecondChart);
+                // Initial Line Chart By Branch Daily Display Button Logic
+                // Initial Line Chart By Branch Daily Display Button Function
+                function handleBranchDailySecondChart() {
+                    Highcharts.chart("second-container", {
+                        chart: { 
+                            type: "line",
+                            borderColor: '#e5e5e5',  
+                            borderWidth: 1,           
+                            borderRadius: 12,         
+                            spacing: [30, 20, 30, 20],
+                            backgroundColor: '#ffffff',
+                            style: {
+                                fontFamily: 'Vazirmatn, sans-serif',
+                                fontSize: '20px'
+                            }
+                            },
+                        title: { text: "فروش تفکیکی",
+                            style: {
+                                fontSize: '25px',
+                                color: '#333'
+                            } 
+                        },
+                        xAxis: { categories,
+                            title: {
+                            text: "تاریخ",
+                            style: {
+                            fontSize: '20px',
+                            fontWeight: 'bold'
+                            }
+                        },
+                        labels: {
+                            useHTML: true,  
+                            formatter: function () {
+                                    const value = this.value; 
+                                    if (holidayDates.includes(value)) {
+                                        return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                    }
+                                    if (fridays.includes(value)) {
+                                        return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                    }
+                                    return value; 
+                                }
+                            } 
+                        },
+                        yAxis: { title: { text: "فروش",
+                            style: {
+                                fontSize: '20px',
+                                fontWeight: 'bold'
+                                } 
+                            } 
+                        },
+                        series: series,
+                        plotOptions: {
+                            series: {
+                                point: {
+                                    events: {
+                                        click: function () {
+                                            const apiUrl = "/api/get-campaign-each-point";
+                                            const date = this.category;
+                                            const branch = this.series.name;
+                                            const body = document.querySelector("body");
+                                            const infoModal = document.querySelector("#info-modal");
+                                            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                                            fetch(apiUrl, {
+                                                method: "POST",
+                                                headers: {
+                                                    "Content-Type": "application/json",
+                                                    "X-CSRFToken": csrftoken,
+                                                },
+                                                body: JSON.stringify({date: date, branch: branch.replace(/\(.*?\)/, "").trim()})
+                                            }).then(response => {
+                                                if (!response.ok) throw new Error("Invalid Response");
+                                                return response.json()
+                                            }).then(data => {
+                                                let htmlCampaigns = data.map((camp, index) =>
+                                                    `<p style='margin-bottom: 0px;' style='margin-bottom: 0px; margin-top: 0px;'>${index + 1}. ${camp.campaign_name}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${camp.campaign_type}</p>`
+                                                ).join('')
+                                                if (data.length === 0) {
+                                                    htmlCampaigns = `<p>هیچ کمپینی یافت نشد.</p>`
+                                                }
+                                                Swal.fire({
+                                                html: `<h3 style='margin-bottom: 0px;'>${this.y}</h3><p style='margin-bottom: 0px; margin-top: 0px;'>${this.series.name}</p><p style='margin-top: 0px;'>${this.category}</p>
+                                                <p style='margin-bottom: 0px;'>کمپین ها:</p>
+                                                ${htmlCampaigns}
+                                                `,
+                                                confirmButtonText: 'بستن',
+                                                confirmButtonColor: '#5a8dee'
+                                            });
+                                            })
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+                // Initial Line Chart By Branch Daily Display Event Listener
+                $("#second-container-tools .day").off("click").on("click", handleBranchDailySecondChart);
                 Highcharts.chart("second-container", {
                     chart: { 
                         type: "line",
@@ -3012,6 +4827,496 @@
                     const total = branchItem.data.reduce((sum, val) => sum + val, 0);
                     return {name: branchItem.name, y: total}
                 });
+
+                // Initial Line Chart By Branch Monthly Display Button Logic
+                // Initial Line Chart By Branch Monthly Display Button Function
+                function handleBranchMonthlyForthChart() {
+                    const apiUrl = "/api/abnormal-monthly-display";
+                    const x = categories;
+                    const y = series;
+                    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                    fetch(apiUrl, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": csrftoken,
+                        },
+                        body: JSON.stringify({x: x, y: y})
+                    }).then(response => {
+                        if (!response.ok) throw new Error("Invalid Response");
+                        return response.json()
+                    }).then(data => {
+                        Highcharts.chart("forth-container", {
+                        chart: { 
+                            type: "line",
+                            borderColor: '#e5e5e5',  
+                            borderWidth: 1,           
+                            borderRadius: 12,         
+                            spacing: [30, 20, 30, 20],
+                            backgroundColor: '#ffffff',
+                            style: {
+                                fontFamily: 'Vazirmatn, sans-serif',
+                                fontSize: '20px'
+                            }
+                            },
+                        title: { text: "تعداد فاکتور تفکیکی",
+                            style: {
+                                fontSize: '25px',
+                                color: '#333'
+                            } 
+                        },
+                        xAxis: { 
+                            categories: data.months,
+                            title: {
+                            text: "تاریخ",
+                            style: {
+                            fontSize: '20px',
+                            fontWeight: 'bold'
+                            }
+                        },
+                        labels: {
+                            useHTML: true,  
+                            formatter: function () {
+                                    const value = this.value; 
+                                    if (holidayDates.includes(value)) {
+                                        return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                    }
+                                    if (fridays.includes(value)) {
+                                            return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                    }
+                                    return value; 
+                                }
+                            } 
+                        },
+                        yAxis: { title: { text: "تعداد فاکتور",
+                            style: {
+                                fontSize: '20px',
+                                fontWeight: 'bold'
+                                } 
+                            } 
+                        },
+                        series: data.values,
+                    });
+                    });
+                }
+                // Initial Line Chart By Branch Monthly Display Event Listener
+                $("#forth-container-tools .month").off("click").on("click", handleBranchMonthlyForthChart);
+                // Initial Line Chart By Branch Weekly Display Button Logic
+                // Initial Line Chart By Branch Weekly Display Button Function
+                function handleBranchWeeklyForthChart() {
+                    const apiUrl = "/api/abnormal-weekly-display";
+                    const x = categories;
+                    const y = series;
+                    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                    fetch(apiUrl, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": csrftoken,
+                        },
+                        body: JSON.stringify({x: x, y: y})
+                    }).then(response => {
+                        if (!response.ok) throw new Error("Invalid Response");
+                        return response.json()
+                    }).then(data => {
+                    Highcharts.chart("forth-container", {
+                        chart: { 
+                            type: "line",
+                            borderColor: '#e5e5e5',  
+                            borderWidth: 1,           
+                            borderRadius: 12,         
+                            spacing: [30, 20, 30, 20],
+                            backgroundColor: '#ffffff',
+                            style: {
+                                fontFamily: 'Vazirmatn, sans-serif',
+                                fontSize: '20px'
+                            }
+                            },
+                        title: { text: "تعداد فاکتور تفکیکی",
+                            style: {
+                                fontSize: '25px',
+                                color: '#333'
+                            } 
+                        },
+                        xAxis: { 
+                            categories: data.weeks,
+                            title: {
+                            text: "تاریخ",
+                            style: {
+                            fontSize: '20px',
+                            fontWeight: 'bold'
+                            }
+                        },
+                        labels: {
+                            useHTML: true,  
+                            formatter: function () {
+                                    const value = this.value; 
+                                    if (holidayDates.includes(value)) {
+                                        return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                    }
+                                    if (fridays.includes(value)) {
+                                            return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                    }
+                                    return value; 
+                                }
+                            } 
+                        },
+                        yAxis: { title: { text: "تعداد فاکتور",
+                            style: {
+                                fontSize: '20px',
+                                fontWeight: 'bold'
+                                } 
+                            } 
+                        },
+                        series: data.values,
+                    });
+                    });
+                }
+                // Initial Line Chart By Branch Weekly Display Event Listener
+                $("#forth-container-tools .week").off("click").on("click", handleBranchWeeklyForthChart);
+                // Initial Line Chart By Branch Daily Display Button Logic
+                // Initial Line Chart By Branch Daily Display Button Function
+                function handleBranchDailyForthChart() {
+                    Highcharts.chart("forth-container", {
+                    chart: { 
+                        type: "line",
+                        borderColor: '#e5e5e5',  
+                        borderWidth: 1,           
+                        borderRadius: 12,         
+                        spacing: [30, 20, 30, 20],
+                        backgroundColor: '#ffffff',
+                        style: {
+                            fontFamily: 'Vazirmatn, sans-serif',
+                            fontSize: '20px'
+                        }
+                        },
+                    title: { text: "تعداد فاکتور تفکیکی",
+                        style: {
+                            fontSize: '25px',
+                            color: '#333'
+                        } 
+                    },
+                    xAxis: { categories,
+                        title: {
+                        text: "تاریخ",
+                        style: {
+                        fontSize: '20px',
+                        fontWeight: 'bold'
+                        }
+                    },
+                    labels: {
+                        useHTML: true,  
+                        formatter: function () {
+                                const value = this.value; 
+                                if (holidayDates.includes(value)) {
+                                    return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                }
+                                if (fridays.includes(value)) {
+                                        return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                }
+                                return value; 
+                            }
+                        } 
+                    },
+                    yAxis: { title: { text: "تعداد فاکتور",
+                        style: {
+                            fontSize: '20px',
+                            fontWeight: 'bold'
+                            } 
+                        } 
+                    },
+                    series: series,
+                    plotOptions: {
+                        series: {
+                            point: {
+                                events: {
+                                    click: function () {
+                                        const apiUrl = "/api/get-campaign-each-point";
+                                        const date = this.category;
+                                        const branch = this.series.name;
+                                        const body = document.querySelector("body");
+                                        const infoModal = document.querySelector("#info-modal");
+                                        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                                        fetch(apiUrl, {
+                                            method: "POST",
+                                            headers: {
+                                                "Content-Type": "application/json",
+                                                "X-CSRFToken": csrftoken,
+                                            },
+                                            body: JSON.stringify({date: date, branch: branch})
+                                        }).then(response => {
+                                            if (!response.ok) throw new Error("Invalid Response");
+                                            return response.json()
+                                        }).then(data => {
+                                            let htmlCampaigns = data.map((camp, index) =>
+                                                `<p style='margin-bottom: 0px;' style='margin-bottom: 0px; margin-top: 0px;'>${index + 1}. ${camp.campaign_name}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${camp.campaign_type}</p>`
+                                            ).join('')
+                                            if (data.length === 0) {
+                                                htmlCampaigns = `<p>هیچ کمپینی یافت نشد.</p>`
+                                            }
+                                            Swal.fire({
+                                                html: `<h3 style='margin-bottom: 0px;'>${this.y}</h3><p style='margin-bottom: 0px; margin-top: 0px;'>${this.series.name}</p><p style='margin-top: 0px;'>${this.category}</p>
+                                                <p style='margin-bottom: 0px;'>کمپین ها:</p>
+                                                ${htmlCampaigns}
+                                                `,
+                                                confirmButtonText: 'بستن',
+                                                confirmButtonColor: '#5a8dee'
+                                            });
+                                        })
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+                }
+                // Initial Line Chart By Branch Daily Display Event Listener
+                $("#forth-container-tools .day").off("click").on("click", handleBranchDailyForthChart);
+
+                // Initial Line Chart By Branch Monthly Display Button Logic
+                // Initial Line Chart By Branch Monthly Display Button Function
+                function handleBranchMonthlySixthChart() {
+                    const apiUrl = "/api/abnormal-monthly-display";
+                    const x = categories;
+                    const y = seriesProduct;
+                    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                    fetch(apiUrl, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": csrftoken,
+                        },
+                        body: JSON.stringify({x: x, y: y})
+                    }).then(response => {
+                        if (!response.ok) throw new Error("Invalid Response");
+                        return response.json()
+                    }).then(data => {
+                        Highcharts.chart("sixth-container", {
+                        chart: { 
+                            type: "line",
+                            borderColor: '#e5e5e5',  
+                            borderWidth: 1,           
+                            borderRadius: 12,         
+                            spacing: [30, 20, 30, 20],
+                            backgroundColor: '#ffffff',
+                            style: {
+                                fontFamily: 'Vazirmatn, sans-serif',
+                                fontSize: '20px'
+                            }
+                            },
+                        title: { text: "تعداد محصول خریداری شده تفکیکی",
+                            style: {
+                                fontSize: '25px',
+                                color: '#333'
+                            } 
+                        },
+                        xAxis: { 
+                            categories: data.months,
+                            title: {
+                            text: "تاریخ",
+                            style: {
+                            fontSize: '20px',
+                            fontWeight: 'bold'
+                            }
+                        },
+                        labels: {
+                            useHTML: true,  
+                            formatter: function () {
+                                    const value = this.value; 
+                                    if (holidayDates.includes(value)) {
+                                        return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                    }
+                                    if (fridays.includes(value)) {
+                                            return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                    }
+                                    return value; 
+                                }
+                            } 
+                        },
+                        yAxis: { title: { text: "تعداد محصول",
+                            style: {
+                                fontSize: '20px',
+                                fontWeight: 'bold'
+                                } 
+                            } 
+                        },
+                        series: data.values,
+                    });
+                    });
+                }
+                // Initial Line Chart By Branch Monthly Display Event Listener
+                $("#sixth-container-tools .month").off("click").on("click", handleBranchMonthlySixthChart);
+                // Initial Line Chart By Branch Weekly Display Button Logic
+                // Initial Line Chart By Branch Weekly Display Button Function
+                function handleBranchWeeklySixthChart() {
+                    const apiUrl = "/api/abnormal-weekly-display";
+                    const x = categories;
+                    const y = seriesProduct;
+                    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                    fetch(apiUrl, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": csrftoken,
+                        },
+                        body: JSON.stringify({x: x, y: y})
+                    }).then(response => {
+                        if (!response.ok) throw new Error("Invalid Response");
+                        return response.json()
+                    }).then(data => {
+                        Highcharts.chart("sixth-container", {
+                        chart: { 
+                            type: "line",
+                            borderColor: '#e5e5e5',  
+                            borderWidth: 1,           
+                            borderRadius: 12,         
+                            spacing: [30, 20, 30, 20],
+                            backgroundColor: '#ffffff',
+                            style: {
+                                fontFamily: 'Vazirmatn, sans-serif',
+                                fontSize: '20px'
+                            }
+                            },
+                        title: { text: "تعداد محصول خریداری شده تفکیکی",
+                            style: {
+                                fontSize: '25px',
+                                color: '#333'
+                            } 
+                        },
+                        xAxis: { 
+                            categories: data.weeks,
+                            title: {
+                            text: "تاریخ",
+                            style: {
+                            fontSize: '20px',
+                            fontWeight: 'bold'
+                            }
+                        },
+                        labels: {
+                            useHTML: true,  
+                            formatter: function () {
+                                    const value = this.value; 
+                                    if (holidayDates.includes(value)) {
+                                        return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                    }
+                                    if (fridays.includes(value)) {
+                                            return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                    }
+                                    return value; 
+                                }
+                            } 
+                        },
+                        yAxis: { title: { text: "تعداد محصول",
+                            style: {
+                                fontSize: '20px',
+                                fontWeight: 'bold'
+                                } 
+                            } 
+                        },
+                        series: data.values,
+                    });
+                    });
+                }
+                // Initial Line Chart By Branch Weekly Display Event Listener
+                $("#sixth-container-tools .week").off("click").on("click", handleBranchWeeklySixthChart);
+                // Initial Line Chart By Branch Daily Display Button Logic
+                // Initial Line Chart By Branch Daily Display Button Function
+                function handleBranchDailySixthChart() {
+                    Highcharts.chart("sixth-container", {
+                    chart: { 
+                        type: "line",
+                        borderColor: '#e5e5e5',  
+                        borderWidth: 1,           
+                        borderRadius: 12,         
+                        spacing: [30, 20, 30, 20],
+                        backgroundColor: '#ffffff',
+                        style: {
+                            fontFamily: 'Vazirmatn, sans-serif',
+                            fontSize: '20px'
+                        }
+                        },
+                    title: { text: "تعداد محصول خریداری شده تفکیکی",
+                        style: {
+                            fontSize: '25px',
+                            color: '#333'
+                        } 
+                    },
+                    xAxis: { categories,
+                        title: {
+                        text: "تاریخ",
+                        style: {
+                        fontSize: '20px',
+                        fontWeight: 'bold'
+                        }
+                    },
+                    labels: {
+                        useHTML: true,  
+                        formatter: function () {
+                                const value = this.value; 
+                                if (holidayDates.includes(value)) {
+                                    return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                }
+                                if (fridays.includes(value)) {
+                                        return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                }
+                                return value; 
+                            }
+                        } 
+                    },
+                    yAxis: { title: { text: "تعداد محصول",
+                        style: {
+                            fontSize: '20px',
+                            fontWeight: 'bold'
+                            } 
+                        } 
+                    },
+                    series: seriesProduct,
+                    plotOptions: {
+                        series: {
+                            point: {
+                                events: {
+                                    click: function () {
+                                        const apiUrl = "/api/get-campaign-each-point";
+                                        const date = this.category;
+                                        const branch = this.series.name;
+                                        const body = document.querySelector("body");
+                                        const infoModal = document.querySelector("#info-modal");
+                                        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                                        fetch(apiUrl, {
+                                            method: "POST",
+                                            headers: {
+                                                "Content-Type": "application/json",
+                                                "X-CSRFToken": csrftoken,
+                                            },
+                                            body: JSON.stringify({date: date, branch: branch})
+                                        }).then(response => {
+                                            if (!response.ok) throw new Error("Invalid Response");
+                                            return response.json()
+                                        }).then(data => {
+                                            let htmlCampaigns = data.map((camp, index) =>
+                                                `<p style='margin-bottom: 0px;' style='margin-bottom: 0px; margin-top: 0px;'>${index + 1}. ${camp.campaign_name}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${camp.campaign_type}</p>`
+                                            ).join('')
+                                            if (data.length === 0) {
+                                                htmlCampaigns = `<p>هیچ کمپینی یافت نشد.</p>`
+                                            }
+                                            Swal.fire({
+                                                html: `<h3 style='margin-bottom: 0px;'>${this.y}</h3><p style='margin-bottom: 0px; margin-top: 0px;'>${this.series.name}</p><p style='margin-top: 0px;'>${this.category}</p>
+                                                <p style='margin-bottom: 0px;'>کمپین ها:</p>
+                                                ${htmlCampaigns}
+                                                `,
+                                                confirmButtonText: 'بستن',
+                                                confirmButtonColor: '#5a8dee'
+                                            });
+                                        })
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+                }
+                // Initial Line Chart By Branch Daily Display Event Listener
+                $("#sixth-container-tools .day").off("click").on("click", handleBranchDailySixthChart);
                 Highcharts.chart("forth-container", {
                     chart: { type: "line",
                         borderColor: '#e5e5e5',  
