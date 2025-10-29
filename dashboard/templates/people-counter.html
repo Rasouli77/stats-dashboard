@@ -423,6 +423,8 @@
 <script src="{% static 'assets/vendor/libs/toastr/toastr.js' %}"></script>
 <script src="{% static 'assets/js/ui-toasts.js' %}"></script>
 <script src="https://cdn.jsdelivr.net/npm/moment-jalaali@0.10.4/build/moment-jalaali.min.js"></script>
+<!-- Jdatetime -->
+<script src="https://cdn.jsdelivr.net/npm/jalaali-js@1.2.6/dist/jalaali.min.js"></script>
 <!-- Error Handling  -->
 <script>
     document.querySelector("#filter-proxy-button").addEventListener("click", (e) => {
@@ -502,6 +504,43 @@
         }
     }
 
+    function parseWeekNumber(weekStr) {
+        // Remove "هفته" and trim whitespace
+        const numStr = weekStr.replace("هفته", "").trim();
+        // Convert Persian digits to English digits first
+        const persianDigits = "۰۱۲۳۴۵۶۷۸۹";
+        const englishNumStr = numStr.replace(/[۰-۹]/g, d => persianDigits.indexOf(d));
+        // Convert to integer
+        return parseInt(englishNumStr, 10);
+    }
+
+    function addWeeklyHighlight(chart, fromWeek, toWeek, color, id) {
+        const categories = chart.xAxis[0].categories;
+        let fromIndex = categories.indexOf(fromWeek);
+        let toIndex = categories.indexOf(toWeek);
+        const first = categories[0];
+        const last = categories[categories.length - 1];
+        console.log(fromWeek, toWeek);
+        console.log(first, last)
+        if (parseWeekNumber(fromWeek) < parseWeekNumber(first)) {
+            fromIndex = categories.indexOf(first);
+        }
+        if (parseWeekNumber(toWeek) > parseWeekNumber(last)) {
+            toIndex = categories.indexOf(last);
+        }
+        if (fromIndex !== -1 && toIndex !== -1) {
+            chart.xAxis[0].addPlotBand({
+                from: fromIndex - 0.5,
+                to: toIndex + 0.5,
+                color,
+                id
+            });
+            console.log(`✅ Added highlight ${id} from ${fromWeek} to ${toWeek}`);
+        } else {
+            console.warn("⚠️ Could not find indices for:", fromWeek, toWeek);
+        }
+    }
+
     function removeHighChart(chart, id) {
         chart.xAxis[0].removePlotBand(id);
         console.log(`❌ Removed highlight ${id}`);
@@ -518,6 +557,47 @@
         const b = Math.floor(Math.random() * 120) + 80;
 
         return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+</script>
+<!-- Weekly Plot Bands Functions -->
+<script>
+    // Convert Persian digits to English digits
+    function persianToEnglishNumber(str) {
+        const persianDigits = '۰۱۲۳۴۵۶۷۸۹';
+        return str.replace(/[۰-۹]/g, d => persianDigits.indexOf(d));
+    }
+
+    // Convert Persian-date string to JS Date (Gregorian)
+    function persianDateToJSDate(persianDate) {
+        const [jy, jm, jd] = persianToEnglishNumber(persianDate)
+            .split("/")
+            .map(Number);
+        // Convert Jalali → Gregorian
+        const g = jalaali.toGregorian(jy, jm, jd);
+        return new Date(g.gy, g.gm - 1, g.gd);
+    }
+
+    // Main function
+    function slicePersianDates(masterList, startDate, endDate) {
+        const jsDates = masterList.map(d => persianDateToJSDate(d));
+
+        let startIndex = 0;
+        let endIndex = jsDates.length - 1;
+
+        if (startDate) {
+            const startJS = persianDateToJSDate(startDate);
+            startIndex = jsDates.findIndex(d => d.getTime() >= startJS.getTime());
+            if (startIndex === -1) startIndex = 0;
+        }
+
+        if (endDate) {
+            const endJS = persianDateToJSDate(endDate);
+            endIndex = jsDates.findIndex(d => d.getTime() > endJS.getTime());
+            if (endIndex === -1) endIndex = jsDates.length;
+            else endIndex = endIndex - 1; // include the date itself
+        }
+
+        return masterList.slice(startIndex, endIndex + 1);
     }
 </script>
 <!-- Holiday Spotter -->
@@ -942,6 +1022,7 @@
             function initialHandleWeeklyChart () {
                 const apiUrl = "/api/normal-weekly-display";
                 const x = newCategories;
+                console.log(x)
                 const y = data.entry_totals;
                 const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
                 fetch(apiUrl, {
@@ -998,6 +1079,58 @@
                         {data: data.exit_totals}
                         ],
                     });
+                    // Campaign Plot Bands
+                    setTimeout(() => {
+                        const plots = document.querySelectorAll(".display-plot");
+                        console.log("Found checkboxes:", plots.length);
+                        // Remove the plot bands on form reload
+                        document.querySelectorAll(".display-plot").forEach((item, index) => {
+                            item.checked = false;
+                            removeHighChart(lineChart, index);
+                            removeHighChart(barChart, index);
+                        });
+                        plots.forEach((item, index) => {
+                            item.addEventListener("change", () => {
+                                const ul = item.closest("ul"); 
+                                if (!ul) return;
+
+                                const liItems = ul.querySelectorAll("li");
+                                if (liItems.length < 3) {
+                                    console.warn("Not enough li items");
+                                    return;
+                                }
+
+                                const startDate = englishToPersianNumber(liItems[1].querySelector(".greg-date")?.innerText?.trim());
+                                const endDate = englishToPersianNumber(liItems[2].querySelector(".greg-date")?.innerText?.trim());
+                                const campaignWeeks = slicePersianDates(newCategories, startDate, endDate);
+                                fetch(apiUrl, {
+                                    method: "POST",
+                                    headers: {
+                                        "Content-Type": "application/json",
+                                        "X-CSRFToken": csrftoken,
+                                    },
+                                    body: JSON.stringify({x: campaignWeeks, y: y})
+                                }).then(response => {
+                                    if (!response.ok) throw new Error("Invalid Response");
+                                    return response.json()
+                                }).then(x => {
+                                    let weeks  = x.weeks;
+                                    console.log(weeks)
+                                    const firstWeek = weeks[0];
+                                    const lastWeek = weeks[weeks.length - 1];
+                                    if (item.checked) {
+                                        console.log("✅ Checkbox checked", { firstWeek, lastWeek });
+                                        addWeeklyHighlight(lineChart, firstWeek, lastWeek, randomPlotBandColor(), index);
+                                        addWeeklyHighlight(barChart, firstWeek, lastWeek, randomPlotBandColor(), index);
+                                    } else {
+                                        console.log("❌ Checkbox unchecked");
+                                        removeHighChart(lineChart, index);
+                                        removeHighChart(barChart, index);
+                                    }
+                                });
+                            });
+                        });
+                    }, 500);
                 });
             }
             // Initial Line Chart Weekly Display Button Event Listener
@@ -1047,6 +1180,42 @@
                     {data: data.exit_totals}
                     ],
                 });
+                // Campaign Plot Bands
+                setTimeout(() => {
+                    const plots = document.querySelectorAll(".display-plot");
+                    console.log("Found checkboxes:", plots.length);
+                    // Remove the plot bands on form reload
+                    document.querySelectorAll(".display-plot").forEach((item, index) => {
+                        item.checked = false;
+                        removeHighChart(lineChart, index);
+                        removeHighChart(barChart, index);
+                    });
+                    plots.forEach((item, index) => {
+                        item.addEventListener("change", () => {
+                            const ul = item.closest("ul"); // go up to parent list
+                            if (!ul) return;
+
+                            const liItems = ul.querySelectorAll("li");
+                            if (liItems.length < 3) {
+                                console.warn("Not enough li items");
+                                return;
+                            }
+
+                            const startDate = englishToPersianNumber(liItems[1].querySelector(".greg-date")?.innerText?.trim());
+                            const endDate = englishToPersianNumber(liItems[2].querySelector(".greg-date")?.innerText?.trim());
+                            
+                            if (item.checked) {
+                                console.log("✅ Checkbox checked", { startDate, endDate });
+                                addHighlight(lineChart, startDate, endDate, randomPlotBandColor(), index);
+                                addHighlight(barChart, startDate, endDate, randomPlotBandColor(), index);
+                            } else {
+                                console.log("❌ Checkbox unchecked");
+                                removeHighChart(lineChart, index);
+                                removeHighChart(barChart, index);
+                            }
+                        });
+                    });
+                }, 500);
             }
             // Initial Line Chart Daily Display Event Listener
             $("#container-tools .day").off("click").on("click", initialHandleDailyChart);
