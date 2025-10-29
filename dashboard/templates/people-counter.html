@@ -450,6 +450,76 @@
         }
     });
 </script>
+<!-- Plot Bands Functions -->
+<script>
+    function persianToEnglishDigits(str) {
+        const persianDigits = '۰۱۲۳۴۵۶۷۸۹';
+        return str.replace(/[۰-۹]/g, d => persianDigits.indexOf(d));
+    }
+
+    function persianDateToJSDate(persianDateStr) {
+        // Convert Persian digits to English digits
+        const englishDateStr = persianToEnglishDigits(persianDateStr);
+
+        // Split into parts
+        const [year, month, day] = englishDateStr.split('/').map(Number);
+
+        // JS months are 0-based
+        return new Date(year, month - 1, day);
+    }
+
+    function englishDateToJSDate(englishDateStr) {
+        const [year, month, day] = englishDateStr.split('/').map(Number);
+        return new Date(year, month - 1, day);
+    }
+
+    function addHighlight(chart, fromDate, toDate, color, id) {
+        const categories = chart.xAxis[0].categories;
+        let fromIndex = categories.indexOf(fromDate);
+        let toIndex = categories.indexOf(toDate);
+        const first = categories[0];
+        const last = categories[categories.length - 1];
+        console.log(fromDate, toDate);
+        console.log(first, last)
+        console.log(persianDateToJSDate(fromDate), persianDateToJSDate(first))
+        if (persianDateToJSDate(fromDate) < persianDateToJSDate(first)) {
+            fromIndex = categories.indexOf(first);
+        }
+        console.log(persianDateToJSDate(toDate), persianDateToJSDate(last));
+        if (persianDateToJSDate(toDate) > persianDateToJSDate(last)) {
+            toIndex = categories.indexOf(last);
+        }
+        if (fromIndex !== -1 && toIndex !== -1) {
+            chart.xAxis[0].addPlotBand({
+                from: fromIndex - 0.5,
+                to: toIndex + 0.5,
+                color,
+                id
+            });
+            console.log(`✅ Added highlight ${id} from ${fromDate} to ${toDate}`);
+        } else {
+            console.warn("⚠️ Could not find indices for:", fromDate, toDate);
+        }
+    }
+
+    function removeHighChart(chart, id) {
+        chart.xAxis[0].removePlotBand(id);
+        console.log(`❌ Removed highlight ${id}`);
+    }
+
+    function englishToPersianNumber(str) {
+        const persianDigits = '۰۱۲۳۴۵۶۷۸۹';
+        return str.replace(/\d/g, d => persianDigits[d]);
+    }
+
+    function randomPlotBandColor(alpha = 0.15) {
+        const r = Math.floor(Math.random() * 120) + 80; // 80-199
+        const g = Math.floor(Math.random() * 120) + 80;
+        const b = Math.floor(Math.random() * 120) + 80;
+
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+</script>
 <!-- Holiday Spotter -->
 <script>
     const holidayDates = []
@@ -608,6 +678,18 @@
                                 </div>
                                 <div class="card-body pb-3">
                                     <ul class="p-0 m-0">
+                                    <li class="d-flex align-items-center mb-3">
+                                    <div class="avatar avatar-sm flex-shrink-0 me-3">
+                                    <span class="avatar-initial rounded-circle bg-label-success">
+                                    <i class="bx bx-show"></i></span>
+                                    </div>
+                                    <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2"> <div class="me-2">
+                                    <p class="mb-0">نمایش</p>
+                                    <small class="text-muted">نمایش بازه در نمودار</small>
+                                    </div> <div class="item-progress"><input type='checkbox' class='display-plot' />
+                                    </div>
+                                    </div>
+                                    </li>
                                     <li class="d-flex align-items-center mb-3">
                                         <div class="avatar avatar-sm flex-shrink-0 me-3">
                                         <span class="avatar-initial rounded-circle bg-label-primary"><i class="bx bx-time"></i></span>
@@ -1031,6 +1113,43 @@
                 {data: data.exit_totals}
                 ],
             });
+            // Campaign Plot Bands
+            setTimeout(() => {
+                const plots = document.querySelectorAll(".display-plot");
+                console.log("Found checkboxes:", plots.length);
+                // Remove the plot bands on form reload
+                document.querySelectorAll(".display-plot").forEach((item, index) => {
+                    item.checked = false;
+                    removeHighChart(lineChart, index);
+                    removeHighChart(barChart, index);
+                });
+                plots.forEach((item, index) => {
+                    item.addEventListener("change", () => {
+                        const ul = item.closest("ul"); // go up to parent list
+                        if (!ul) return;
+
+                        const liItems = ul.querySelectorAll("li");
+                        if (liItems.length < 3) {
+                            console.warn("Not enough li items");
+                            return;
+                        }
+
+                        const startDate = englishToPersianNumber(liItems[1].querySelector(".greg-date")?.innerText?.trim());
+                        const endDate = englishToPersianNumber(liItems[2].querySelector(".greg-date")?.innerText?.trim());
+                        
+                        if (item.checked) {
+                            console.log("✅ Checkbox checked", { startDate, endDate });
+                            addHighlight(lineChart, startDate, endDate, randomPlotBandColor(), index);
+                            addHighlight(barChart, startDate, endDate, randomPlotBandColor(), index);
+                        } else {
+                            console.log("❌ Checkbox unchecked");
+                            removeHighChart(lineChart, index);
+                            removeHighChart(barChart, index);
+                        }
+                    });
+                });
+            }, 500);
+
         })
         .catch(error => {
             console.error('Error:', error);
@@ -1083,7 +1202,7 @@
                     const total = branchItem.data.reduce((sum, val) => sum + val, 0);
                     return { name: branchItem.name, y: total };
                 });
-                Highcharts.chart("second-container", {
+                const secondContainer = Highcharts.chart("second-container", {
                     chart: { type: "line",
                         borderColor: '#e5e5e5',  
                         borderWidth: 1,           
@@ -1178,6 +1297,39 @@
                         }
                     }
                 });
+                // Campaign Plot Bands
+                setTimeout(() => {
+                    const plots = document.querySelectorAll(".display-plot");
+                    console.log("Found checkboxes:", plots.length);
+                    // Remove the plot bands on form reload
+                    document.querySelectorAll(".display-plot").forEach((x, index) => {
+                        x.checked = false;
+                        removeHighChart(secondContainer, index);
+                    });
+                    plots.forEach((i, index) => {
+                        i.addEventListener("change", () => {
+                            const ul = i.closest("ul"); 
+                            if (!ul) return;
+
+                            const liItems = ul.querySelectorAll("li");
+                            if (liItems.length < 3) {
+                                console.warn("Not enough li items");
+                                return;
+                            }
+
+                            const startDate = englishToPersianNumber(liItems[1].querySelector(".greg-date")?.innerText?.trim());
+                            const endDate = englishToPersianNumber(liItems[2].querySelector(".greg-date")?.innerText?.trim());
+                            
+                            if (i.checked) {
+                                console.log("✅ Checkbox checked", { startDate, endDate });
+                                addHighlight(secondContainer, startDate, endDate, randomPlotBandColor(), index);
+                            } else {
+                                console.log("❌ Checkbox unchecked");
+                                removeHighChart(secondContainer, index);
+                            }
+                        });
+                    });
+                }, 500);
                 // Initial Line Chart By Branch Monthly Display Button Logic
                 // Initial Line Chart By Branch Monthly Display Button Function
                 function initialHandleBranchMonthlyDisplay() {
@@ -2008,7 +2160,79 @@
                         {data: data.exit_totals}
                         ],
                     });
+                    // Campaign Plot Bands
+                    setTimeout(() => {
+                        const plots = document.querySelectorAll(".display-plot");
+                        console.log("Found checkboxes:", plots.length);
+                        // Remove the plot bands on form reload
+                        document.querySelectorAll(".display-plot").forEach((item, index) => {
+                            item.checked = false;
+                            removeHighChart(lineChart, index);
+                            removeHighChart(barChart, index);
+                        });
+                        plots.forEach((item, index) => {
+                            item.addEventListener("change", () => {
+                                const ul = item.closest("ul"); // go up to parent list
+                                if (!ul) return;
+
+                                const liItems = ul.querySelectorAll("li");
+                                if (liItems.length < 3) {
+                                    console.warn("Not enough li items");
+                                    return;
+                                }
+
+                                const startDate = englishToPersianNumber(liItems[1].querySelector(".greg-date")?.innerText?.trim());
+                                const endDate = englishToPersianNumber(liItems[2].querySelector(".greg-date")?.innerText?.trim());
+                                
+                                if (item.checked) {
+                                    console.log("✅ Checkbox checked", { startDate, endDate });
+                                    addHighlight(lineChart, startDate, endDate, randomPlotBandColor(), index);
+                                    addHighlight(barChart, startDate, endDate, randomPlotBandColor(), index);
+                                } else {
+                                    console.log("❌ Checkbox unchecked");
+                                    removeHighChart(lineChart, index);
+                                    removeHighChart(barChart, index);
+                                }
+                            });
+                        });
+                    }, 500);
                 });
+                // Campaign Plot Bands
+                setTimeout(() => {
+                    const plots = document.querySelectorAll(".display-plot");
+                    console.log("Found checkboxes:", plots.length);
+                    // Remove the plot bands on form reload
+                    document.querySelectorAll(".display-plot").forEach((item, index) => {
+                        item.checked = false;
+                        removeHighChart(lineChart, index);
+                        removeHighChart(barChart, index);
+                    });
+                    plots.forEach((item, index) => {
+                        item.addEventListener("change", () => {
+                            const ul = item.closest("ul"); // go up to parent list
+                            if (!ul) return;
+
+                            const liItems = ul.querySelectorAll("li");
+                            if (liItems.length < 3) {
+                                console.warn("Not enough li items");
+                                return;
+                            }
+
+                            const startDate = englishToPersianNumber(liItems[1].querySelector(".greg-date")?.innerText?.trim());
+                            const endDate = englishToPersianNumber(liItems[2].querySelector(".greg-date")?.innerText?.trim());
+                            
+                            if (item.checked) {
+                                console.log("✅ Checkbox checked", { startDate, endDate });
+                                addHighlight(lineChart, startDate, endDate, randomPlotBandColor(), index);
+                                addHighlight(barChart, startDate, endDate, randomPlotBandColor(), index);
+                            } else {
+                                console.log("❌ Checkbox unchecked");
+                                removeHighChart(lineChart, index);
+                                removeHighChart(barChart, index);
+                            }
+                        });
+                    });
+                }, 500);
                 // Campaign UI Update
                 document.querySelector("#campaign-fill").innerHTML = "";
                 if (data.campaigns.length === 0) {
@@ -2045,6 +2269,18 @@
                                     </div>
                                     <div class="card-body pb-3">
                                         <ul class="p-0 m-0">
+                                        <li class="d-flex align-items-center mb-3">
+                                        <div class="avatar avatar-sm flex-shrink-0 me-3">
+                                        <span class="avatar-initial rounded-circle bg-label-success">
+                                        <i class="bx bx-show"></i></span>
+                                        </div>
+                                        <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2"> <div class="me-2">
+                                        <p class="mb-0">نمایش</p>
+                                        <small class="text-muted">نمایش بازه در نمودار</small>
+                                        </div> <div class="item-progress"><input type='checkbox' class='display-plot' />
+                                        </div>
+                                        </div>
+                                        </li>
                                         <li class="d-flex align-items-center mb-3">
                                             <div class="avatar avatar-sm flex-shrink-0 me-3">
                                             <span class="avatar-initial rounded-circle bg-label-primary"><i class="bx bx-time"></i></span>
@@ -2212,7 +2448,7 @@
                     return { name: branchItem.name, y: total };
                 });
                 // Line Chart By Branch Update
-                Highcharts.chart("second-container", {
+                const secondContainer = Highcharts.chart("second-container", {
                     chart: { type: "line",
                         backgroundColor: '#ffffff',
                         borderColor: '#e5e5e5',  
@@ -2305,6 +2541,39 @@
                         }
                     }
                 });
+                // Campaign Plot Bands
+                setTimeout(() => {
+                    const plots = document.querySelectorAll(".display-plot");
+                    console.log("Found checkboxes:", plots.length);
+                    // Remove the plot bands on form reload
+                    document.querySelectorAll(".display-plot").forEach((item, index) => {
+                        item.checked = false;
+                        removeHighChart(secondContainer, index);
+                    });
+                    plots.forEach((item, index) => {
+                        item.addEventListener("change", () => {
+                            const ul = item.closest("ul"); 
+                            if (!ul) return;
+
+                            const liItems = ul.querySelectorAll("li");
+                            if (liItems.length < 3) {
+                                console.warn("Not enough li items");
+                                return;
+                            }
+
+                            const startDate = englishToPersianNumber(liItems[1].querySelector(".greg-date")?.innerText?.trim());
+                            const endDate = englishToPersianNumber(liItems[2].querySelector(".greg-date")?.innerText?.trim());
+                            
+                            if (item.checked) {
+                                console.log("✅ Checkbox checked", { startDate, endDate });
+                                addHighlight(secondContainer, startDate, endDate, randomPlotBandColor(), index);
+                            } else {
+                                console.log("❌ Checkbox unchecked");
+                                removeHighChart(secondContainer, index);
+                            }
+                        });
+                    });
+                }, 500);
                 // Line Chart By Branch Monthly Display Button Logic
                 // Line Chart By Branch Monthly Display Button Function
                 function handleBranchMonthlyDisplay() {
@@ -2458,7 +2727,7 @@
                 // Line Chart By Branch Daily Display Logic
                 // Line Chart By Branch Daily Display Function
                 function handleBranchDailyDisplay() {
-                    Highcharts.chart("second-container", {
+                    const secondContainer = Highcharts.chart("second-container", {
                         chart: { type: "line",
                             backgroundColor: '#ffffff',
                             borderColor: '#e5e5e5',  
@@ -2551,6 +2820,40 @@
                             }
                         }
                     });
+                    // Campaign Plot Bands
+                    console.log(secondContainer.xAxis)
+                    setTimeout(() => {
+                        const plots = document.querySelectorAll(".display-plot");
+                        console.log("Found checkboxes:", plots.length);
+                        // Remove the plot bands on form reload
+                        document.querySelectorAll(".display-plot").forEach((i, index) => {
+                            i.checked = false;
+                            removeHighChart(secondContainer, index);
+                        });
+                        plots.forEach((i, index) => {
+                            i.addEventListener("change", () => {
+                                const ul = i.closest("ul"); 
+                                if (!ul) return;
+
+                                const liItems = ul.querySelectorAll("li");
+                                if (liItems.length < 3) {
+                                    console.warn("Not enough li items");
+                                    return;
+                                }
+
+                                const startDate = englishToPersianNumber(liItems[1].querySelector(".greg-date")?.innerText?.trim());
+                                const endDate = englishToPersianNumber(liItems[2].querySelector(".greg-date")?.innerText?.trim());
+                                
+                                if (i.checked) {
+                                    console.log("✅ Checkbox checked", { startDate, endDate });
+                                    addHighlight(secondContainer, startDate, endDate, randomPlotBandColor(), index);
+                                } else {
+                                    console.log("❌ Checkbox unchecked");
+                                    removeHighChart(secondContainer, index);
+                                }
+                            });
+                        });
+                    }, 1000);
                 }
                 // Line Chart By Branch Daily Display Event Listener
                 $("#second-container-tools .day").off("click").on("click", handleBranchDailyDisplay);
