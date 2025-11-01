@@ -11,13 +11,14 @@ from .models import (
 )
 from django.db.models import Sum, Q, Min, Max, Avg, F
 from .views import jalali_to_gregorian
-from datetime import datetime
+from datetime import datetime, timedelta
 import math
 import re
 import subprocess
 import jdatetime
 import re
 from collections import defaultdict
+from .ai import ai_give_answers
 
 
 class MultipleBranches(APIView):
@@ -735,3 +736,42 @@ class abNormalMonthlyDisplay(APIView):
             return Response({"months": months, "values": values})
         except Exception as e:
             return Response({"error": f"{e}"})
+
+
+class AI(APIView):
+    def post(self, request):
+        """
+        We have 4 variables that get posted to this API:
+        1. Which area to focus on: (traffic, sales, conversion rate)
+        2. What is the type of the said chart: Aggregated or Separated
+        3. No matter what they want, we always send all data associated with the specified time period
+        4. As well as holidays
+        (only the emphasis shifts based on the variable e)
+        The data we send within the specified time line for both types (the t variable):
+        1. invoice count 
+        2. invoice amount
+        3. invoice product count
+        4. traffic
+        """
+        # Emphasis
+        e = request.data.get("e")
+        # Type: Aggregated / Separated
+        t = request.data.get("t")
+        # Start Date
+        raw_start_date = request.data.get("startDate")
+        # End Date
+        raw_end_date = request.data.get("endDate")
+        # Holidays
+        holidays = request.data.get("holidays")
+
+        # Dates
+        start_jdate = persian_date_to_jdate(raw_start_date)
+        end_jdate = persian_date_to_jdate(raw_end_date)
+        start_date = start_jdate.togregorian()
+        end_date = end_jdate.togregorian()
+
+        # Difference
+        difference = (end_date - start_date).days
+
+
+

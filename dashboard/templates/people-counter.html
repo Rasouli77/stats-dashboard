@@ -1013,6 +1013,15 @@
                         {data: data.exit_totals}
                         ],
                     });
+                    // Remove Plot for Month Display
+                    setTimeout(() => {
+                        const plots = document.querySelectorAll(".display-plot");
+                        document.querySelectorAll(".display-plot").forEach((i, index) => {
+                            i.checked = false;
+                            removeHighChart(lineChart, index);
+                            removeHighChart(barChart, index);
+                        });
+                    }, 500);
                 });
             }
             // Initial Line Chart Monthly Event Listener
@@ -1518,7 +1527,7 @@
                         return response.json()
                     }).then(data => {
                         // Line Chart By Branch Update
-                        Highcharts.chart("second-container", {
+                        const secondContainer = Highcharts.chart("second-container", {
                             chart: { type: "line",
                                 backgroundColor: '#ffffff',
                                 borderColor: '#e5e5e5',  
@@ -1570,6 +1579,14 @@
                             },
                             series: data.values,
                         });
+                        // Remove Plot for Month Display
+                        setTimeout(() => {
+                            const plots = document.querySelectorAll(".display-plot");
+                            document.querySelectorAll(".display-plot").forEach((i, index) => {
+                                i.checked = false;
+                                removeHighChart(secondContainer, index);
+                            });
+                        }, 500);
                     });
                 }
                 // Initial Line Chart By Branch Monthly Display Event Listener
@@ -1593,7 +1610,7 @@
                         return response.json()
                     }).then(data => {
                         // Line Chart By Branch Update
-                        Highcharts.chart("second-container", {
+                        const secondContainer = Highcharts.chart("second-container", {
                             chart: { type: "line",
                                 backgroundColor: '#ffffff',
                                 borderColor: '#e5e5e5',  
@@ -1645,6 +1662,55 @@
                             },
                             series: data.values,
                         });
+                        // Campaign Plot Bands
+                        setTimeout(() => {
+                            const plots = document.querySelectorAll(".display-plot");
+                            console.log("Found checkboxes:", plots.length);
+                            // Remove the plot bands on form reload
+                            document.querySelectorAll(".display-plot").forEach((item, index) => {
+                                item.checked = false;
+                                removeHighChart(secondContainer, index);
+                            });
+                            plots.forEach((item, index) => {
+                                item.addEventListener("change", () => {
+                                    const ul = item.closest("ul"); 
+                                    if (!ul) return;
+
+                                    const liItems = ul.querySelectorAll("li");
+                                    if (liItems.length < 3) {
+                                        console.warn("Not enough li items");
+                                        return;
+                                    }
+
+                                    const startDate = englishToPersianNumber(liItems[1].querySelector(".greg-date")?.innerText?.trim());
+                                    const endDate = englishToPersianNumber(liItems[2].querySelector(".greg-date")?.innerText?.trim());
+                                    const campaignWeeks = slicePersianDates(categories, startDate, endDate);
+                                    fetch(apiUrl, {
+                                        method: "POST",
+                                        headers: {
+                                            "Content-Type": "application/json",
+                                            "X-CSRFToken": csrftoken,
+                                        },
+                                        body: JSON.stringify({x: campaignWeeks, y: y})
+                                    }).then(response => {
+                                        if (!response.ok) throw new Error("Invalid Response");
+                                        return response.json()
+                                    }).then(x => {
+                                        let weeks  = x.weeks;
+                                        console.log(weeks)
+                                        const firstWeek = weeks[0];
+                                        const lastWeek = weeks[weeks.length - 1];
+                                        if (item.checked) {
+                                            console.log("✅ Checkbox checked", { firstWeek, lastWeek });
+                                            addWeeklyHighlight(secondContainer, firstWeek, lastWeek, randomPlotBandColor(), index);
+                                        } else {
+                                            console.log("❌ Checkbox unchecked");
+                                            removeHighChart(secondContainer, index);
+                                        }
+                                    });
+                                });
+                            });
+                        }, 500);
                     });
                 }
                 // Initial Line Chart By Branch Weekly Display Event Listener
@@ -1652,7 +1718,7 @@
                 // Initial Line Chart By Branch Daily Display Logic
                 // Initial Line Chart By Branch Daily Display Function
                 function initialHandleBranchDailyDisplay() {
-                    Highcharts.chart("second-container", {
+                    const secondContainer = Highcharts.chart("second-container", {
                         chart: { type: "line",
                             backgroundColor: '#ffffff',
                             borderColor: '#e5e5e5',  
@@ -1745,6 +1811,39 @@
                             }
                         }
                     });
+                    // Campaign Plot Bands
+                    setTimeout(() => {
+                        const plots = document.querySelectorAll(".display-plot");
+                        console.log("Found checkboxes:", plots.length);
+                        // Remove the plot bands on form reload
+                        document.querySelectorAll(".display-plot").forEach((i, index) => {
+                            i.checked = false;
+                            removeHighChart(secondContainer, index);
+                        });
+                        plots.forEach((i, index) => {
+                            i.addEventListener("change", () => {
+                                const ul = i.closest("ul"); 
+                                if (!ul) return;
+
+                                const liItems = ul.querySelectorAll("li");
+                                if (liItems.length < 3) {
+                                    console.warn("Not enough li items");
+                                    return;
+                                }
+
+                                const startDate = englishToPersianNumber(liItems[1].querySelector(".greg-date")?.innerText?.trim());
+                                const endDate = englishToPersianNumber(liItems[2].querySelector(".greg-date")?.innerText?.trim());
+                                
+                                if (i.checked) {
+                                    console.log("✅ Checkbox checked", { startDate, endDate });
+                                    addHighlight(secondContainer, startDate, endDate, randomPlotBandColor(), index);
+                                } else {
+                                    console.log("❌ Checkbox unchecked");
+                                    removeHighChart(secondContainer, index);
+                                }
+                            });
+                        });
+                    }, 800);
                 }
                 // Initial Line Chart By Branch Daily Display Event Listener
                 $("#second-container-tools .day").off("click").on("click", initialHandleBranchDailyDisplay);
@@ -2133,6 +2232,15 @@
                             {data: data.exit_totals}
                             ],
                         });
+                        // Remove Plot for Month Display
+                        setTimeout(() => {
+                            const plots = document.querySelectorAll(".display-plot");
+                            document.querySelectorAll(".display-plot").forEach((i, index) => {
+                                i.checked = false;
+                                removeHighChart(lineChart, index);
+                                removeHighChart(barChart, index);
+                            });
+                        }, 500);
                     });
                 }
                 // Line Chart Monthly Display Event Listeners
@@ -2198,6 +2306,58 @@
                             {data: data.exit_totals}
                             ],
                         });
+                        // Campaign Plot Bands
+                        setTimeout(() => {
+                            const plots = document.querySelectorAll(".display-plot");
+                            console.log("Found checkboxes:", plots.length);
+                            // Remove the plot bands on form reload
+                            document.querySelectorAll(".display-plot").forEach((item, index) => {
+                                item.checked = false;
+                                removeHighChart(lineChart, index);
+                                removeHighChart(barChart, index);
+                            });
+                            plots.forEach((item, index) => {
+                                item.addEventListener("change", () => {
+                                    const ul = item.closest("ul"); 
+                                    if (!ul) return;
+
+                                    const liItems = ul.querySelectorAll("li");
+                                    if (liItems.length < 3) {
+                                        console.warn("Not enough li items");
+                                        return;
+                                    }
+
+                                    const startDate = englishToPersianNumber(liItems[1].querySelector(".greg-date")?.innerText?.trim());
+                                    const endDate = englishToPersianNumber(liItems[2].querySelector(".greg-date")?.innerText?.trim());
+                                    const campaignWeeks = slicePersianDates(newCategories, startDate, endDate);
+                                    fetch(apiUrl, {
+                                        method: "POST",
+                                        headers: {
+                                            "Content-Type": "application/json",
+                                            "X-CSRFToken": csrftoken,
+                                        },
+                                        body: JSON.stringify({x: campaignWeeks, y: y})
+                                    }).then(response => {
+                                        if (!response.ok) throw new Error("Invalid Response");
+                                        return response.json()
+                                    }).then(x => {
+                                        let weeks  = x.weeks;
+                                        console.log(weeks)
+                                        const firstWeek = weeks[0];
+                                        const lastWeek = weeks[weeks.length - 1];
+                                        if (item.checked) {
+                                            console.log("✅ Checkbox checked", { firstWeek, lastWeek });
+                                            addWeeklyHighlight(lineChart, firstWeek, lastWeek, randomPlotBandColor(), index);
+                                            addWeeklyHighlight(barChart, firstWeek, lastWeek, randomPlotBandColor(), index);
+                                        } else {
+                                            console.log("❌ Checkbox unchecked");
+                                            removeHighChart(lineChart, index);
+                                            removeHighChart(barChart, index);
+                                        }
+                                    });
+                                });
+                            });
+                        }, 500);
                     });
                 }
                 // Line Chart Monthly Display Event Listener
@@ -2762,7 +2922,7 @@
                         return response.json()
                     }).then(data => {
                         // Line Chart By Branch Update
-                        Highcharts.chart("second-container", {
+                        const secondContainer = Highcharts.chart("second-container", {
                             chart: { type: "line",
                                 backgroundColor: '#ffffff',
                                 borderColor: '#e5e5e5',  
@@ -2814,6 +2974,14 @@
                             },
                             series: data.values,
                         });
+                        // Remove Plot for Month Display
+                        setTimeout(() => {
+                            const plots = document.querySelectorAll(".display-plot");
+                            document.querySelectorAll(".display-plot").forEach((i, index) => {
+                                i.checked = false;
+                                removeHighChart(secondContainer, index);
+                            });
+                        }, 500);
                     });
                 }
                 // Line Chart By Branch Monthly Display Event Listener
@@ -2837,7 +3005,7 @@
                         return response.json()
                     }).then(data => {
                         // Line Chart By Branch Update
-                        Highcharts.chart("second-container", {
+                        const secondContainer = Highcharts.chart("second-container", {
                             chart: { type: "line",
                                 backgroundColor: '#ffffff',
                                 borderColor: '#e5e5e5',  
@@ -2889,6 +3057,55 @@
                             },
                             series: data.values,
                         });
+                        // Campaign Plot Bands
+                        setTimeout(() => {
+                            const plots = document.querySelectorAll(".display-plot");
+                            console.log("Found checkboxes:", plots.length);
+                            // Remove the plot bands on form reload
+                            document.querySelectorAll(".display-plot").forEach((item, index) => {
+                                item.checked = false;
+                                removeHighChart(secondContainer, index);
+                            });
+                            plots.forEach((item, index) => {
+                                item.addEventListener("change", () => {
+                                    const ul = item.closest("ul"); 
+                                    if (!ul) return;
+
+                                    const liItems = ul.querySelectorAll("li");
+                                    if (liItems.length < 3) {
+                                        console.warn("Not enough li items");
+                                        return;
+                                    }
+
+                                    const startDate = englishToPersianNumber(liItems[1].querySelector(".greg-date")?.innerText?.trim());
+                                    const endDate = englishToPersianNumber(liItems[2].querySelector(".greg-date")?.innerText?.trim());
+                                    const campaignWeeks = slicePersianDates(categories, startDate, endDate);
+                                    fetch(apiUrl, {
+                                        method: "POST",
+                                        headers: {
+                                            "Content-Type": "application/json",
+                                            "X-CSRFToken": csrftoken,
+                                        },
+                                        body: JSON.stringify({x: campaignWeeks, y: y})
+                                    }).then(response => {
+                                        if (!response.ok) throw new Error("Invalid Response");
+                                        return response.json()
+                                    }).then(x => {
+                                        let weeks  = x.weeks;
+                                        console.log(weeks)
+                                        const firstWeek = weeks[0];
+                                        const lastWeek = weeks[weeks.length - 1];
+                                        if (item.checked) {
+                                            console.log("✅ Checkbox checked", { firstWeek, lastWeek });
+                                            addWeeklyHighlight(secondContainer, firstWeek, lastWeek, randomPlotBandColor(), index);
+                                        } else {
+                                            console.log("❌ Checkbox unchecked");
+                                            removeHighChart(secondContainer, index);
+                                        }
+                                    });
+                                });
+                            });
+                        }, 500);
                     });
                 }
                 // Line Chart By Branch Weekly Display Event Listener
@@ -2990,7 +3207,6 @@
                         }
                     });
                     // Campaign Plot Bands
-                    console.log(secondContainer.xAxis)
                     setTimeout(() => {
                         const plots = document.querySelectorAll(".display-plot");
                         console.log("Found checkboxes:", plots.length);
