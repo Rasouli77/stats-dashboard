@@ -610,6 +610,12 @@ def persian_date_to_jdate(s: str):
     return jdatetime.date(y, m, d)
 
 
+def persian_date_eng_digit_to_jdate(s: str):
+    parts = re.split(r"[\/\-\.]", s)
+    y, m, d = map(int, parts)
+    return jdatetime.date(y, m, d)
+
+
 def divide_monthly(dates, values):
     monthly_data = defaultdict(int)
     for d, v in zip(dates, values):
@@ -633,6 +639,38 @@ def divide_monthly(dates, values):
     return months, values
 
 
+def divide_monthly_avg(dates, values):
+    monthly_data = defaultdict(int)
+    counter = 0
+    counter_list = []
+    for d, v in zip(dates, values):
+        date = persian_date_to_jdate(d)
+        year = date.year
+        month = date.month
+        if len(str(month)) == 1:
+            key = f"{year}/0{month}"
+        else:
+            key = f"{year}/{month}"
+        if key in monthly_data.keys():
+            counter += 1
+        else:
+            if counter != 0:
+                counter_list.append(counter + 1)
+            counter = 0
+        monthly_data[key] += v
+    sorted_monthly_data = sorted(
+        monthly_data.items(), key=lambda item: int(re.sub("/", "", item[0]))
+    )
+    monthly_data = dict(sorted_monthly_data)
+    monthly_data_output = {}
+    for k, v in monthly_data.items():
+        monthly_data_output[ascii_to_persian(k)] = v
+    months = list(monthly_data_output.keys())
+    values = list(monthly_data_output.values())
+    avg_values = [math.floor(a/b) if b != 0 else 0 for a, b in zip(values, counter_list)]
+    return months, avg_values
+
+
 def divide_weekly(dates, values):
     weekly_data = defaultdict(int)
     for d, v in zip(dates, values):
@@ -651,6 +689,35 @@ def divide_weekly(dates, values):
     weeks = list(weekly_data_output.keys())
     values = list(weekly_data_output.values())
     return weeks, values
+
+
+def divide_weekly_avg(dates, values):
+    weekly_data = defaultdict(int)
+    counter = 0
+    counter_list = []
+    for d, v in zip(dates, values):
+        date = persian_date_to_jdate(d)
+        year = date.year
+        week = date.isocalendar()[1]
+        key = f"هفته {week}"
+        if key in weekly_data.keys():
+            counter += 1
+        else:
+            if counter != 0:
+                counter_list.append(counter + 1)
+            counter = 0
+        weekly_data[key] += v
+    sorted_weekly_data = sorted(
+        weekly_data.items(), key=lambda item: int(re.findall(r"\d+", item[0])[0])
+    )
+    weekly_data = dict(sorted_weekly_data)
+    weekly_data_output = {}
+    for k, v in weekly_data.items():
+        weekly_data_output[f"هفته {ascii_to_persian(re.findall(r'\d+', k)[0])}"] = v
+    weeks = list(weekly_data_output.keys())
+    values = list(weekly_data_output.values())
+    avg_values = [math.floor(a/b) if b != 0 else 0 for a, b in zip(values, counter_list)]
+    return weeks, avg_values
 
 
 class NormalWeeklyDisplay(APIView):
@@ -760,15 +827,15 @@ class AI(APIView):
         # Type: a stands for aggregated: true or false
         a = request.data.get("a")
         # Start Date
-        raw_start_date = request.data.get("startDate")
+        raw_start_date = request.data.get("aiStartDate")
         # End Date
-        raw_end_date = request.data.get("endDate")
+        raw_end_date = request.data.get("aiEndDate")
         # Branch ID
-        branch_ids = request.data.getlist("branch")
+        branch_ids = [int(x) for x in request.data.get("aiBranchIds")]
 
         # Dates
-        start_jdate = persian_date_to_jdate(raw_start_date)
-        end_jdate = persian_date_to_jdate(raw_end_date)
+        start_jdate = persian_date_eng_digit_to_jdate(raw_start_date)
+        end_jdate = persian_date_eng_digit_to_jdate(raw_end_date)
         start_date = start_jdate.togregorian()
         end_date = end_jdate.togregorian()
 
@@ -819,7 +886,9 @@ class AI(APIView):
                 "campaign_type": campaign["campaign_type"],
             }
             campaign_list.append(dictionary)
-
+        for i in campaign_list:
+            i["campaign_start_date"] = i["campaign_start_date"].isoformat()
+            i["campaign_end_date"] = i["campaign_end_date"].isoformat()
         # Holidays
         holidays = HolidayDate.objects.filter(
             gregorian_date__range=(start_date, end_date)
@@ -886,10 +955,39 @@ class AI(APIView):
                 print("dates", dates)
 
                 messages = [
-                    {"role": "system", "content": "You are a data analyst who speaks in Persian. Traffic comming into the branches is equal to total_entries. From left to button, all the values from each list belong to that day. We have campaigns and holidays with their corresponding dates and date ranges."},
-                    {"role": "user", "content": f"Analyze this data:\ntotal_entries = {json.dumps(total_entries, ensure_ascii=False)}\ninvoice_items = {json.dumps(invoice_items, ensure_ascii=False)}\ninvoice_products = {json.dumps(invoice_products, ensure_ascii=False)}\ninvoice_amounts = {json.dumps(invoice_amounts, ensure_ascii=False)}\ncomplete_holiday_dates = {json.dumps(complete_holiday_dates, ensure_ascii=False)}\ncampaign_list = {json.dumps(campaign_list, ensure_ascii=False)}\ndates = {json.dumps(dates, ensure_ascii=False)}"}
+                    {
+                        "role": "system",
+                        "content": (
+                            "You are a professional data analyst who responds only in Persian."
+                            "Turn all dates to jalali. Do not mention gregorian dates."
+                            "Traffic entering the branches is represented by total_entries."
+                            "All dates are ordered from left to right, and each value in every list corresponds to the same day in the dates list. "
+                            "The data also includes campaigns and holidays with their respective dates or date ranges."
+                            "As a data expert, analyze the data carefully: identify trends, patterns, and anomalies;"
+                            "explain averages, percentage changes, and growth rates when relevant;"
+                            "and always consider the effects of campaigns and holidays."
+                            "Finish your response with exactly two practical business suggestions."
+                            "Do not use HTML in your response — use plain text styling instead."
+                            "At the end, make sure your final Persian response contains no English or Chinese words or characters; remove them if necessary."
+                        )
+                    },
+                    {
+                        "role": "user",
+                        "content": (
+                            f"Analyze this data:\n"
+                            f"total_entries (traffic) = {json.dumps(total_entries, ensure_ascii=False)}\n"
+                            f"invoice_items (number of invoices) = {json.dumps(invoice_items, ensure_ascii=False)}\n"
+                            f"invoice_products (number of sold products) = {json.dumps(invoice_products, ensure_ascii=False)}\n"
+                            f"invoice_amounts (sales amounts in million tomans) = {json.dumps(invoice_amounts, ensure_ascii=False)}\n"
+                            f"complete_holiday_dates = {json.dumps(complete_holiday_dates, ensure_ascii=False)}\n"
+                            f"campaign_list = {json.dumps(campaign_list, ensure_ascii=False)}\n"
+                            f"dates = {json.dumps(dates, ensure_ascii=False)}\n"
+                            f"The focus of your analysis must be on: {e}. 30% must be on other data above."
+                        )
+                    }
                 ]
-
+                ai_response = ai_give_answers(messages, 0.5)
+                return Response({"ai": ai_response})
             except Exception as e:
                 print(e)
                 return Response({"error": f"{e}"})
@@ -905,8 +1003,10 @@ class AI(APIView):
                 )
                 invoices = Invoice.objects.filter(branch__merchant__url_hash=url_hash, date__range=(start_date, end_date))
                 dates = sorted(set(traffic.values_list("date", flat=True)))
+                dates = [date.isoformat() for date in dates]
                 traffic_response = {"dates": dates, "branches": {}}
                 invoice_response = {"dates": dates, "invoice_data": {}}
+
                 branches = Branch.objects.filter(merchant__url_hash=url_hash, pk__in=branch_ids)
                 for branch in branches:
                     entry_totals = []
@@ -914,7 +1014,7 @@ class AI(APIView):
                     total_items = []
                     total_products = []
                     # traffic loop
-                    for row in queryset.filter(branch=branch):
+                    for row in traffic.filter(branch=branch):
                         count = row["entry_totals"]
                         entry_totals.append(count)
                     # Data for AI
@@ -923,7 +1023,7 @@ class AI(APIView):
                         "entry_totals": entry_totals,
                     }
                     # invoice loop
-                    for invoice in queryset.filter(branch=branch):
+                    for invoice in invoices.filter(branch=branch):
                         amount = invoice.total_amount
                         items = invoice.total_items
                         products = invoice.total_product
@@ -942,6 +1042,38 @@ class AI(APIView):
                 print("invoice_response", invoice_response)
                 print("complete_holiday_dates", complete_holiday_dates)
                 print("campaign_list", campaign_list)
+                messages = [
+                    {
+                        "role": "system",
+                        "content": (
+                            "You are a professional data analyst who responds only in Persian."
+                            "Turn all dates to jalali. Do not mention gregorian dates."
+                            "Traffic entering the branches is represented by total_entries."
+                            "All dates are ordered from left to right, and each value in every list corresponds to the same day in the dates list."
+                            "The data also includes campaigns and holidays with their respective dates or date ranges."
+                            "As a data expert, analyze the data carefully: identify trends, patterns, and anomalies"
+                            "explain averages, percentage changes, and growth rates when relevant;"
+                            "and always consider the effects of campaigns and holidays."
+                            "Finish your response with exactly two practical business suggestions."
+                            "Do not use HTML in your response — use plain text styling instead."
+                            "At the end, make sure your final Persian response contains no English or Chinese words or characters; remove them if necessary."
+                        )
+                    },
+                    {
+                        "role": "user",
+                        "content": (
+                            f"Analyze this data:\n"
+                            f"traffic_response (traffic) separated by branch = {json.dumps(traffic_response, ensure_ascii=False)}\n"
+                            f"invoice_response (total_amounts: sales amounts in million tomans) (total_items: number of invoices) (total_products: number of sold products) = {json.dumps(invoice_response, ensure_ascii=False)}\n"
+                            f"complete_holiday_dates = {json.dumps(complete_holiday_dates, ensure_ascii=False)}\n"
+                            f"campaign_list = {json.dumps(campaign_list, ensure_ascii=False)}\n"
+                            f"dates = {json.dumps(dates, ensure_ascii=False)}\n"
+                            f"70% of your focus must be on: {e}. 30% must be on other data above. "
+                        )
+                    }
+                ]
+                ai_response = ai_give_answers(messages, 0.5)
+                return Response({"ai": ai_response})
             except Exception as e:
                 return Response({"error": f"{e}"})
 

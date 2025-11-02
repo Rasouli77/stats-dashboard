@@ -17,12 +17,6 @@ def ai_give_answers(messages, temperature, max_tokens=2048, stream=False):
         max_tokens=max_tokens,
         stream=stream
     )
-    return response
+    print(response)
+    return response.choices[0].message.content
 
-messages = [
-    {"role": "system", "content": "You are a data analyst who speaks in Persian"},
-    {"role": "user", "content": "Hi"}
-]
-
-response = ai_give_answers(messages, 1)
-print(response.choices[0].message.content)

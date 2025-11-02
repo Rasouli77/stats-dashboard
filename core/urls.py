@@ -63,7 +63,8 @@ from dashboard.api_views import (
     NormalWeeklyDisplay,
     NormalMonthlyDisplay,
     abNormalWeeklyDisplay,
-    abNormalMonthlyDisplay
+    abNormalMonthlyDisplay,
+    AI
 )
 from django.contrib.auth import views as auth_views
 from django.contrib import admin
@@ -170,6 +171,7 @@ urlpatterns = [
     path("api/normal-monthly-display", NormalMonthlyDisplay.as_view(), name="normal-monthly-display"),
     path("api/abnormal-weekly-display", abNormalWeeklyDisplay.as_view(), name="abnormal-weekly-display"),
     path("api/abnormal-monthly-display", abNormalMonthlyDisplay.as_view(), name="abnormal-monthly-display"),
+    path("api/ai", AI.as_view(), name='ai'),
     path("dashboard/alert-menu/<str:url_hash>", alert_menu, name="alert_menu"),
     path("dashboard/alert-form-sms/<str:url_hash>", alert_form_sms, name="alert_form_sms"),
     path("dahsboard/alert-form-social/<str:url_hash>", alert_form_social, name="alert_form_social"),
@@ -178,5 +180,4 @@ urlpatterns = [
     path("dashboard/alert-form-sms-edit/<int:contact_id>", alert_form_sms_edit, name="alert-form-sms-edit"),
     path("dashboard/search/grouped-campaign-search-as-type/", grouped_campaign_search_as_type, name="grouped_campaign_search_as_type"),
     path("dashboard/search/single-campaign-search-as-type/", single_campaign_search_as_type, name="single_campaign_search_as_type"),
-    
 ]

@@ -10,6 +10,14 @@ const aiClose = document.getElementById('aiClose');
 const aiLoading = document.getElementById('aiLoading');
 const aiResponse = document.getElementById('aiResponse');
 
+// AI Response
+let answer = '';
+
+// AI Sent Data
+const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+const apiUrl = "/api/ai";
+
+// Button List
 const aiButtons = [
     containerBarChartToolsAI,
     containerToolsAI,
@@ -17,16 +25,50 @@ const aiButtons = [
     secondContainerToolsAI
 ]
 
+async function ai_response(e, a, startDate, endDate, branch) {
+    const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrftoken,
+        },
+        body: JSON.stringify({
+            e: e,
+            a: a,
+            aiStartDate: startDate,
+            aiEndDate: endDate,
+            aiBranchIds: branch
+        })
+    });
+    const data = await response.json();
+    return data.ai
+}
+    
+
 aiButtons.forEach(element => {
-    element.addEventListener('click', () => {
+    element.addEventListener('click', async () => {
+    console.log(aiStartDate, aiEndDate, aiBranchIds, csrftoken);
+    console.log(element.parentElement.id)
     aiModal.style.display = 'flex';
     aiLoading.style.display = 'flex';
     aiResponse.style.display = 'none';
-    setTimeout(() => {
-    aiLoading.style.display = 'none';
-    aiResponse.style.display = 'block';
-    typeWriter("هوش مصنوعی بزودی به سیستم اضافه می شود.");
-    }, 3000);
+    try {
+        if (element.parentElement.id === 'container-bar-chart-tools' || element.parentElement.id === 'container-tools') {
+            answer = await ai_response('traffic', true, aiStartDate, aiEndDate, aiBranchIds); 
+        } 
+        if (element.parentElement.id === 'second-container-tools' || element.parentElement.id === 'second-container-pie-chart-tools') {
+            answer = await ai_response('traffic', false, aiStartDate, aiEndDate, aiBranchIds); 
+        }
+        aiLoading.style.display = 'none';
+        aiResponse.style.display = 'block';
+        typeWriter(answer);
+    } catch (error) {
+        console.error(error);
+        aiLoading.style.display = 'none';
+        aiResponse.style.display = 'block';
+        answer = "خطایی رخ داده. اتصال به اینترنت را بررسی کنید";
+        typeWriter(answer);
+    }
     // Close modal
     aiClose.addEventListener('click', () => {
         aiModal.style.display = 'none';
