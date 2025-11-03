@@ -9,7 +9,9 @@
 {% block content %}
 {% if request.user.is_authenticated %}
     {% if request.user.is_superuser %}
-    <h4 class="py-3 breadcrumb-wrapper mb-4">ساخت کاربر جدید</h4>
+    <h4 class="py-3 breadcrumb-wrapper mb-4">
+    <i class='bx bx-user-plus' style="margin-left: 10px; font-size: 30px;"></i>  
+    ساخت کاربر جدید</h4>
     <form action="" method="post">
         {% csrf_token %}
         <div class="row">
@@ -18,17 +20,22 @@
                 <h5 class="card-header heading-color">برای ساخت کاربر جدید موارد زیر را تکمیل کنید.</h5>
                 <div class="card-body">
                   <div>
+                    <i class='bx bx-user'></i>
                     <label for="id_first_name" class="form-label">نام</label>
                     <input type="text" class="form-control" name="first_name" id="id_first_name" aria-describedby="defaultFormControlHelp">
+                    <i class='bx bx-user-circle'></i>
                     <label for="id_last_name" class="form-label">نام خانوادگی</label>
                     <input type="text" class="form-control" name="last_name" id="id_last_name" aria-describedby="defaultFormControlHelp">
+                    <i class='bx bx-id-card'></i>
                     <label for="id_username" class="form-label">نام کاربری</label>
                     <input type="text" class="form-control" name="username" id="id_username" aria-describedby="defaultFormControlHelp">
                     <div id="defaultFormControlHelp" class="form-text">
                         الزامی. 150 کاراکتر یا کمتر. فقط شامل حروف، اعداد، و علامات @/./+/-/_
                     </div>
+                    <i class='bx bx-lock-alt'></i>
                     <label for="id_password" class="form-label">رمز عبور</label>
                     <input type="text" class="form-control" name="password" id="id_password" aria-describedby="defaultFormControlHelp">
+                    <i class='bx bx-envelope'></i>
                     <label for="id_email" class="form-label">ایمیل</label>
                     <input type="text" class="form-control" name="email" id="id_email" aria-describedby="defaultFormControlHelp"><br>
                     <div class="form-check form-switch mb-2">

@@ -841,7 +841,9 @@ class AI(APIView):
 
         # Difference
         difference = (end_date - start_date).days
-
+        print(difference)
+        if difference < 10:
+            return Response({"ai":"برای تحلیل هوش مصنوعی نیاز است که بازه ای بیشتر از 10 روز انتخاب شود."})
 
         # Database
         # url hash
@@ -959,6 +961,7 @@ class AI(APIView):
                         "role": "system",
                         "content": (
                             "You are a professional data analyst who responds only in Persian."
+                            "Do not talk about specific dates. Only focus on Averages over the course of periods of time. Never Focus on specific dates."
                             "Turn all dates to jalali. Do not mention gregorian dates."
                             "Traffic entering the branches is represented by total_entries."
                             "All dates are ordered from left to right, and each value in every list corresponds to the same day in the dates list. "
@@ -966,6 +969,7 @@ class AI(APIView):
                             "As a data expert, analyze the data carefully: identify trends, patterns, and anomalies;"
                             "explain averages, percentage changes, and growth rates when relevant;"
                             "and always consider the effects of campaigns and holidays."
+                            "Mention each campaign specifically and judge them"
                             "Finish your response with exactly two practical business suggestions."
                             "Do not use HTML in your response — use plain text styling instead."
                             "At the end, make sure your final Persian response contains no English or Chinese words or characters; remove them if necessary."
@@ -983,6 +987,7 @@ class AI(APIView):
                             f"campaign_list = {json.dumps(campaign_list, ensure_ascii=False)}\n"
                             f"dates = {json.dumps(dates, ensure_ascii=False)}\n"
                             f"The focus of your analysis must be on: {e}. 30% must be on other data above."
+                            "Do not talk about specific dates. Only focus on Averages over the course of periods of time. Never Focus on specific dates."
                         )
                     }
                 ]
@@ -1047,6 +1052,7 @@ class AI(APIView):
                         "role": "system",
                         "content": (
                             "You are a professional data analyst who responds only in Persian."
+                            "Do not talk about specific dates. Only focus on Averages over the course of periods of time. Never Focus on specific dates."
                             "Turn all dates to jalali. Do not mention gregorian dates."
                             "Traffic entering the branches is represented by total_entries."
                             "All dates are ordered from left to right, and each value in every list corresponds to the same day in the dates list."
@@ -1054,6 +1060,7 @@ class AI(APIView):
                             "As a data expert, analyze the data carefully: identify trends, patterns, and anomalies"
                             "explain averages, percentage changes, and growth rates when relevant;"
                             "and always consider the effects of campaigns and holidays."
+                            "Mention each campaign specifically and judge them"
                             "Finish your response with exactly two practical business suggestions."
                             "Do not use HTML in your response — use plain text styling instead."
                             "At the end, make sure your final Persian response contains no English or Chinese words or characters; remove them if necessary."
@@ -1069,6 +1076,7 @@ class AI(APIView):
                             f"campaign_list = {json.dumps(campaign_list, ensure_ascii=False)}\n"
                             f"dates = {json.dumps(dates, ensure_ascii=False)}\n"
                             f"70% of your focus must be on: {e}. 30% must be on other data above. "
+                            "Do not talk about specific dates. Only focus on Averages over the course of periods of time. Never Focus on specific dates."
                         )
                     }
                 ]

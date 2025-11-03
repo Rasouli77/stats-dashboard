@@ -141,6 +141,36 @@
         to { opacity: 1; }
     }
 
+    #aiResponse {
+        height: 500px;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    #aiResponse {
+        scrollbar-width: thin;           
+        scrollbar-color: #1E1E2F #0F0F1A; 
+    }
+
+    /* Chrome, Edge, Safari */
+    #aiResponse::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    #aiResponse::-webkit-scrollbar-track {
+        background: #0F0F1A; 
+    }
+
+    #aiResponse::-webkit-scrollbar-thumb {
+        background-color: #1E1E2F; 
+        border-radius: 4px;
+        border: 1px solid #2A2A3B; 
+    }
+
+    #aiResponse::-webkit-scrollbar-thumb:hover {
+        background-color: #2E2E4A; 
+    }
+
     /* ---------- MODAL BOX ---------- */
     .ai-modal-content {
         background: #1e1e2f;
@@ -228,7 +258,7 @@
             <h1 style="color: #262626; font-size: 1.125rem; font-weight: 700;">گزارش بر اساس:</h1>
         </div>
         <div class="col-xl-2 col-lg-2 col-md-12 col-sm-12" style="margin-bottom: 10px;">
-            <small>نمایش</small>
+            <small><i class='bx bx-show'></i> نمایش</small>
             <div class="card mt-3">
                 <div class="card-body" style="padding: 0px !important;">
                     <select class="form-select w-100" aria-label="Filter select" id="chart-display-toggle">
@@ -239,7 +269,7 @@
             </div>
         </div>
         <div class="col-xl-2 col-lg-2 col-md-12 col-sm-12" style="margin-bottom: 10px;">
-            <small>بازه زمانی گزارش و شعب</small>
+            <small><i class='bx bx-calendar'></i> بازه گزارش و شعب</small>
             <div class="card mt-3">
                 <div class="card-body" style="padding: 0px !important;">
                     <button type="button" class="btn btn-outline-primary w-100" data-bs-toggle="modal" data-bs-target="#dateModal" style="border: none; color: black; background-color: #ccdbf1;">
@@ -493,7 +523,7 @@
         </div>
     </div>
     <div class="row" style="margin-left: 0px;">
-        <div class="col-lg-3" style="margin-bottom: 10px;" id="holiday-container">
+        <div class="col-lg-3" id="holiday-container">
             <div class="card" id="holiday-card" style="background-clip: padding-box;
             border-style: solid;
             box-shadow: none;
@@ -559,6 +589,12 @@
             e.stopPropagation();
         }
     });
+</script>
+<!-- AI Initialization -->
+<script>
+    let aiStartDate = "";
+    let aiEndDate = "";
+    let aiBranchIds = [];
 </script>
 <!-- Holiday Spotter -->
 <script>
@@ -1833,7 +1869,6 @@
                             border-color: #e5e5e5;
                             background-color: #F9F9F9;
                             border-radius: 12px;
-                            height: 100%;
                             padding: 10px;">
                                 <div class="card-header d-flex align-items-center justify-content-between">
                                     <h5 class="card-title mb-0">${campaign.campaign_name}</h5>
@@ -2602,6 +2637,10 @@
             event.preventDefault(); 
             const form = this;
             const formData = new FormData(form);
+            const params = new URLSearchParams(formData);
+            aiStartDate = params.get("start-date");
+            aiEndDate = params.get("end-date");
+            aiBranchIds = params.getAll("branch");
             const queryString = new URLSearchParams(formData).toString();
             const loadingOverlay = document.getElementById('loading-overlay');
             loadingOverlay.style.display = 'flex';
@@ -3736,7 +3775,6 @@
                             border-color: #e5e5e5;
                             background-color: #F9F9F9;
                             border-radius: 12px;
-                            height: 100%;
                             padding: 10px;">
                                 <div class="card-header d-flex align-items-center justify-content-between">
                                     <h5 class="card-title mb-0">${campaign.campaign_name}</h5>

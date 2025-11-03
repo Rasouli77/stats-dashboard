@@ -250,7 +250,7 @@
             <h1 style="color: #262626; font-size: 1.125rem; font-weight: 700;">گزارش بر اساس:</h1>
         </div>
         <div class="col-xl-2 col-lg-2 col-md-12 col-sm-12" style="margin-bottom: 10px;">
-            <small>نمایش</small>
+            <small><i class='bx bx-show'></i> نمایش</small>
             <div class="card mt-3">
                 <div class="card-body" style="padding: 0px !important;">
                     <select class="form-select w-100" aria-label="Filter select" id="chart-display-toggle">
@@ -261,7 +261,7 @@
             </div>
         </div>
         <div class="col-xl-2 col-lg-2 col-md-12 col-sm-12" style="margin-bottom: 10px;">
-            <small>بازه زمانی گزارش و شعب</small>
+            <small><i class='bx bx-calendar'></i> بازه گزارش و شعب</small>
             <div class="card mt-3">
                 <div class="card-body" style="padding: 0px !important;">
                     <button type="button" class="btn btn-outline-primary w-100" data-bs-toggle="modal" data-bs-target="#dateModal" style="border: none; color: black; background-color: #ccdbf1;">
@@ -556,7 +556,7 @@
         </div>
     </div>
     <div class="row" style="margin-left: 0px;">
-        <div class="col-lg-3" style="margin-bottom: 10px;" id="holiday-container">
+        <div class="col-lg-3" id="holiday-container">
             <div class="card" id="holiday-card" style="background-clip: padding-box;
             border-style: solid;
             box-shadow: none;
@@ -630,6 +630,154 @@
             e.stopPropagation();
         }
     });
+</script>
+<!-- Plot Bands Functions -->
+<script>
+    function persianToEnglishDigits(str) {
+        const persianDigits = '۰۱۲۳۴۵۶۷۸۹';
+        return str.replace(/[۰-۹]/g, d => persianDigits.indexOf(d));
+    }
+
+    function persianDateToJSDate(persianDateStr) {
+        // Convert Persian digits to English digits
+        const englishDateStr = persianToEnglishDigits(persianDateStr);
+
+        // Split into parts
+        const [year, month, day] = englishDateStr.split('/').map(Number);
+
+        // JS months are 0-based
+        return new Date(year, month - 1, day);
+    }
+
+    function englishDateToJSDate(englishDateStr) {
+        const [year, month, day] = englishDateStr.split('/').map(Number);
+        return new Date(year, month - 1, day);
+    }
+
+    function addHighlight(chart, fromDate, toDate, color, id) {
+        const categories = chart.xAxis[0].categories;
+        let fromIndex = categories.indexOf(fromDate);
+        let toIndex = categories.indexOf(toDate);
+        const first = categories[0];
+        const last = categories[categories.length - 1];
+        console.log(fromDate, toDate);
+        console.log(first, last)
+        console.log(persianDateToJSDate(fromDate), persianDateToJSDate(first))
+        if (persianDateToJSDate(fromDate) < persianDateToJSDate(first)) {
+            fromIndex = categories.indexOf(first);
+        }
+        console.log(persianDateToJSDate(toDate), persianDateToJSDate(last));
+        if (persianDateToJSDate(toDate) > persianDateToJSDate(last)) {
+            toIndex = categories.indexOf(last);
+        }
+        if (fromIndex !== -1 && toIndex !== -1) {
+            chart.xAxis[0].addPlotBand({
+                from: fromIndex - 0.5,
+                to: toIndex + 0.5,
+                color,
+                id
+            });
+            console.log(`✅ Added highlight ${id} from ${fromDate} to ${toDate}`);
+        } else {
+            console.warn("⚠️ Could not find indices for:", fromDate, toDate);
+        }
+    }
+
+    function parseWeekNumber(weekStr) {
+        // Remove "هفته" and trim whitespace
+        const numStr = weekStr.replace("هفته", "").trim();
+        // Convert Persian digits to English digits first
+        const persianDigits = "۰۱۲۳۴۵۶۷۸۹";
+        const englishNumStr = numStr.replace(/[۰-۹]/g, d => persianDigits.indexOf(d));
+        // Convert to integer
+        return parseInt(englishNumStr, 10);
+    }
+
+    function addWeeklyHighlight(chart, fromWeek, toWeek, color, id) {
+        const categories = chart.xAxis[0].categories;
+        let fromIndex = categories.indexOf(fromWeek);
+        let toIndex = categories.indexOf(toWeek);
+        const first = categories[0];
+        const last = categories[categories.length - 1];
+        console.log(fromWeek, toWeek);
+        console.log(first, last)
+        if (parseWeekNumber(fromWeek) < parseWeekNumber(first)) {
+            fromIndex = categories.indexOf(first);
+        }
+        if (parseWeekNumber(toWeek) > parseWeekNumber(last)) {
+            toIndex = categories.indexOf(last);
+        }
+        if (fromIndex !== -1 && toIndex !== -1) {
+            chart.xAxis[0].addPlotBand({
+                from: fromIndex - 0.5,
+                to: toIndex + 0.5,
+                color,
+                id
+            });
+            console.log(`✅ Added highlight ${id} from ${fromWeek} to ${toWeek}`);
+        } else {
+            console.warn("⚠️ Could not find indices for:", fromWeek, toWeek);
+        }
+    }
+
+    function removeHighChart(chart, id) {
+        chart.xAxis[0].removePlotBand(id);
+        console.log(`❌ Removed highlight ${id}`);
+    }
+
+    function englishToPersianNumber(str) {
+        const persianDigits = '۰۱۲۳۴۵۶۷۸۹';
+        return str.replace(/\d/g, d => persianDigits[d]);
+    }
+
+    function randomPlotBandColor(alpha = 0.15) {
+        const r = Math.floor(Math.random() * 120) + 80; 
+        const g = Math.floor(Math.random() * 120) + 80;
+        const b = Math.floor(Math.random() * 120) + 80;
+
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+</script>
+<!-- Weekly Plot Bands Functions -->
+<script>
+    // Convert Persian digits to English digits
+    function persianToEnglishNumber(str) {
+        const persianDigits = '۰۱۲۳۴۵۶۷۸۹';
+        return str.replace(/[۰-۹]/g, d => persianDigits.indexOf(d));
+    }
+
+    // Convert Persian-date string to JS Date (Gregorian)
+    function persianDateToJSDate(persianDate) {
+        const [jy, jm, jd] = persianToEnglishNumber(persianDate)
+            .split("/")
+            .map(Number);
+        // Convert Jalali → Gregorian
+        const g = jalaali.toGregorian(jy, jm, jd);
+        return new Date(g.gy, g.gm - 1, g.gd);
+    }
+
+    // Main function
+    function slicePersianDates(masterList, startDate, endDate) {
+        const jsDates = masterList.map(d => persianDateToJSDate(d));
+
+        let startIndex = 0;
+        let endIndex = jsDates.length - 1;
+
+        if (startDate) {
+            const startJS = persianDateToJSDate(startDate);
+            startIndex = jsDates.findIndex(d => d.getTime() >= startJS.getTime());
+            if (startIndex === -1) startIndex = 0;
+        }
+
+        if (endDate) {
+            const endJS = persianDateToJSDate(endDate);
+            endIndex = jsDates.findIndex(d => d.getTime() > endJS.getTime());
+            if (endIndex === -1) endIndex = jsDates.length;
+            else endIndex = endIndex - 1; // include the date itself
+        }
+
+        return masterList.slice(startIndex, endIndex + 1);
+    }
 </script>
 <!-- Holiday Spotter -->
 <script>
@@ -1091,6 +1239,58 @@
                         series: [{name: `فروش (${Number(totalAmount).toLocaleString('fa-IR')})`, data: d.values}
                         ],
                     });
+                    // Campaign Plot Bands
+                    setTimeout(() => {
+                        const plots = document.querySelectorAll(".display-plot");
+                        console.log("Found checkboxes:", plots.length);
+                        // Remove the plot bands on form reload
+                        document.querySelectorAll(".display-plot").forEach((item, index) => {
+                            item.checked = false;
+                            removeHighChart(lineChart, index);
+                            removeHighChart(barChart, index);
+                        });
+                        plots.forEach((item, index) => {
+                            item.addEventListener("change", () => {
+                                const ul = item.closest("ul"); 
+                                if (!ul) return;
+
+                                const liItems = ul.querySelectorAll("li");
+                                if (liItems.length < 3) {
+                                    console.warn("Not enough li items");
+                                    return;
+                                }
+
+                                const startDate = englishToPersianNumber(liItems[1].querySelector(".greg-date")?.innerText?.trim());
+                                const endDate = englishToPersianNumber(liItems[2].querySelector(".greg-date")?.innerText?.trim());
+                                const campaignWeeks = slicePersianDates(newCategories, startDate, endDate);
+                                fetch(apiUrl, {
+                                    method: "POST",
+                                    headers: {
+                                        "Content-Type": "application/json",
+                                        "X-CSRFToken": csrftoken,
+                                    },
+                                    body: JSON.stringify({x: campaignWeeks, y: y})
+                                }).then(response => {
+                                    if (!response.ok) throw new Error("Invalid Response");
+                                    return response.json()
+                                }).then(x => {
+                                    let weeks  = x.weeks;
+                                    console.log(weeks)
+                                    const firstWeek = weeks[0];
+                                    const lastWeek = weeks[weeks.length - 1];
+                                    if (item.checked) {
+                                        console.log("✅ Checkbox checked", { firstWeek, lastWeek });
+                                        addWeeklyHighlight(lineChart, firstWeek, lastWeek, randomPlotBandColor(), index);
+                                        addWeeklyHighlight(barChart, firstWeek, lastWeek, randomPlotBandColor(), index);
+                                    } else {
+                                        console.log("❌ Checkbox unchecked");
+                                        removeHighChart(lineChart, index);
+                                        removeHighChart(barChart, index);
+                                    }
+                                });
+                            });
+                        });
+                    }, 500);
                 });
             }
 
@@ -1150,6 +1350,58 @@
                         },
                         series: [{ data: d.values }]
                     });
+                    // Campaign Plot Bands
+                    setTimeout(() => {
+                        const plots = document.querySelectorAll(".display-plot");
+                        console.log("Found checkboxes:", plots.length);
+                        // Remove the plot bands on form reload
+                        document.querySelectorAll(".display-plot").forEach((item, index) => {
+                            item.checked = false;
+                            removeHighChart(thirdLineChart, index);
+                            removeHighChart(thirdBarChart, index);
+                        });
+                        plots.forEach((item, index) => {
+                            item.addEventListener("change", () => {
+                                const ul = item.closest("ul"); 
+                                if (!ul) return;
+
+                                const liItems = ul.querySelectorAll("li");
+                                if (liItems.length < 3) {
+                                    console.warn("Not enough li items");
+                                    return;
+                                }
+
+                                const startDate = englishToPersianNumber(liItems[1].querySelector(".greg-date")?.innerText?.trim());
+                                const endDate = englishToPersianNumber(liItems[2].querySelector(".greg-date")?.innerText?.trim());
+                                const campaignWeeks = slicePersianDates(newCategories, startDate, endDate);
+                                fetch(apiUrl, {
+                                    method: "POST",
+                                    headers: {
+                                        "Content-Type": "application/json",
+                                        "X-CSRFToken": csrftoken,
+                                    },
+                                    body: JSON.stringify({x: campaignWeeks, y: y})
+                                }).then(response => {
+                                    if (!response.ok) throw new Error("Invalid Response");
+                                    return response.json()
+                                }).then(x => {
+                                    let weeks  = x.weeks;
+                                    console.log(weeks)
+                                    const firstWeek = weeks[0];
+                                    const lastWeek = weeks[weeks.length - 1];
+                                    if (item.checked) {
+                                        console.log("✅ Checkbox checked", { firstWeek, lastWeek });
+                                        addWeeklyHighlight(thirdLineChart, firstWeek, lastWeek, randomPlotBandColor(), index);
+                                        addWeeklyHighlight(thirdBarChart, firstWeek, lastWeek, randomPlotBandColor(), index);
+                                    } else {
+                                        console.log("❌ Checkbox unchecked");
+                                        removeHighChart(thirdLineChart, index);
+                                        removeHighChart(thirdBarChart, index);
+                                    }
+                                });
+                            });
+                        });
+                    }, 500);
                 });
             }
 
@@ -1209,6 +1461,58 @@
                         },
                         series: [{ data: d.values }]
                     });
+                    // Campaign Plot Bands
+                    setTimeout(() => {
+                        const plots = document.querySelectorAll(".display-plot");
+                        console.log("Found checkboxes:", plots.length);
+                        // Remove the plot bands on form reload
+                        document.querySelectorAll(".display-plot").forEach((item, index) => {
+                            item.checked = false;
+                            removeHighChart(fifthLineChart, index);
+                            removeHighChart(fifthBarChart, index);
+                        });
+                        plots.forEach((item, index) => {
+                            item.addEventListener("change", () => {
+                                const ul = item.closest("ul"); 
+                                if (!ul) return;
+
+                                const liItems = ul.querySelectorAll("li");
+                                if (liItems.length < 3) {
+                                    console.warn("Not enough li items");
+                                    return;
+                                }
+
+                                const startDate = englishToPersianNumber(liItems[1].querySelector(".greg-date")?.innerText?.trim());
+                                const endDate = englishToPersianNumber(liItems[2].querySelector(".greg-date")?.innerText?.trim());
+                                const campaignWeeks = slicePersianDates(newCategories, startDate, endDate);
+                                fetch(apiUrl, {
+                                    method: "POST",
+                                    headers: {
+                                        "Content-Type": "application/json",
+                                        "X-CSRFToken": csrftoken,
+                                    },
+                                    body: JSON.stringify({x: campaignWeeks, y: y})
+                                }).then(response => {
+                                    if (!response.ok) throw new Error("Invalid Response");
+                                    return response.json()
+                                }).then(x => {
+                                    let weeks  = x.weeks;
+                                    console.log(weeks)
+                                    const firstWeek = weeks[0];
+                                    const lastWeek = weeks[weeks.length - 1];
+                                    if (item.checked) {
+                                        console.log("✅ Checkbox checked", { firstWeek, lastWeek });
+                                        addWeeklyHighlight(fifthLineChart, firstWeek, lastWeek, randomPlotBandColor(), index);
+                                        addWeeklyHighlight(fifthBarChart, firstWeek, lastWeek, randomPlotBandColor(), index);
+                                    } else {
+                                        console.log("❌ Checkbox unchecked");
+                                        removeHighChart(fifthLineChart, index);
+                                        removeHighChart(fifthBarChart, index);
+                                    }
+                                });
+                            });
+                        });
+                    }, 500);
                 });
             }
             // Initial Line Chart Weekly Event Listeners
@@ -1262,6 +1566,43 @@
                     series: [{name: `فروش (${Number(totalAmount).toLocaleString('fa-IR')})`, data: data.total_amount}
                     ],
                 });
+
+                // Campaign Plot Bands
+                setTimeout(() => {
+                    const plots = document.querySelectorAll(".display-plot");
+                    console.log("Found checkboxes:", plots.length);
+                    // Remove the plot bands on form reload
+                    document.querySelectorAll(".display-plot").forEach((item, index) => {
+                        item.checked = false;
+                        removeHighChart(lineChart, index);
+                        removeHighChart(barChart, index);
+                    });
+                    plots.forEach((item, index) => {
+                        item.addEventListener("change", () => {
+                            const ul = item.closest("ul"); // go up to parent list
+                            if (!ul) return;
+
+                            const liItems = ul.querySelectorAll("li");
+                            if (liItems.length < 3) {
+                                console.warn("Not enough li items");
+                                return;
+                            }
+
+                            const startDate = englishToPersianNumber(liItems[1].querySelector(".greg-date")?.innerText?.trim());
+                            const endDate = englishToPersianNumber(liItems[2].querySelector(".greg-date")?.innerText?.trim());
+                            
+                            if (item.checked) {
+                                console.log("✅ Checkbox checked", { startDate, endDate });
+                                addHighlight(lineChart, startDate, endDate, randomPlotBandColor(), index);
+                                addHighlight(barChart, startDate, endDate, randomPlotBandColor(), index);
+                            } else {
+                                console.log("❌ Checkbox unchecked");
+                                removeHighChart(lineChart, index);
+                                removeHighChart(barChart, index);
+                            }
+                        });
+                    });
+                }, 500);
             }
 
             function initialHandleDailyThirdChart () {
@@ -1304,6 +1645,42 @@
                     },
                     series: [{ data: data.total_items }]
                 });
+                // Campaign Plot Bands
+                setTimeout(() => {
+                    const plots = document.querySelectorAll(".display-plot");
+                    console.log("Found checkboxes:", plots.length);
+                    // Remove the plot bands on form reload
+                    document.querySelectorAll(".display-plot").forEach((item, index) => {
+                        item.checked = false;
+                        removeHighChart(thirdLineChart, index);
+                        removeHighChart(thirdBarChart, index);
+                    });
+                    plots.forEach((item, index) => {
+                        item.addEventListener("change", () => {
+                            const ul = item.closest("ul"); // go up to parent list
+                            if (!ul) return;
+
+                            const liItems = ul.querySelectorAll("li");
+                            if (liItems.length < 3) {
+                                console.warn("Not enough li items");
+                                return;
+                            }
+
+                            const startDate = englishToPersianNumber(liItems[1].querySelector(".greg-date")?.innerText?.trim());
+                            const endDate = englishToPersianNumber(liItems[2].querySelector(".greg-date")?.innerText?.trim());
+                            
+                            if (item.checked) {
+                                console.log("✅ Checkbox checked", { startDate, endDate });
+                                addHighlight(thirdLineChart, startDate, endDate, randomPlotBandColor(), index);
+                                addHighlight(thirdBarChart, startDate, endDate, randomPlotBandColor(), index);
+                            } else {
+                                console.log("❌ Checkbox unchecked");
+                                removeHighChart(thirdLineChart, index);
+                                removeHighChart(thirdBarChart, index);
+                            }
+                        });
+                    });
+                }, 500);
             }
 
             function initialHandleDailyFifthChart () {
@@ -1346,6 +1723,42 @@
                     },
                     series: [{ data: data.total_products }]
                 });
+                // Campaign Plot Bands
+                setTimeout(() => {
+                    const plots = document.querySelectorAll(".display-plot");
+                    console.log("Found checkboxes:", plots.length);
+                    // Remove the plot bands on form reload
+                    document.querySelectorAll(".display-plot").forEach((item, index) => {
+                        item.checked = false;
+                        removeHighChart(fifthLineChart, index);
+                        removeHighChart(fifthBarChart, index);
+                    });
+                    plots.forEach((item, index) => {
+                        item.addEventListener("change", () => {
+                            const ul = item.closest("ul"); // go up to parent list
+                            if (!ul) return;
+
+                            const liItems = ul.querySelectorAll("li");
+                            if (liItems.length < 3) {
+                                console.warn("Not enough li items");
+                                return;
+                            }
+
+                            const startDate = englishToPersianNumber(liItems[1].querySelector(".greg-date")?.innerText?.trim());
+                            const endDate = englishToPersianNumber(liItems[2].querySelector(".greg-date")?.innerText?.trim());
+                            
+                            if (item.checked) {
+                                console.log("✅ Checkbox checked", { startDate, endDate });
+                                addHighlight(fifthLineChart, startDate, endDate, randomPlotBandColor(), index);
+                                addHighlight(fifthBarChart, startDate, endDate, randomPlotBandColor(), index);
+                            } else {
+                                console.log("❌ Checkbox unchecked");
+                                removeHighChart(fifthLineChart, index);
+                                removeHighChart(fifthBarChart, index);
+                            }
+                        });
+                    });
+                }, 500);
             }
             // Initial Line Chart Daily Event Listeners
             $("#container-tools .day").off("click").on("click", initialHandleDailyFirstChart);
@@ -1477,6 +1890,55 @@
                 series: [{ data: data.total_products }]
             });
             
+            // Campaign Plot Bands
+            setTimeout(() => {
+                const plots = document.querySelectorAll(".display-plot");
+                console.log("Found checkboxes:", plots.length);
+                // Remove the plot bands on form reload
+                document.querySelectorAll(".display-plot").forEach((item, index) => {
+                    item.checked = false;
+                    removeHighChart(barChart, index);
+                    removeHighChart(lineChart, index);
+                    removeHighChart(thirdBarChart, index);
+                    removeHighChart(thirdLineChart, index);
+                    removeHighChart(fifthBarChart, index);
+                    removeHighChart(fifthLineChart, index);
+                });
+                plots.forEach((item, index) => {
+                    item.addEventListener("change", () => {
+                        const ul = item.closest("ul"); 
+                        if (!ul) return;
+
+                        const liItems = ul.querySelectorAll("li");
+                        if (liItems.length < 3) {
+                            console.warn("Not enough li items");
+                            return;
+                        }
+
+                        const startDate = englishToPersianNumber(liItems[1].querySelector(".greg-date")?.innerText?.trim());
+                        const endDate = englishToPersianNumber(liItems[2].querySelector(".greg-date")?.innerText?.trim());
+                        
+                        if (item.checked) {
+                            console.log("✅ Checkbox checked", { startDate, endDate });
+                            addHighlight(barChart, startDate, endDate, randomPlotBandColor(), index);
+                            addHighlight(lineChart, startDate, endDate, randomPlotBandColor(), index);
+                            addHighlight(thirdBarChart, startDate, endDate, randomPlotBandColor(), index);
+                            addHighlight(thirdLineChart, startDate, endDate, randomPlotBandColor(), index);
+                            addHighlight(fifthBarChart, startDate, endDate, randomPlotBandColor(), index);
+                            addHighlight(fifthLineChart, startDate, endDate, randomPlotBandColor(), index);
+                        } else {
+                            console.log("❌ Checkbox unchecked");
+                            removeHighChart(barChart, index);
+                            removeHighChart(lineChart, index);
+                            removeHighChart(thirdBarChart, index);
+                            removeHighChart(thirdLineChart, index);
+                            removeHighChart(fifthBarChart, index);
+                            removeHighChart(fifthLineChart, index);
+                        }
+                    });
+                });
+            }, 500);
+
             document.querySelector(".table-border-bottom-0").innerHTML = "";
             data.campaigns.forEach(campaign => {
             const rowhtml = `
@@ -1565,13 +2027,24 @@
                             border-color: #e5e5e5;
                             background-color: #F9F9F9;
                             border-radius: 12px;
-                            height: 100%;
                             padding: 10px;">
                                 <div class="card-header d-flex align-items-center justify-content-between">
                                     <h5 class="card-title mb-0">${campaign.campaign_name}</h5>
                                 </div>
                                 <div class="card-body pb-3">
                                     <ul class="p-0 m-0">
+                                    <li class="d-flex align-items-center mb-3">
+                                        <div class="avatar avatar-sm flex-shrink-0 me-3">
+                                        <span class="avatar-initial rounded-circle bg-label-success">
+                                        <i class="bx bx-show"></i></span>
+                                        </div>
+                                        <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2"> <div class="me-2">
+                                        <p class="mb-0">نمایش</p>
+                                        <small class="text-muted">نمایش بازه در نمودار</small>
+                                        </div> <div class="item-progress"><input type='checkbox' class='display-plot' />
+                                        </div>
+                                        </div>
+                                    </li>
                                     <li class="d-flex align-items-center mb-3">
                                         <div class="avatar avatar-sm flex-shrink-0 me-3">
                                         <span class="avatar-initial rounded-circle bg-label-primary"><i class="bx bx-time"></i></span>
@@ -1649,7 +2122,7 @@
         .catch(error => {
             console.error('Error:', error);
         });
-        const inevents = [
+    const inevents = [
         "جشن نوروز/جشن سال نو",
         "شب قدر",
         "عید سعید فطر",
@@ -1858,7 +2331,7 @@
                         if (!response.ok) throw new Error("Invalid Response");
                         return response.json()
                     }).then(data => {
-                        Highcharts.chart("second-container", {
+                        const secondContainer = Highcharts.chart("second-container", {
                             chart: { 
                                 type: "line",
                                 borderColor: '#e5e5e5',  
@@ -1909,6 +2382,55 @@
                             },
                             series: data.values
                         });
+                        // Campaign Plot Bands
+                        setTimeout(() => {
+                            const plots = document.querySelectorAll(".display-plot");
+                            console.log("Found checkboxes:", plots.length);
+                            // Remove the plot bands on form reload
+                            document.querySelectorAll(".display-plot").forEach((item, index) => {
+                                item.checked = false;
+                                removeHighChart(secondContainer, index);
+                            });
+                            plots.forEach((item, index) => {
+                                item.addEventListener("change", () => {
+                                    const ul = item.closest("ul"); 
+                                    if (!ul) return;
+
+                                    const liItems = ul.querySelectorAll("li");
+                                    if (liItems.length < 3) {
+                                        console.warn("Not enough li items");
+                                        return;
+                                    }
+
+                                    const startDate = englishToPersianNumber(liItems[1].querySelector(".greg-date")?.innerText?.trim());
+                                    const endDate = englishToPersianNumber(liItems[2].querySelector(".greg-date")?.innerText?.trim());
+                                    const campaignWeeks = slicePersianDates(categories, startDate, endDate);
+                                    fetch(apiUrl, {
+                                        method: "POST",
+                                        headers: {
+                                            "Content-Type": "application/json",
+                                            "X-CSRFToken": csrftoken,
+                                        },
+                                        body: JSON.stringify({x: campaignWeeks, y: y})
+                                    }).then(response => {
+                                        if (!response.ok) throw new Error("Invalid Response");
+                                        return response.json()
+                                    }).then(x => {
+                                        let weeks  = x.weeks;
+                                        console.log(weeks)
+                                        const firstWeek = weeks[0];
+                                        const lastWeek = weeks[weeks.length - 1];
+                                        if (item.checked) {
+                                            console.log("✅ Checkbox checked", { firstWeek, lastWeek });
+                                            addWeeklyHighlight(secondContainer, firstWeek, lastWeek, randomPlotBandColor(), index);
+                                        } else {
+                                            console.log("❌ Checkbox unchecked");
+                                            removeHighChart(secondContainer, index);
+                                        }
+                                    });
+                                });
+                            });
+                        }, 500);
                     });
                 }
                 // Initial Line Chart By Branch Weekly Display Event Listener
@@ -2012,7 +2534,7 @@
                 // Initial Line Chart By Branch Daily Display Event Listener
                 $("#second-container-tools .day").off("click").on("click", initialHandleBranchDailySecondChart);
 
-                Highcharts.chart("second-container", {
+                const secondContainer = Highcharts.chart("second-container", {
                     chart: { 
                         type: "line",
                         borderColor: '#e5e5e5',  
@@ -2143,6 +2665,40 @@
                         data: pieData   // aggregated data here
                     }]
                 });
+
+                // Campaign Plot Bands
+                setTimeout(() => {
+                    const plots = document.querySelectorAll(".display-plot");
+                    console.log("Found checkboxes:", plots.length);
+                    // Remove the plot bands on form reload
+                    document.querySelectorAll(".display-plot").forEach((x, index) => {
+                        x.checked = false;
+                        removeHighChart(secondContainer, index);
+                    });
+                    plots.forEach((i, index) => {
+                        i.addEventListener("change", () => {
+                            const ul = i.closest("ul"); 
+                            if (!ul) return;
+
+                            const liItems = ul.querySelectorAll("li");
+                            if (liItems.length < 3) {
+                                console.warn("Not enough li items");
+                                return;
+                            }
+
+                            const startDate = englishToPersianNumber(liItems[1].querySelector(".greg-date")?.innerText?.trim());
+                            const endDate = englishToPersianNumber(liItems[2].querySelector(".greg-date")?.innerText?.trim());
+                            
+                            if (i.checked) {
+                                console.log("✅ Checkbox checked", { startDate, endDate });
+                                addHighlight(secondContainer, startDate, endDate, randomPlotBandColor(), index);
+                            } else {
+                                console.log("❌ Checkbox unchecked");
+                                removeHighChart(secondContainer, index);
+                            }
+                        });
+                    });
+                }, 500);
             },
             error: function (xhr) {
                 console.error("Error loading data");
@@ -2274,7 +2830,7 @@
                         if (!response.ok) throw new Error("Invalid Response");
                         return response.json()
                     }).then(data => {
-                    Highcharts.chart("forth-container", {
+                    const forthContainer = Highcharts.chart("forth-container", {
                         chart: { 
                             type: "line",
                             borderColor: '#e5e5e5',  
@@ -2325,6 +2881,55 @@
                         },
                         series: data.values,
                     });
+                    // Campaign Plot Bands
+                    setTimeout(() => {
+                        const plots = document.querySelectorAll(".display-plot");
+                        console.log("Found checkboxes:", plots.length);
+                        // Remove the plot bands on form reload
+                        document.querySelectorAll(".display-plot").forEach((item, index) => {
+                            item.checked = false;
+                            removeHighChart(forthContainer, index);
+                        });
+                        plots.forEach((item, index) => {
+                            item.addEventListener("change", () => {
+                                const ul = item.closest("ul"); 
+                                if (!ul) return;
+
+                                const liItems = ul.querySelectorAll("li");
+                                if (liItems.length < 3) {
+                                    console.warn("Not enough li items");
+                                    return;
+                                }
+
+                                const startDate = englishToPersianNumber(liItems[1].querySelector(".greg-date")?.innerText?.trim());
+                                const endDate = englishToPersianNumber(liItems[2].querySelector(".greg-date")?.innerText?.trim());
+                                const campaignWeeks = slicePersianDates(categories, startDate, endDate);
+                                fetch(apiUrl, {
+                                    method: "POST",
+                                    headers: {
+                                        "Content-Type": "application/json",
+                                        "X-CSRFToken": csrftoken,
+                                    },
+                                    body: JSON.stringify({x: campaignWeeks, y: y})
+                                }).then(response => {
+                                    if (!response.ok) throw new Error("Invalid Response");
+                                    return response.json()
+                                }).then(x => {
+                                    let weeks  = x.weeks;
+                                    console.log(weeks)
+                                    const firstWeek = weeks[0];
+                                    const lastWeek = weeks[weeks.length - 1];
+                                    if (item.checked) {
+                                        console.log("✅ Checkbox checked", { firstWeek, lastWeek });
+                                        addWeeklyHighlight(forthContainer, firstWeek, lastWeek, randomPlotBandColor(), index);
+                                    } else {
+                                        console.log("❌ Checkbox unchecked");
+                                        removeHighChart(forthContainer, index);
+                                    }
+                                });
+                            });
+                        });
+                    }, 500);
                     });
                 }
                 // Initial Line Chart By Branch Weekly Display Event Listener
@@ -2519,7 +3124,7 @@
                         if (!response.ok) throw new Error("Invalid Response");
                         return response.json()
                     }).then(data => {
-                        Highcharts.chart("sixth-container", {
+                        const sixthContainer = Highcharts.chart("sixth-container", {
                         chart: { 
                             type: "line",
                             borderColor: '#e5e5e5',  
@@ -2570,6 +3175,55 @@
                         },
                         series: data.values,
                     });
+                    // Campaign Plot Bands
+                    setTimeout(() => {
+                        const plots = document.querySelectorAll(".display-plot");
+                        console.log("Found checkboxes:", plots.length);
+                        // Remove the plot bands on form reload
+                        document.querySelectorAll(".display-plot").forEach((item, index) => {
+                            item.checked = false;
+                            removeHighChart(sixthContainer, index);
+                        });
+                        plots.forEach((item, index) => {
+                            item.addEventListener("change", () => {
+                                const ul = item.closest("ul"); 
+                                if (!ul) return;
+
+                                const liItems = ul.querySelectorAll("li");
+                                if (liItems.length < 3) {
+                                    console.warn("Not enough li items");
+                                    return;
+                                }
+
+                                const startDate = englishToPersianNumber(liItems[1].querySelector(".greg-date")?.innerText?.trim());
+                                const endDate = englishToPersianNumber(liItems[2].querySelector(".greg-date")?.innerText?.trim());
+                                const campaignWeeks = slicePersianDates(categories, startDate, endDate);
+                                fetch(apiUrl, {
+                                    method: "POST",
+                                    headers: {
+                                        "Content-Type": "application/json",
+                                        "X-CSRFToken": csrftoken,
+                                    },
+                                    body: JSON.stringify({x: campaignWeeks, y: y})
+                                }).then(response => {
+                                    if (!response.ok) throw new Error("Invalid Response");
+                                    return response.json()
+                                }).then(x => {
+                                    let weeks  = x.weeks;
+                                    console.log(weeks)
+                                    const firstWeek = weeks[0];
+                                    const lastWeek = weeks[weeks.length - 1];
+                                    if (item.checked) {
+                                        console.log("✅ Checkbox checked", { firstWeek, lastWeek });
+                                        addWeeklyHighlight(sixthContainer, firstWeek, lastWeek, randomPlotBandColor(), index);
+                                    } else {
+                                        console.log("❌ Checkbox unchecked");
+                                        removeHighChart(sixthContainer, index);
+                                    }
+                                });
+                            });
+                        });
+                    }, 500);
                     });
                 }
                 // Initial Line Chart By Branch Weekly Display Event Listener
@@ -2674,7 +3328,7 @@
                 $("#sixth-container-tools .day").off("click").on("click", initialHandleBranchDailySixthChart);
 
 
-                Highcharts.chart("forth-container", {
+                const forthContainer = Highcharts.chart("forth-container", {
                     chart: { 
                         type: "line",
                         borderColor: '#e5e5e5',  
@@ -2806,7 +3460,7 @@
                     }]
                 });
 
-                Highcharts.chart("sixth-container", {
+                const sixthContainer = Highcharts.chart("sixth-container", {
                     chart: { 
                         type: "line",
                         borderColor: '#e5e5e5',  
@@ -2937,6 +3591,43 @@
                         data: pieDataProduct   // aggregated data here
                     }]
                 });
+
+                // Campaign Plot Bands
+                setTimeout(() => {
+                    const plots = document.querySelectorAll(".display-plot");
+                    console.log("Found checkboxes:", plots.length);
+                    // Remove the plot bands on form reload
+                    document.querySelectorAll(".display-plot").forEach((x, index) => {
+                        x.checked = false;
+                        removeHighChart(forthContainer, index);
+                        removeHighChart(sixthContainer, index);
+                    });
+                    plots.forEach((i, index) => {
+                        i.addEventListener("change", () => {
+                            const ul = i.closest("ul"); 
+                            if (!ul) return;
+
+                            const liItems = ul.querySelectorAll("li");
+                            if (liItems.length < 3) {
+                                console.warn("Not enough li items");
+                                return;
+                            }
+
+                            const startDate = englishToPersianNumber(liItems[1].querySelector(".greg-date")?.innerText?.trim());
+                            const endDate = englishToPersianNumber(liItems[2].querySelector(".greg-date")?.innerText?.trim());
+                            
+                            if (i.checked) {
+                                console.log("✅ Checkbox checked", { startDate, endDate });
+                                addHighlight(forthContainer, startDate, endDate, randomPlotBandColor(), index);
+                                addHighlight(sixthContainer, startDate, endDate, randomPlotBandColor(), index);
+                            } else {
+                                console.log("❌ Checkbox unchecked");
+                                removeHighChart(forthContainer, index);
+                                removeHighChart(sixthContainer, index);
+                            }
+                        });
+                    });
+                }, 500);
             },
             error: function (xhr) {
                 console.error("Error loading data");
@@ -3866,6 +4557,59 @@
                             series: [{name: `فروش (${Number(totalAmount).toLocaleString('fa-IR')})`, data: d.values}
                             ],
                         });
+
+                        // Campaign Plot Bands
+                        setTimeout(() => {
+                            const plots = document.querySelectorAll(".display-plot");
+                            console.log("Found checkboxes:", plots.length);
+                            // Remove the plot bands on form reload
+                            document.querySelectorAll(".display-plot").forEach((item, index) => {
+                                item.checked = false;
+                                removeHighChart(lineChart, index);
+                                removeHighChart(barChart, index);
+                            });
+                            plots.forEach((item, index) => {
+                                item.addEventListener("change", () => {
+                                    const ul = item.closest("ul"); 
+                                    if (!ul) return;
+
+                                    const liItems = ul.querySelectorAll("li");
+                                    if (liItems.length < 3) {
+                                        console.warn("Not enough li items");
+                                        return;
+                                    }
+
+                                    const startDate = englishToPersianNumber(liItems[1].querySelector(".greg-date")?.innerText?.trim());
+                                    const endDate = englishToPersianNumber(liItems[2].querySelector(".greg-date")?.innerText?.trim());
+                                    const campaignWeeks = slicePersianDates(newCategories, startDate, endDate);
+                                    fetch(apiUrl, {
+                                        method: "POST",
+                                        headers: {
+                                            "Content-Type": "application/json",
+                                            "X-CSRFToken": csrftoken,
+                                        },
+                                        body: JSON.stringify({x: campaignWeeks, y: y})
+                                    }).then(response => {
+                                        if (!response.ok) throw new Error("Invalid Response");
+                                        return response.json()
+                                    }).then(x => {
+                                        let weeks  = x.weeks;
+                                        console.log(weeks)
+                                        const firstWeek = weeks[0];
+                                        const lastWeek = weeks[weeks.length - 1];
+                                        if (item.checked) {
+                                            console.log("✅ Checkbox checked", { firstWeek, lastWeek });
+                                            addWeeklyHighlight(lineChart, firstWeek, lastWeek, randomPlotBandColor(), index);
+                                            addWeeklyHighlight(barChart, firstWeek, lastWeek, randomPlotBandColor(), index);
+                                        } else {
+                                            console.log("❌ Checkbox unchecked");
+                                            removeHighChart(lineChart, index);
+                                            removeHighChart(barChart, index);
+                                        }
+                                    });
+                                });
+                            });
+                        }, 500);
                     });
                 }
 
@@ -3925,6 +4669,59 @@
                             },
                             series: [{ data: d.values }]
                         });
+
+                        // Campaign Plot Bands
+                        setTimeout(() => {
+                            const plots = document.querySelectorAll(".display-plot");
+                            console.log("Found checkboxes:", plots.length);
+                            // Remove the plot bands on form reload
+                            document.querySelectorAll(".display-plot").forEach((item, index) => {
+                                item.checked = false;
+                                removeHighChart(thirdLineChart, index);
+                                removeHighChart(thirdBarChart, index);
+                            });
+                            plots.forEach((item, index) => {
+                                item.addEventListener("change", () => {
+                                    const ul = item.closest("ul"); 
+                                    if (!ul) return;
+
+                                    const liItems = ul.querySelectorAll("li");
+                                    if (liItems.length < 3) {
+                                        console.warn("Not enough li items");
+                                        return;
+                                    }
+
+                                    const startDate = englishToPersianNumber(liItems[1].querySelector(".greg-date")?.innerText?.trim());
+                                    const endDate = englishToPersianNumber(liItems[2].querySelector(".greg-date")?.innerText?.trim());
+                                    const campaignWeeks = slicePersianDates(newCategories, startDate, endDate);
+                                    fetch(apiUrl, {
+                                        method: "POST",
+                                        headers: {
+                                            "Content-Type": "application/json",
+                                            "X-CSRFToken": csrftoken,
+                                        },
+                                        body: JSON.stringify({x: campaignWeeks, y: y})
+                                    }).then(response => {
+                                        if (!response.ok) throw new Error("Invalid Response");
+                                        return response.json()
+                                    }).then(x => {
+                                        let weeks  = x.weeks;
+                                        console.log(weeks)
+                                        const firstWeek = weeks[0];
+                                        const lastWeek = weeks[weeks.length - 1];
+                                        if (item.checked) {
+                                            console.log("✅ Checkbox checked", { firstWeek, lastWeek });
+                                            addWeeklyHighlight(thirdLineChart, firstWeek, lastWeek, randomPlotBandColor(), index);
+                                            addWeeklyHighlight(thirdBarChart, firstWeek, lastWeek, randomPlotBandColor(), index);
+                                        } else {
+                                            console.log("❌ Checkbox unchecked");
+                                            removeHighChart(thirdLineChart, index);
+                                            removeHighChart(thirdBarChart, index);
+                                        }
+                                    });
+                                });
+                            });
+                        }, 500);
                     });
                 }
 
@@ -3984,6 +4781,59 @@
                             },
                             series: [{ data: d.values }]
                         });
+
+                        // Campaign Plot Bands
+                        setTimeout(() => {
+                            const plots = document.querySelectorAll(".display-plot");
+                            console.log("Found checkboxes:", plots.length);
+                            // Remove the plot bands on form reload
+                            document.querySelectorAll(".display-plot").forEach((item, index) => {
+                                item.checked = false;
+                                removeHighChart(fifthLineChart, index);
+                                removeHighChart(fifthBarChart, index);
+                            });
+                            plots.forEach((item, index) => {
+                                item.addEventListener("change", () => {
+                                    const ul = item.closest("ul"); 
+                                    if (!ul) return;
+
+                                    const liItems = ul.querySelectorAll("li");
+                                    if (liItems.length < 3) {
+                                        console.warn("Not enough li items");
+                                        return;
+                                    }
+
+                                    const startDate = englishToPersianNumber(liItems[1].querySelector(".greg-date")?.innerText?.trim());
+                                    const endDate = englishToPersianNumber(liItems[2].querySelector(".greg-date")?.innerText?.trim());
+                                    const campaignWeeks = slicePersianDates(newCategories, startDate, endDate);
+                                    fetch(apiUrl, {
+                                        method: "POST",
+                                        headers: {
+                                            "Content-Type": "application/json",
+                                            "X-CSRFToken": csrftoken,
+                                        },
+                                        body: JSON.stringify({x: campaignWeeks, y: y})
+                                    }).then(response => {
+                                        if (!response.ok) throw new Error("Invalid Response");
+                                        return response.json()
+                                    }).then(x => {
+                                        let weeks  = x.weeks;
+                                        console.log(weeks)
+                                        const firstWeek = weeks[0];
+                                        const lastWeek = weeks[weeks.length - 1];
+                                        if (item.checked) {
+                                            console.log("✅ Checkbox checked", { firstWeek, lastWeek });
+                                            addWeeklyHighlight(fifthLineChart, firstWeek, lastWeek, randomPlotBandColor(), index);
+                                            addWeeklyHighlight(fifthBarChart, firstWeek, lastWeek, randomPlotBandColor(), index);
+                                        } else {
+                                            console.log("❌ Checkbox unchecked");
+                                            removeHighChart(fifthLineChart, index);
+                                            removeHighChart(fifthBarChart, index);
+                                        }
+                                    });
+                                });
+                            });
+                        }, 500);
                     });
                 }
                 // Initial Line Chart Weekly Event Listeners
@@ -4037,6 +4887,43 @@
                         series: [{name: `فروش (${Number(totalAmount).toLocaleString('fa-IR')})`, data: data.total_amount}
                         ],
                     });
+
+                    // Campaign Plot Bands
+                    setTimeout(() => {
+                        const plots = document.querySelectorAll(".display-plot");
+                        console.log("Found checkboxes:", plots.length);
+                        // Remove the plot bands on form reload
+                        document.querySelectorAll(".display-plot").forEach((item, index) => {
+                            item.checked = false;
+                            removeHighChart(barChart, index);
+                            removeHighChart(lineChart, index);
+                        });
+                        plots.forEach((item, index) => {
+                            item.addEventListener("change", () => {
+                                const ul = item.closest("ul"); 
+                                if (!ul) return;
+
+                                const liItems = ul.querySelectorAll("li");
+                                if (liItems.length < 3) {
+                                    console.warn("Not enough li items");
+                                    return;
+                                }
+
+                                const startDate = englishToPersianNumber(liItems[1].querySelector(".greg-date")?.innerText?.trim());
+                                const endDate = englishToPersianNumber(liItems[2].querySelector(".greg-date")?.innerText?.trim());
+                                
+                                if (item.checked) {
+                                    console.log("✅ Checkbox checked", { startDate, endDate });
+                                    addHighlight(barChart, startDate, endDate, randomPlotBandColor(), index);
+                                    addHighlight(lineChart, startDate, endDate, randomPlotBandColor(), index);
+                                } else {
+                                    console.log("❌ Checkbox unchecked");
+                                    removeHighChart(barChart, index);
+                                    removeHighChart(lineChart, index);
+                                }
+                            });
+                        });
+                    }, 500);
                 }
 
                 function handleDailyThirdChart () {
@@ -4079,6 +4966,43 @@
                         },
                         series: [{ data: data.total_items }]
                     });
+
+                    // Campaign Plot Bands
+                    setTimeout(() => {
+                        const plots = document.querySelectorAll(".display-plot");
+                        console.log("Found checkboxes:", plots.length);
+                        // Remove the plot bands on form reload
+                        document.querySelectorAll(".display-plot").forEach((item, index) => {
+                            item.checked = false;
+                            removeHighChart(thirdBarChart, index);
+                            removeHighChart(thirdLineChart, index);
+                        });
+                        plots.forEach((item, index) => {
+                            item.addEventListener("change", () => {
+                                const ul = item.closest("ul"); 
+                                if (!ul) return;
+
+                                const liItems = ul.querySelectorAll("li");
+                                if (liItems.length < 3) {
+                                    console.warn("Not enough li items");
+                                    return;
+                                }
+
+                                const startDate = englishToPersianNumber(liItems[1].querySelector(".greg-date")?.innerText?.trim());
+                                const endDate = englishToPersianNumber(liItems[2].querySelector(".greg-date")?.innerText?.trim());
+                                
+                                if (item.checked) {
+                                    console.log("✅ Checkbox checked", { startDate, endDate });
+                                    addHighlight(thirdBarChart, startDate, endDate, randomPlotBandColor(), index);
+                                    addHighlight(thirdLineChart, startDate, endDate, randomPlotBandColor(), index);
+                                } else {
+                                    console.log("❌ Checkbox unchecked");
+                                    removeHighChart(thirdBarChart, index);
+                                    removeHighChart(thirdLineChart, index);
+                                }
+                            });
+                        });
+                    }, 500);
                 }
 
                 function handleDailyFifthChart () {
@@ -4121,6 +5045,43 @@
                         },
                         series: [{ data: data.total_products }]
                     });
+
+                    // Campaign Plot Bands
+                    setTimeout(() => {
+                        const plots = document.querySelectorAll(".display-plot");
+                        console.log("Found checkboxes:", plots.length);
+                        // Remove the plot bands on form reload
+                        document.querySelectorAll(".display-plot").forEach((item, index) => {
+                            item.checked = false;
+                            removeHighChart(fifthBarChart, index);
+                            removeHighChart(fifthLineChart, index);
+                        });
+                        plots.forEach((item, index) => {
+                            item.addEventListener("change", () => {
+                                const ul = item.closest("ul"); 
+                                if (!ul) return;
+
+                                const liItems = ul.querySelectorAll("li");
+                                if (liItems.length < 3) {
+                                    console.warn("Not enough li items");
+                                    return;
+                                }
+
+                                const startDate = englishToPersianNumber(liItems[1].querySelector(".greg-date")?.innerText?.trim());
+                                const endDate = englishToPersianNumber(liItems[2].querySelector(".greg-date")?.innerText?.trim());
+                                
+                                if (item.checked) {
+                                    console.log("✅ Checkbox checked", { startDate, endDate });
+                                    addHighlight(fifthBarChart, startDate, endDate, randomPlotBandColor(), index);
+                                    addHighlight(fifthLineChart, startDate, endDate, randomPlotBandColor(), index);
+                                } else {
+                                    console.log("❌ Checkbox unchecked");
+                                    removeHighChart(fifthBarChart, index);
+                                    removeHighChart(fifthLineChart, index);
+                                }
+                            });
+                        });
+                    }, 500);
                 }
                 // Initial Line Chart Daily Event Listeners
                 $("#container-tools .day").off("click").on("click", handleDailyFirstChart);
@@ -4252,6 +5213,55 @@
                     series: [{ data: data.total_products }]
                 });
                 
+                // Campaign Plot Bands
+                setTimeout(() => {
+                    const plots = document.querySelectorAll(".display-plot");
+                    console.log("Found checkboxes:", plots.length);
+                    // Remove the plot bands on form reload
+                    document.querySelectorAll(".display-plot").forEach((item, index) => {
+                        item.checked = false;
+                        removeHighChart(barChart, index);
+                        removeHighChart(lineChart, index);
+                        removeHighChart(thirdBarChart, index);
+                        removeHighChart(thirdLineChart, index);
+                        removeHighChart(fifthBarChart, index);
+                        removeHighChart(fifthLineChart, index);
+                    });
+                    plots.forEach((item, index) => {
+                        item.addEventListener("change", () => {
+                            const ul = item.closest("ul"); 
+                            if (!ul) return;
+
+                            const liItems = ul.querySelectorAll("li");
+                            if (liItems.length < 3) {
+                                console.warn("Not enough li items");
+                                return;
+                            }
+
+                            const startDate = englishToPersianNumber(liItems[1].querySelector(".greg-date")?.innerText?.trim());
+                            const endDate = englishToPersianNumber(liItems[2].querySelector(".greg-date")?.innerText?.trim());
+                            
+                            if (item.checked) {
+                                console.log("✅ Checkbox checked", { startDate, endDate });
+                                addHighlight(barChart, startDate, endDate, randomPlotBandColor(), index);
+                                addHighlight(lineChart, startDate, endDate, randomPlotBandColor(), index);
+                                addHighlight(thirdBarChart, startDate, endDate, randomPlotBandColor(), index);
+                                addHighlight(thirdLineChart, startDate, endDate, randomPlotBandColor(), index);
+                                addHighlight(fifthBarChart, startDate, endDate, randomPlotBandColor(), index);
+                                addHighlight(fifthLineChart, startDate, endDate, randomPlotBandColor(), index);
+                            } else {
+                                console.log("❌ Checkbox unchecked");
+                                removeHighChart(barChart, index);
+                                removeHighChart(lineChart, index);
+                                removeHighChart(thirdBarChart, index);
+                                removeHighChart(thirdLineChart, index);
+                                removeHighChart(fifthBarChart, index);
+                                removeHighChart(fifthLineChart, index);
+                            }
+                        });
+                    });
+                }, 500);
+
                 document.querySelector("#campaign-fill").innerHTML = "";
                 document.querySelector("#campaign-fill").classList.add("box");
                 if (data.campaigns.length === 0) {
@@ -4284,13 +5294,24 @@
                             border-color: #e5e5e5;
                             background-color: #F9F9F9;
                             border-radius: 12px;
-                            height: 100%;
                             padding: 10px;">
                                 <div class="card-header d-flex align-items-center justify-content-between">
                                     <h5 class="card-title mb-0">${campaign.campaign_name}</h5>
                                 </div>
                                 <div class="card-body pb-3">
                                     <ul class="p-0 m-0">
+                                    <li class="d-flex align-items-center mb-3">
+                                        <div class="avatar avatar-sm flex-shrink-0 me-3">
+                                        <span class="avatar-initial rounded-circle bg-label-success">
+                                        <i class="bx bx-show"></i></span>
+                                        </div>
+                                        <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2"> <div class="me-2">
+                                        <p class="mb-0">نمایش</p>
+                                        <small class="text-muted">نمایش بازه در نمودار</small>
+                                        </div> <div class="item-progress"><input type='checkbox' class='display-plot' />
+                                        </div>
+                                        </div>
+                                    </li>
                                     <li class="d-flex align-items-center mb-3">
                                         <div class="avatar avatar-sm flex-shrink-0 me-3">
                                         <span class="avatar-initial rounded-circle bg-label-primary"><i class="bx bx-time"></i></span>
@@ -4543,7 +5564,7 @@
                         if (!response.ok) throw new Error("Invalid Response");
                         return response.json()
                     }).then(data => {
-                        Highcharts.chart("second-container", {
+                        const secondContainer = Highcharts.chart("second-container", {
                             chart: { 
                                 type: "line",
                                 borderColor: '#e5e5e5',  
@@ -4594,6 +5615,55 @@
                             },
                             series: data.values
                         });
+                        // Campaign Plot Bands
+                        setTimeout(() => {
+                            const plots = document.querySelectorAll(".display-plot");
+                            console.log("Found checkboxes:", plots.length);
+                            // Remove the plot bands on form reload
+                            document.querySelectorAll(".display-plot").forEach((item, index) => {
+                                item.checked = false;
+                                removeHighChart(secondContainer, index);
+                            });
+                            plots.forEach((item, index) => {
+                                item.addEventListener("change", () => {
+                                    const ul = item.closest("ul"); 
+                                    if (!ul) return;
+
+                                    const liItems = ul.querySelectorAll("li");
+                                    if (liItems.length < 3) {
+                                        console.warn("Not enough li items");
+                                        return;
+                                    }
+
+                                    const startDate = englishToPersianNumber(liItems[1].querySelector(".greg-date")?.innerText?.trim());
+                                    const endDate = englishToPersianNumber(liItems[2].querySelector(".greg-date")?.innerText?.trim());
+                                    const campaignWeeks = slicePersianDates(categories, startDate, endDate);
+                                    fetch(apiUrl, {
+                                        method: "POST",
+                                        headers: {
+                                            "Content-Type": "application/json",
+                                            "X-CSRFToken": csrftoken,
+                                        },
+                                        body: JSON.stringify({x: campaignWeeks, y: y})
+                                    }).then(response => {
+                                        if (!response.ok) throw new Error("Invalid Response");
+                                        return response.json()
+                                    }).then(x => {
+                                        let weeks  = x.weeks;
+                                        console.log(weeks)
+                                        const firstWeek = weeks[0];
+                                        const lastWeek = weeks[weeks.length - 1];
+                                        if (item.checked) {
+                                            console.log("✅ Checkbox checked", { firstWeek, lastWeek });
+                                            addWeeklyHighlight(secondContainer, firstWeek, lastWeek, randomPlotBandColor(), index);
+                                        } else {
+                                            console.log("❌ Checkbox unchecked");
+                                            removeHighChart(secondContainer, index);
+                                        }
+                                    });
+                                });
+                            });
+                        }, 500);
                     });
                 }
                 // Initial Line Chart By Branch Weekly Display Event Listener
@@ -4601,7 +5671,7 @@
                 // Initial Line Chart By Branch Daily Display Button Logic
                 // Initial Line Chart By Branch Daily Display Button Function
                 function handleBranchDailySecondChart() {
-                    Highcharts.chart("second-container", {
+                    const secondContainer = Highcharts.chart("second-container", {
                         chart: { 
                             type: "line",
                             borderColor: '#e5e5e5',  
@@ -4693,10 +5763,44 @@
                             }
                         }
                     });
+                // Campaign Plot Bands
+                setTimeout(() => {
+                    const plots = document.querySelectorAll(".display-plot");
+                    console.log("Found checkboxes:", plots.length);
+                    // Remove the plot bands on form reload
+                    document.querySelectorAll(".display-plot").forEach((x, index) => {
+                        x.checked = false;
+                        removeHighChart(secondContainer, index);
+                    });
+                    plots.forEach((i, index) => {
+                        i.addEventListener("change", () => {
+                            const ul = i.closest("ul"); 
+                            if (!ul) return;
+
+                            const liItems = ul.querySelectorAll("li");
+                            if (liItems.length < 3) {
+                                console.warn("Not enough li items");
+                                return;
+                            }
+
+                            const startDate = englishToPersianNumber(liItems[1].querySelector(".greg-date")?.innerText?.trim());
+                            const endDate = englishToPersianNumber(liItems[2].querySelector(".greg-date")?.innerText?.trim());
+                            
+                            if (i.checked) {
+                                console.log("✅ Checkbox checked", { startDate, endDate });
+                                addHighlight(secondContainer, startDate, endDate, randomPlotBandColor(), index);
+                            } else {
+                                console.log("❌ Checkbox unchecked");
+                                removeHighChart(secondContainer, index);
+                            }
+                        });
+                    });
+                }, 500);
                 }
                 // Initial Line Chart By Branch Daily Display Event Listener
                 $("#second-container-tools .day").off("click").on("click", handleBranchDailySecondChart);
-                Highcharts.chart("second-container", {
+                console.log(categories)
+                const secondContainer = Highcharts.chart("second-container", {
                     chart: { 
                         type: "line",
                         borderColor: '#e5e5e5',  
@@ -4828,6 +5932,39 @@
                         data: pieData   // aggregated data here
                     }]
                 });
+                // Campaign Plot Bands
+                setTimeout(() => {
+                    const plots = document.querySelectorAll(".display-plot");
+                    console.log("Found checkboxes:", plots.length);
+                    // Remove the plot bands on form reload
+                    document.querySelectorAll(".display-plot").forEach((x, index) => {
+                        x.checked = false;
+                        removeHighChart(secondContainer, index);
+                    });
+                    plots.forEach((i, index) => {
+                        i.addEventListener("change", () => {
+                            const ul = i.closest("ul"); 
+                            if (!ul) return;
+
+                            const liItems = ul.querySelectorAll("li");
+                            if (liItems.length < 3) {
+                                console.warn("Not enough li items");
+                                return;
+                            }
+
+                            const startDate = englishToPersianNumber(liItems[1].querySelector(".greg-date")?.innerText?.trim());
+                            const endDate = englishToPersianNumber(liItems[2].querySelector(".greg-date")?.innerText?.trim());
+                            
+                            if (i.checked) {
+                                console.log("✅ Checkbox checked", { startDate, endDate });
+                                addHighlight(secondContainer, startDate, endDate, randomPlotBandColor(), index);
+                            } else {
+                                console.log("❌ Checkbox unchecked");
+                                removeHighChart(secondContainer, index);
+                            }
+                        });
+                    });
+                }, 500);
             },
             error: function (xhr) {
                 console.error("Error loading data");
@@ -4959,7 +6096,7 @@
                         if (!response.ok) throw new Error("Invalid Response");
                         return response.json()
                     }).then(data => {
-                    Highcharts.chart("forth-container", {
+                    const forthContainer = Highcharts.chart("forth-container", {
                         chart: { 
                             type: "line",
                             borderColor: '#e5e5e5',  
@@ -5010,6 +6147,55 @@
                         },
                         series: data.values,
                     });
+                    // Campaign Plot Bands
+                    setTimeout(() => {
+                        const plots = document.querySelectorAll(".display-plot");
+                        console.log("Found checkboxes:", plots.length);
+                        // Remove the plot bands on form reload
+                        document.querySelectorAll(".display-plot").forEach((item, index) => {
+                            item.checked = false;
+                            removeHighChart(forthContainer, index);
+                        });
+                        plots.forEach((item, index) => {
+                            item.addEventListener("change", () => {
+                                const ul = item.closest("ul"); 
+                                if (!ul) return;
+
+                                const liItems = ul.querySelectorAll("li");
+                                if (liItems.length < 3) {
+                                    console.warn("Not enough li items");
+                                    return;
+                                }
+
+                                const startDate = englishToPersianNumber(liItems[1].querySelector(".greg-date")?.innerText?.trim());
+                                const endDate = englishToPersianNumber(liItems[2].querySelector(".greg-date")?.innerText?.trim());
+                                const campaignWeeks = slicePersianDates(categories, startDate, endDate);
+                                fetch(apiUrl, {
+                                    method: "POST",
+                                    headers: {
+                                        "Content-Type": "application/json",
+                                        "X-CSRFToken": csrftoken,
+                                    },
+                                    body: JSON.stringify({x: campaignWeeks, y: y})
+                                }).then(response => {
+                                    if (!response.ok) throw new Error("Invalid Response");
+                                    return response.json()
+                                }).then(x => {
+                                    let weeks  = x.weeks;
+                                    console.log(weeks)
+                                    const firstWeek = weeks[0];
+                                    const lastWeek = weeks[weeks.length - 1];
+                                    if (item.checked) {
+                                        console.log("✅ Checkbox checked", { firstWeek, lastWeek });
+                                        addWeeklyHighlight(forthContainer, firstWeek, lastWeek, randomPlotBandColor(), index);
+                                    } else {
+                                        console.log("❌ Checkbox unchecked");
+                                        removeHighChart(forthContainer, index);
+                                    }
+                                });
+                            });
+                        });
+                    }, 500);
                     });
                 }
                 // Initial Line Chart By Branch Weekly Display Event Listener
@@ -5017,7 +6203,7 @@
                 // Initial Line Chart By Branch Daily Display Button Logic
                 // Initial Line Chart By Branch Daily Display Button Function
                 function handleBranchDailyForthChart() {
-                    Highcharts.chart("forth-container", {
+                    const forthContainer = Highcharts.chart("forth-container", {
                     chart: { 
                         type: "line",
                         borderColor: '#e5e5e5',  
@@ -5109,10 +6295,42 @@
                         }
                     }
                 });
+                // Campaign Plot Bands
+                setTimeout(() => {
+                    const plots = document.querySelectorAll(".display-plot");
+                    console.log("Found checkboxes:", plots.length);
+                    // Remove the plot bands on form reload
+                    document.querySelectorAll(".display-plot").forEach((x, index) => {
+                        x.checked = false;
+                        removeHighChart(forthContainer, index);
+                    });
+                    plots.forEach((i, index) => {
+                        i.addEventListener("change", () => {
+                            const ul = i.closest("ul"); 
+                            if (!ul) return;
+
+                            const liItems = ul.querySelectorAll("li");
+                            if (liItems.length < 3) {
+                                console.warn("Not enough li items");
+                                return;
+                            }
+
+                            const startDate = englishToPersianNumber(liItems[1].querySelector(".greg-date")?.innerText?.trim());
+                            const endDate = englishToPersianNumber(liItems[2].querySelector(".greg-date")?.innerText?.trim());
+                            
+                            if (i.checked) {
+                                console.log("✅ Checkbox checked", { startDate, endDate });
+                                addHighlight(forthContainer, startDate, endDate, randomPlotBandColor(), index);
+                            } else {
+                                console.log("❌ Checkbox unchecked");
+                                removeHighChart(forthContainer, index);
+                            }
+                        });
+                    });
+                }, 500);
                 }
                 // Initial Line Chart By Branch Daily Display Event Listener
                 $("#forth-container-tools .day").off("click").on("click", handleBranchDailyForthChart);
-
                 // Initial Line Chart By Branch Monthly Display Button Logic
                 // Initial Line Chart By Branch Monthly Display Button Function
                 function handleBranchMonthlySixthChart() {
@@ -5204,7 +6422,7 @@
                         if (!response.ok) throw new Error("Invalid Response");
                         return response.json()
                     }).then(data => {
-                        Highcharts.chart("sixth-container", {
+                        const sixthContainer = Highcharts.chart("sixth-container", {
                         chart: { 
                             type: "line",
                             borderColor: '#e5e5e5',  
@@ -5255,6 +6473,55 @@
                         },
                         series: data.values,
                     });
+                    // Campaign Plot Bands
+                    setTimeout(() => {
+                        const plots = document.querySelectorAll(".display-plot");
+                        console.log("Found checkboxes:", plots.length);
+                        // Remove the plot bands on form reload
+                        document.querySelectorAll(".display-plot").forEach((item, index) => {
+                            item.checked = false;
+                            removeHighChart(sixthContainer, index);
+                        });
+                        plots.forEach((item, index) => {
+                            item.addEventListener("change", () => {
+                                const ul = item.closest("ul"); 
+                                if (!ul) return;
+
+                                const liItems = ul.querySelectorAll("li");
+                                if (liItems.length < 3) {
+                                    console.warn("Not enough li items");
+                                    return;
+                                }
+
+                                const startDate = englishToPersianNumber(liItems[1].querySelector(".greg-date")?.innerText?.trim());
+                                const endDate = englishToPersianNumber(liItems[2].querySelector(".greg-date")?.innerText?.trim());
+                                const campaignWeeks = slicePersianDates(categories, startDate, endDate);
+                                fetch(apiUrl, {
+                                    method: "POST",
+                                    headers: {
+                                        "Content-Type": "application/json",
+                                        "X-CSRFToken": csrftoken,
+                                    },
+                                    body: JSON.stringify({x: campaignWeeks, y: y})
+                                }).then(response => {
+                                    if (!response.ok) throw new Error("Invalid Response");
+                                    return response.json()
+                                }).then(x => {
+                                    let weeks  = x.weeks;
+                                    console.log(weeks)
+                                    const firstWeek = weeks[0];
+                                    const lastWeek = weeks[weeks.length - 1];
+                                    if (item.checked) {
+                                        console.log("✅ Checkbox checked", { firstWeek, lastWeek });
+                                        addWeeklyHighlight(sixthContainer, firstWeek, lastWeek, randomPlotBandColor(), index);
+                                    } else {
+                                        console.log("❌ Checkbox unchecked");
+                                        removeHighChart(sixthContainer, index);
+                                    }
+                                });
+                            });
+                        });
+                    }, 500);
                     });
                 }
                 // Initial Line Chart By Branch Weekly Display Event Listener
@@ -5262,7 +6529,7 @@
                 // Initial Line Chart By Branch Daily Display Button Logic
                 // Initial Line Chart By Branch Daily Display Button Function
                 function handleBranchDailySixthChart() {
-                    Highcharts.chart("sixth-container", {
+                    const sixthContainer = Highcharts.chart("sixth-container", {
                     chart: { 
                         type: "line",
                         borderColor: '#e5e5e5',  
@@ -5354,10 +6621,43 @@
                         }
                     }
                 });
+                // Campaign Plot Bands
+                setTimeout(() => {
+                    const plots = document.querySelectorAll(".display-plot");
+                    console.log("Found checkboxes:", plots.length);
+                    // Remove the plot bands on form reload
+                    document.querySelectorAll(".display-plot").forEach((x, index) => {
+                        x.checked = false;
+                        removeHighChart(sixthContainer, index);
+                    });
+                    plots.forEach((i, index) => {
+                        i.addEventListener("change", () => {
+                            const ul = i.closest("ul"); 
+                            if (!ul) return;
+
+                            const liItems = ul.querySelectorAll("li");
+                            if (liItems.length < 3) {
+                                console.warn("Not enough li items");
+                                return;
+                            }
+
+                            const startDate = englishToPersianNumber(liItems[1].querySelector(".greg-date")?.innerText?.trim());
+                            const endDate = englishToPersianNumber(liItems[2].querySelector(".greg-date")?.innerText?.trim());
+                            
+                            if (i.checked) {
+                                console.log("✅ Checkbox checked", { startDate, endDate });
+                                addHighlight(sixthContainer, startDate, endDate, randomPlotBandColor(), index);
+                            } else {
+                                console.log("❌ Checkbox unchecked");
+                                removeHighChart(sixthContainer, index);
+                            }
+                        });
+                    });
+                }, 500);
                 }
                 // Initial Line Chart By Branch Daily Display Event Listener
                 $("#sixth-container-tools .day").off("click").on("click", handleBranchDailySixthChart);
-                Highcharts.chart("forth-container", {
+                const forthContainer = Highcharts.chart("forth-container", {
                     chart: { type: "line",
                         borderColor: '#e5e5e5',  
                         borderWidth: 1,           
@@ -5488,7 +6788,7 @@
                     }]
                 });
 
-                Highcharts.chart("sixth-container", {
+                const sixthContainer = Highcharts.chart("sixth-container", {
                     chart: { type: "line",
                         borderColor: '#e5e5e5',  
                         borderWidth: 1,           
@@ -5618,6 +6918,43 @@
                         data: pieDataProduct   // aggregated data here
                     }]
                 });
+
+                // Campaign Plot Bands
+                setTimeout(() => {
+                    const plots = document.querySelectorAll(".display-plot");
+                    console.log("Found checkboxes:", plots.length);
+                    // Remove the plot bands on form reload
+                    document.querySelectorAll(".display-plot").forEach((x, index) => {
+                        x.checked = false;
+                        removeHighChart(forthContainer, index);
+                        removeHighChart(sixthContainer, index);
+                    });
+                    plots.forEach((i, index) => {
+                        i.addEventListener("change", () => {
+                            const ul = i.closest("ul"); 
+                            if (!ul) return;
+
+                            const liItems = ul.querySelectorAll("li");
+                            if (liItems.length < 3) {
+                                console.warn("Not enough li items");
+                                return;
+                            }
+
+                            const startDate = englishToPersianNumber(liItems[1].querySelector(".greg-date")?.innerText?.trim());
+                            const endDate = englishToPersianNumber(liItems[2].querySelector(".greg-date")?.innerText?.trim());
+                            
+                            if (i.checked) {
+                                console.log("✅ Checkbox checked", { startDate, endDate });
+                                addHighlight(forthContainer, startDate, endDate, randomPlotBandColor(), index);
+                                addHighlight(sixthContainer, startDate, endDate, randomPlotBandColor(), index);
+                            } else {
+                                console.log("❌ Checkbox unchecked");
+                                removeHighChart(forthContainer, index);
+                                removeHighChart(sixthContainer, index);
+                            }
+                        });
+                    });
+                }, 500);
             },
             error: function (xhr) {
                 console.error("Error loading data");

@@ -93,7 +93,7 @@ aiButtons.forEach(element => {
         console.error(error);
         aiLoading.style.display = 'none';
         aiResponse.style.display = 'block';
-        answer = "خطایی رخ داده. اتصال به اینترنت را بررسی کنید";
+        answer = "از اتصال خود اطمینان حاصل کنید و یا بازه ای بیشتر از 10 روز انتخاب کنید";
         typeWriter(answer);
     }
     // Close modal

@@ -244,13 +244,13 @@
         <div class="row">
             <!-- Date Picker Card -->
             <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12" style="margin-bottom: 10px;">
-                <h1 style="color: #262626; font-size: 1.38rem; font-weight: 700;">گزارش ترافیک (TR)</h1>
+                <h1 style="color: #262626; font-size: 1.38rem; font-weight: 700;"> گزارش ترافیک (TR)</h1>
             </div>
             <div class="col-xl-2 col-lg-2 col-md-12 col-sm-12" style="margin-bottom: 10px;">
                 <h1 style="color: #262626; font-size: 1.125rem; font-weight: 700;">گزارش بر اساس:</h1>
             </div>
             <div class="col-xl-2 col-lg-2 col-md-12 col-sm-12" style="margin-bottom: 10px;">
-                <small>نمایش</small>
+                <small><i class='bx bx-show'></i> نمایش</small>
                 <div class="card mt-3">
                     <div class="card-body" style="padding: 0px !important;">
                         <select class="form-select w-100" aria-label="Filter select" id="chart-display-toggle">
@@ -261,7 +261,7 @@
                 </div>
             </div>
             <div class="col-xl-2 col-lg-2 col-md-12 col-sm-12" style="margin-bottom: 10px;">
-                <small>بازه زمانی گزارش و شعب</small>
+                <small><i class='bx bx-calendar'></i> بازه زمانی و شعب</small>
                 <div class="card mt-3">
                     <div class="card-body" style="padding: 0px !important;">
                         <button type="button" class="btn btn-outline-primary w-100" data-bs-toggle="modal" data-bs-target="#dateModal" style="border: none; color: black; background-color: #ccdbf1;">
@@ -422,7 +422,7 @@
             </div>
         </div>
         <div class="row" style="margin-left: 0px;">
-            <div class="col-lg-3" style="margin-bottom: 10px;" id="holiday-container">
+            <div class="col-lg-3" id="holiday-container">
                 <div class="card" id="holiday-card" style="background-clip: padding-box;
                 border-style: solid;
                 box-shadow: none;
@@ -586,7 +586,7 @@
     }
 
     function randomPlotBandColor(alpha = 0.15) {
-        const r = Math.floor(Math.random() * 120) + 80; // 80-199
+        const r = Math.floor(Math.random() * 120) + 80; 
         const g = Math.floor(Math.random() * 120) + 80;
         const b = Math.floor(Math.random() * 120) + 80;
 
@@ -785,7 +785,6 @@
                             border-color: #e5e5e5;
                             background-color: #F9F9F9;
                             border-radius: 12px;
-                            height: 100%;
                             padding: 10px;">
                                 <div class="card-header d-flex align-items-center justify-content-between">
                                     <h5 class="card-title mb-0">${campaign.campaign_name}</h5>
@@ -2629,7 +2628,6 @@
                                 border-color: #e5e5e5;
                                 background-color: #F9F9F9;
                                 border-radius: 12px;
-                                height: 100%;
                                 padding: 10px;">
                                     <div class="card-header d-flex align-items-center justify-content-between">
                                         <h5 class="card-title mb-0">${campaign.campaign_name}</h5>
