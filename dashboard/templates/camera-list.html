@@ -46,7 +46,15 @@
         <p class="text-muted mb-0">در این قسمت می توانید وضعیت هر دوربین را بررسی کنید</p>
     </div>
 </div>
-<div class="card">
+<div class="card" style="
+background-clip: padding-box;
+border-style: solid;
+box-shadow: none;
+border-width: 1px;
+border-color: #e5e5e5;
+border-radius: 12px;
+padding: 10px;
+">
   <div class="table-responsive text-nowrap" style="margin-bottom: 100px; padding-top: 35px;">
     <table class="table table-hover">
       <thead>
@@ -63,7 +71,7 @@
       <tbody class="table-border-bottom-0">
         {% for camera in cameras %}
         <tr>
-          <td><i class="align-middle fab fa-angular fa-lg text-danger me-3"></i><strong>{{ camera.cam_name }}</strong></td>
+          <td><strong>{{ camera.cam_name }}</strong></td>
           <td>{{ camera.city }}</td>
           <td>
             {{ camera.branch }}
