@@ -32,7 +32,13 @@
         {% for user in users %}
         <tr>
           <td><i class="align-middle fab fa-angular fa-lg text-danger me-3"></i><strong>{{ user.user.first_name }} {{ user.user.last_name }}</strong></td>
-          <td>{{ user.mobile }}</td>
+          <td>
+            {% if user.mobile %}
+            {{ user.mobile }}
+            {% else %}
+            -
+            {% endif %}
+          </td>
           <td>
               {{ user.merchant.name }}
           </td>

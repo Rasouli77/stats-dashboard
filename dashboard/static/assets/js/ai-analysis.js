@@ -93,6 +93,12 @@ aiButtons.forEach(element => {
         if (element.parentElement.id === 'second-one-to-all-container-pie-chart-tools' || element.parentElement.id === 'second-one-to-all-container-tools') {
             answer = await ai_response('traffic', false, aiStartDate, aiEndDate, aiBranchIds); 
         }
+        if (element.parentElement.id === 'product-counter-bar-chart-tools' || element.parentElement.id === 'product-counter-tools') {
+            answer = await ai_response('product sold divided by invoice count', true, aiStartDate, aiEndDate, aiBranchIds); 
+        }
+        if (element.parentElement.id === 'product-counter-branch-pie-chart-tools' || element.parentElement.id === 'product-counter-branch-tools') {
+            answer = await ai_response('product sold divided by invoice count', false, aiStartDate, aiEndDate, aiBranchIds); 
+        }
         aiLoading.style.display = 'none';
         aiResponse.style.display = 'block';
         typeWriter(answer);

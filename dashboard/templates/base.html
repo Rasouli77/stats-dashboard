@@ -133,6 +133,11 @@
                       <div data-i18n="Preview">سهم ترافیک</div>
                     </a>
                   </li>
+                  <li class="menu-item">
+                    <a href="{% url 'analysis' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}?type=4" class="menu-link">
+                      <div data-i18n="Preview">میانگین سبد</div>
+                    </a>
+                  </li>
                 </ul>
             </li>
             <li class="menu-item">
