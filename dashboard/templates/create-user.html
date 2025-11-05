@@ -16,33 +16,40 @@
         {% csrf_token %}
         <div class="row">
             <div class="col-md-6">
-              <div class="card mb-4">
+              <div class="card mb-4" style="
+              background-clip: padding-box;
+              border-style: solid;
+              box-shadow: none;
+              border-width: 1px;
+              border-color: #e5e5e5;
+              border-radius: 12px;
+              padding: 10px;">
                 <h5 class="card-header heading-color">برای ساخت کاربر جدید موارد زیر را تکمیل کنید.</h5>
                 <div class="card-body">
                   <div>
                     <i class='bx bx-user'></i>
                     <label for="id_first_name" class="form-label">نام</label>
-                    <input type="text" class="form-control" name="first_name" id="id_first_name" aria-describedby="defaultFormControlHelp">
+                    <input type="text" class="form-control" name="first_name" id="id_first_name" aria-describedby="defaultFormControlHelp" required>
                     <i class='bx bx-user-circle'></i>
                     <label for="id_last_name" class="form-label">نام خانوادگی</label>
-                    <input type="text" class="form-control" name="last_name" id="id_last_name" aria-describedby="defaultFormControlHelp">
+                    <input type="text" class="form-control" name="last_name" id="id_last_name" aria-describedby="defaultFormControlHelp" required>
                     <i class='bx bx-id-card'></i>
                     <label for="id_username" class="form-label">نام کاربری</label>
-                    <input type="text" class="form-control" name="username" id="id_username" aria-describedby="defaultFormControlHelp">
+                    <input type="text" class="form-control" name="username" id="id_username" aria-describedby="defaultFormControlHelp" required>
                     <div id="defaultFormControlHelp" class="form-text">
                         الزامی. 150 کاراکتر یا کمتر. فقط شامل حروف، اعداد، و علامات @/./+/-/_
                     </div>
                     <i class='bx bx-lock-alt'></i>
                     <label for="id_password" class="form-label">رمز عبور</label>
-                    <input type="text" class="form-control" name="password" id="id_password" aria-describedby="defaultFormControlHelp">
+                    <input type="text" class="form-control" name="password" id="id_password" aria-describedby="defaultFormControlHelp" required>
                     <i class='bx bx-envelope'></i>
                     <label for="id_email" class="form-label">ایمیل</label>
                     <input type="text" class="form-control" name="email" id="id_email" aria-describedby="defaultFormControlHelp"><br>
-                    <div class="form-check form-switch mb-2">
+                    <div class="form-check form-switch mb-2" style="display: none;">
                         <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" name="is_staff">
                         <label class="form-check-label" for="id_is_staff">وضعیت کارمندی</label>
                     </div>
-                    <div id="defaultFormControlHelp" class="form-text">
+                    <div id="defaultFormControlHelp" class="form-text" style="display: none;">
                         نشان می‌دهد که آیا این کاربر می‌تواند وارد این وبگاه مدیریت شود یا خیر.
                     </div><br>
                     <div class="form-check form-switch mb-2">
@@ -59,8 +66,58 @@
             </div>
         </div>
     </form>
+{% if messages %}
+  {% for message in messages %}
+      {% if message.tags == 'success' %}
+      <div style="display: none;" class="alert alert-success" role="alert">{{ message }}</div>
+      {% elif message.tags == 'warning' %}
+      <div style="display: none;" class="alert alert-warning" role="alert">{{ message }}</div>
+      {% else %}
+      <div style="display: none;" class="alert alert-danger" role="alert">{{ message }}</div>
+      {% endif %}
+  {% endfor %}
+{% endif %}
 {% else %}
 <p>شما اجازه دسترسی به این قسمت را ندارید</p>
 {% endif %}
 {% endif %}
+{% endblock %}
+{% block extra_js %}
+<!-- Pop Ups -->
+<!-- JQuery Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+  try {
+    const successContainer = document.querySelector(".alert-success");
+    if (successContainer) {
+      const success = successContainer.innerText;
+        Swal.fire({
+        icon: "success",
+        title: "موفق",
+        html: `${success}<br><br><a class="btn btn-primary" href="{% url 'users' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}">بستن</a>`,
+        showConfirmButton: false,
+      });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+  
+  try {
+    const errorContainer = document.querySelector(".alert-danger");
+    const errorItem = $('.alert ul.errorlist li:first').contents().first().text().trim();
+    if (errorContainer.children.length >= 1) {
+      const error = `${errorItem} - ${document.querySelector(".errorlist li .errorlist li").innerText}`;
+        Swal.fire({
+        icon: "error",
+        title: "خطا",
+        html: `${error}`,
+        confirmButtonColor: '#5a8dee',
+        confirmButtonText: 'بستن' 
+      });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+</script>
 {% endblock %}

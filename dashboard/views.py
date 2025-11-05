@@ -319,18 +319,23 @@ def generate_user(request, url_hash):
         and request.user.profile.is_manager
         and request.user.is_active
     ):
-        form = Generate_User(request.POST)
-        if form.is_valid():
-            new_user = form.save()
-            try:
-                UserProfile.objects.create(
-                    user=new_user,
-                    merchant=request.user.profile.merchant,
-                    mobile="",
-                    is_manager=False,
-                )
-            except Exception as e:
-                print(e)
+        if request.method == "POST":
+            form = Generate_User(request.POST)
+            if form.is_valid():
+                new_user = form.save()
+                try:
+                    UserProfile.objects.create(
+                        user=new_user,
+                        merchant=request.user.profile.merchant,
+                        mobile="",
+                        is_manager=False,
+                    )
+                    messages.success(request, "کاربر با موفقیت ساخته شد")
+                except Exception as e:
+                    print(e)
+                    messages.error(request, f"{e}")
+        else:
+            form = Generate_User()
         return render(request, "create-user.html", {"form": form})
     return render(request, "401.html", status=401)
 

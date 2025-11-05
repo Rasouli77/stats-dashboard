@@ -86,9 +86,9 @@
                     <span class="note needsclick">فایل اکسل با توجه به تمپلیت مربوطه آپلود شود</span>
                 </div>
             </form>
-            <button class="btn btn-primary" id="submit-invoice-upload" style="margin-top: 25px; width: 15%;"><i style="margin-left: 10px;" class='bx bx-cloud-upload me-2'></i> آپلود</button>
-            <button class="btn btn-danger" id="remove-invoice-file" style="margin-top: 25px; width: 15%;">حذف فایل</button>
-            <a onclick="window.history.back()" class="btn btn-secondary" type="button" style="margin-top: 25px; width: 15%; color: white;"><i style="margin-left: 10px;" class='bx bx-arrow-back me-2'></i> بازگشت</a>
+            <button class="btn btn-primary" id="submit-invoice-upload" style="margin-top: 25px; width: 120px;"><i style="margin-left: 10px;" class='bx bx-cloud-upload me-2'></i> آپلود</button>
+            <button class="btn btn-danger" id="remove-invoice-file" style="margin-top: 25px; width: 120px;">حذف فایل</button>
+            <a onclick="window.history.back()" class="btn btn-secondary" type="button" style="margin-top: 25px; width: 120px; color: white;"><i style="margin-left: 10px;" class='bx bx-arrow-back me-2'></i> بازگشت</a>
         </div> 
     </div>
 </div>
@@ -97,4 +97,40 @@
 {% endblock %}
 {% block extra_js %}
 <script src="{% static 'assets/js/excel-file-upload-droparea.js' %}"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- Pop Ups -->
+<script>
+  try {
+    const successContainer = document.querySelector(".alert-success");
+    if (successContainer) {
+      const success = successContainer.innerText;
+        Swal.fire({
+        icon: "success",
+        title: "موفق",
+        html: `${success}<br><br><a class="btn btn-primary" href="{% url 'invoices' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}">بستن</a>`,
+        showConfirmButton: false,
+      });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+  
+  try {
+    const errorContainer = document.querySelector(".alert-danger");
+    const errorItem = $('.alert ul.errorlist li:first').contents().first().text().trim();
+    if (errorContainer.children.length >= 1) {
+      const error = `${errorItem} - ${document.querySelector(".errorlist li .errorlist li").innerText}`;
+        Swal.fire({
+        icon: "error",
+        title: "خطا",
+        html: `${error}`,
+        confirmButtonColor: '#5a8dee',
+        confirmButtonText: 'بستن' 
+      });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+</script>
 {% endblock %}
