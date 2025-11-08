@@ -31,7 +31,7 @@ import jdatetime
 import json
 from django.contrib import messages
 from django.db.models import F
-from .camera_data import get_custom_date_camera_data, update_or_create_camera_data
+from .camera_data import get_custom_date_camera_data, update_or_create_camera_data, get_camera_data, get_custom_date_camera_data_hour
 from django.db import connection
 from django.utils import timezone
 import subprocess
@@ -1729,6 +1729,9 @@ def camera_list(request, url_hash):
     for camera in cameras:
         camera.status = ping_ip(camera.ip)
         camera.save()
+    # get_camera_data("172.16.20.103")
+    get_custom_date_camera_data("172.16.20.103", "2025-11-01", "2025-11-05")
+    get_custom_date_camera_data_hour("172.16.20.103", "2025-11-01", "2025-11-05")
     return render(request, "camera-list.html", {"cameras": cameras})
 
 
