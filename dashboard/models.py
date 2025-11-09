@@ -410,21 +410,34 @@ class AlertCameraMalfunctionMessage(models.Model):
         verbose_name_plural = "پیام خطای اطلاع رسانی دوربین"
 
 
-# class SendReport(models.Model):
-#     merchant = models.ForeignKey(
-#         Merchant,
-#         on_delete=models.CASCADE,
-#         verbose_name="مرچنت",
-#         db_index=True,
-#     )
-#     name = models.CharField(max_length=255, verbose_name="نام")
-#     whatsapp_mobile = models.CharField(max_length=11, verbose_name="شماره واتساپ", null=True, blank=True)
-#     id_telegram = models.CharField(max_length=225, verbose_name="آی دی تلگرام", null=True, blank=True)
-#     is_active = models.BooleanField(verbose_name="فعال")
-#     time_sent = models.TimeField(verbose_name="زمان ارسال")
-#     date_created = models.DateTimeField(
-#         null=True, default=datetime.now, verbose_name="تاریخ ساخت"
-#     )
-#     last_modified = models.DateTimeField(
-#         auto_now=True, verbose_name="تاریخ آخرین تغییر"
-#     )
+class PeopleCountingHourly(models.Model):
+    date = models.DateField(verbose_name="تاریخ")
+    hour = models.TimeField(verbose_name="ساعت")
+    entry = models.IntegerField(verbose_name="ورود")
+    cam = models.ForeignKey(
+        Cam,
+        on_delete=models.CASCADE,
+        verbose_name="دوربین",
+    )
+    merchant = models.ForeignKey(
+        Merchant,
+        on_delete=models.CASCADE,
+        verbose_name="مرچنت",
+        db_index=True,
+    )
+    branch = models.ForeignKey(
+        Branch,
+        on_delete=models.CASCADE,
+        verbose_name="شعبه",
+        db_index=True,
+    )
+    date_created = models.DateTimeField(
+        null=True, default=datetime.now, verbose_name="تاریخ ساخت"
+    )
+    last_modified = models.DateTimeField(
+        auto_now=True, verbose_name="تاریخ آخرین تغییر"
+    )
+
+    class Meta:
+        verbose_name = "شمارشگر ساعتی"
+        verbose_name_plural = "شمارشگر ساعتی"

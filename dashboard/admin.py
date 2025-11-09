@@ -16,6 +16,7 @@ from .models import (
     HolidayDescription,
     AlertCameraMalfunction,
     AlertCameraMalfunctionMessage,
+    PeopleCountingHourly
 )
 from rangefilter.filters import DateRangeFilter
 
@@ -32,6 +33,21 @@ class PeopleCountingAdmin(admin.ModelAdmin):
         "exit",
         "date_created",
         "last_modified",
+    )
+    list_filter = ["branch", "date"]
+    exclude = ["date_created"]
+
+
+class PeopleCountingHourlyAdmin(admin.ModelAdmin):
+    list_display = (
+        "merchant",
+        "date",
+        "hour",
+        "branch",
+        "cam",
+        "entry",
+        "date_created",
+        "last_modified"
     )
     list_filter = ["branch", "date"]
     exclude = ["date_created"]
@@ -141,7 +157,7 @@ class UserProfileAdmin(admin.ModelAdmin):
 
 
 class InvoiceAdmin(admin.ModelAdmin):
-    list_display = ["date", "branch", "total_amount", "total_items"]
+    list_display = ["date", "branch", "total_amount", "total_items", "date_created", "last_modified"]
     autocomplete_fields = ["branch"]
     list_filter = ["branch", "date_created"]
     exclude = ["date_created"]
@@ -193,3 +209,4 @@ admin.site.register(HolidayDate, HolidayDateAdmin)
 admin.site.register(HolidayDescription)
 admin.site.register(AlertCameraMalfunction, AlertCameraMalfunctionAdmin)
 admin.site.register(AlertCameraMalfunctionMessage, AlertCameraMalfunctionMessageAdmin)
+admin.site.register(PeopleCountingHourly, PeopleCountingHourlyAdmin)
