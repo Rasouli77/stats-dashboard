@@ -8,6 +8,7 @@ from .models import (
     Campaign,
     HolidayDate,
     Cam,
+    PeopleCountingHourly
 )
 from django.db.models import Sum, Q, Min, Max, Avg, F
 from .views import jalali_to_gregorian
@@ -1086,6 +1087,42 @@ class AI(APIView):
                 return Response({"error": f"{e}"})
 
 
+class MultipleBranchesHourly(APIView):
+    def get(self, request):
+        queryset = (
+            PeopleCounting.objects.filter(
+                merchant__url_hash=request.user.profile.merchant.url_hash
+            )
+            .values("hour")
+            .annotate(entry_totals=Sum("entry"))
+            .order_by("date", "hour")
+        )
+        start_date_str = str(jalali_to_gregorian(request.GET.get("start-date")))
+        end_date_str = str(jalali_to_gregorian(request.GET.get("end-date")))
+        selected_branches = request.GET.getlist("branch")
+        start_date = 0
+        end_date = 0
+        start_date = datetime.strptime(start_date_str, "%Y-%m-%d").date()
+        end_date = datetime.strptime(end_date_str, "%Y-%m-%d").date()
+        if start_date and end_date:
+            try:
+                queryset = queryset.filter(date__range=(start_date, end_date))
+            except Exception as e:
+                print("error", e)
+
+        hours = sorted(set(queryset.values_list("hour", flat=True)))
+        response = {"hours": hours, "branches": {}}
+        branches = Branch.objects.filter(pk__in=selected_branches)
+        for branch in branches:
+            entry_totals = []
+            for row in queryset.filter(branch=branch):
+                count = row["entry_totals"]
+                entry_totals.append(count)
+            response["branches"][str(branch.pk)] = {
+                "name": branch.name,
+                "entry_totals": entry_totals,
+            }
+        return Response(response)
 
         
 

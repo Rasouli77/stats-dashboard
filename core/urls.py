@@ -48,7 +48,8 @@ from dashboard.views import (
     alert_form_social,
     alert_form_sms_edit,
     grouped_campaign_search_as_type,
-    single_campaign_search_as_type
+    single_campaign_search_as_type,
+    people_counting_hourly
 )
 from dashboard.api_views import (
     MultipleBranches,
@@ -64,7 +65,8 @@ from dashboard.api_views import (
     NormalMonthlyDisplay,
     abNormalWeeklyDisplay,
     abNormalMonthlyDisplay,
-    AI
+    AI,
+    MultipleBranchesHourly
 )
 from django.contrib.auth import views as auth_views
 from django.contrib import admin
@@ -78,6 +80,9 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path(
         "dashboard/people-counter/<str:url_hash>", people_counter, name="people_counter"
+    ),
+    path(
+        "dashboard/people-counter-hourly/<str:url_hash>", people_counting_hourly, name="people_counting_hourly"
     ),
     path("dashboard/users/<str:url_hash>", users_list, name="users"),
     path("dashboard/generate-user/<str:url_hash>", generate_user, name="generate_user"),
@@ -149,6 +154,7 @@ urlpatterns = [
     path("dashboard/account/profile/<int:user_id>/", profile, name="profile"),
     path("dashboard/<str:url_hash>", home, name="home"),
     path("api/multi-branch-data", MultipleBranches.as_view(), name="multi_branch_data"),
+    path("api/multi-branch-data", MultipleBranchesHourly.as_view(), name="multi_branch_data_hourly"),
     path(
         "api/multi-branch-invoice-data",
         MultiBranchesInvoice.as_view(),

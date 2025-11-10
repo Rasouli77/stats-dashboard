@@ -1,0 +1,3309 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}
+	شمارشگر
+{% endblock %}
+{% block meta_description %}
+	شمارشگر
+{% endblock %}
+{% block extra_css %}
+<!-- Style for Calendar, FlatPicker and Toastr -->
+<link rel="stylesheet" href="{% static 'assets/vendor/libs/fullcalendar/fullcalendar.css' %}">
+<link rel="stylesheet" href="{% static 'assets/vendor/libs/flatpickr/flatpickr.css' %}">
+<link rel="stylesheet" href="{% static 'assets/vendor/css/pages/app-calendar.css' %}">
+<link rel="stylesheet" href="{% static 'assets/vendor/libs/toastr/toastr.css' %}" />
+<!-- Custom Style for FlatPicker Calendar -->
+<style>
+    .light-style .flatpickr-calendar {
+        box-shadow: none !important;
+    }
+</style>
+<!-- Custom Style for the Loading Overlay / Additional CSS -->
+<style>
+    .loading-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+    }
+    .loader {
+        border: 8px solid #f3f3f3;
+        border-top: 8px solid #3498db;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .highcharts-credits {
+        display: none;
+    }
+
+    .demo-inline-spacing > * {
+        margin: 0px !important;
+    }
+    .box {
+        height: 25vh;  
+        overflow-y: auto;
+    }
+</style>
+<!-- Chart Tool Bar -->
+<style>
+    .icon-bar {
+        display: flex;
+        gap: 12px;
+        font-size: 24px;
+        margin-top: 25px;
+    }
+
+    .icon-wrapper {
+        position: relative;
+        cursor: pointer;
+        transition: color 0.3s ease;
+    }
+
+    /* Default color */
+    .icon-wrapper i {
+        color: #555;
+        transition: color 0.3s ease;
+    }
+
+    /* Hover colors for each one */
+    .bar-chart:hover i { color: #4caf50; } /* Green */
+    .pie-chart:hover i { color: #ff9800; } /* Orange */
+    .line-chart:hover i { color: #2196f3; } /* Blue */
+    .ai:hover i { color: #9c27b0; } /* Purple */
+
+    /* Tooltip styling */
+    .icon-wrapper::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        top: -32px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #333;
+        color: #fff;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 12px;
+        opacity: 0;
+        pointer-events: none;
+        white-space: nowrap;
+        transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    /* Show tooltip on hover */
+    .icon-wrapper:hover::after {
+        opacity: 1;
+        transform: translateX(-50%) translateY(4px);
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="loading-overlay" id="loading-overlay">
+    <div class="loader"></div>
+</div>
+<div class="calendar-container">
+    <div class="container">
+        <div class="row">
+            <!-- Date Picker Card -->
+            <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12" style="margin-bottom: 10px;">
+                <h1 style="color: #262626; font-size: 1.38rem; font-weight: 700;"> گزارش ترافیک (TR)</h1>
+            </div>
+            <div class="col-xl-2 col-lg-2 col-md-12 col-sm-12" style="margin-bottom: 10px;">
+                <h1 style="color: #262626; font-size: 1.125rem; font-weight: 700;">گزارش بر اساس:</h1>
+            </div>
+            <div class="col-xl-2 col-lg-2 col-md-12 col-sm-12" style="margin-bottom: 10px;">
+                <small><i class='bx bx-show'></i> نمایش</small>
+                <div class="card mt-3">
+                    <div class="card-body" style="padding: 0px !important;">
+                        <select class="form-select w-100" aria-label="Filter select" id="chart-display-toggle">
+                            <option value="1" selected>تجمیعی</option>
+                            <option value="2">تفکیکی</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-2 col-lg-2 col-md-12 col-sm-12" style="margin-bottom: 10px;">
+                <small><i class='bx bx-calendar'></i> بازه زمانی و شعب</small>
+                <div class="card mt-3">
+                    <div class="card-body" style="padding: 0px !important;">
+                        <button type="button" class="btn btn-outline-primary w-100" data-bs-toggle="modal" data-bs-target="#dateModal" style="border: none; color: black; background-color: #ccdbf1;">
+                            <i class="menu-icon tf-icons bx bx-filter"></i>
+                            فیلتر
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <!-- Date Picker Modal -->
+            <div class="modal fade" id="dateModal" tabindex="-1" aria-labelledby="dateModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="dateModalLabel">بازه زمانی گزارش</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="بستن"></button>
+                        </div>
+                        <div class="modal-body" style="display: flex; justify-content: center; align-items: center;">
+                            <!-- Your date range picker goes here -->
+                            <div id="date-range"></div>
+                        </div>
+                        <div class="modal-footer">
+                            <button 
+                                type="button" 
+                                class="btn btn-primary" 
+                                id="confirmDateBtn">
+                                بعدی
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Branch Selector Card -->
+            <!-- Branch Selector Modal -->
+            <div class="modal fade" id="branchModal" tabindex="-1" aria-labelledby="branchModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="branchModalLabel">انتخاب شعب</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="بستن"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="branches-grid">
+                            <div class="form-check mt-2">
+                                <input class="form-check-input" type="checkbox" id="select-all">
+                                <label class="form-check-label" for="select-all">انتخاب همه</label>
+                            </div>
+                            {% for branch in branches %}
+                            <div class="form-check mt-2">
+                                <input class="form-check-input fake-check" type="checkbox" value="{{ branch.pk }}" id="branch-{{ branch.pk }}">
+                                <label class="form-check-label" for="branch-{{ branch.pk }}">{{ branch.name }}</label>
+                            </div>
+                            {% endfor %}
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary">قبلی</button>
+                            <form action="" method="get" id="filter-form">
+                                <label style="display: none;" for="start-date">از تاریخ</label>
+                                <input type="text" name="start-date" id="start-date" style="display: none;">
+                                <label style="display: none;" for="end-date">تا</label>
+                                <input type="text" name="end-date" id="end-date" style="display: none;">
+                                {% for branch in branches %}
+                                <div class="form-check mt-3" style="display: none;">
+                                    <input class="form-check-input real-check" type="checkbox" value="{{ branch.pk }}" name="branch">
+                                    <label class="form-check-label" for="defaultCheck1">{{ branch.name }}</label>
+                                </div>
+                                {% endfor %}
+                                <button class="btn btn-primary btn-md" type="submit" id="filter-proxy-button" data-bs-dismiss="modal">فیلتر</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="demo-inline-spacing mt-3">
+                    <div class="tab-content px-0 pt-2">
+                        <!-- total traffic aggregation line chart -->
+                        <div id="container-tools" class="icon-bar" style="display: none;">
+                            <div class="icon-wrapper day" data-tooltip="Day">
+                                <i class="bx bx-calendar-event"></i>
+                            </div>
+                            <div class="icon-wrapper week" data-tooltip="Week">
+                                <i class="bx bx-calendar-week"></i>
+                            </div>
+                            <div class="icon-wrapper month" data-tooltip="Month">
+                                <i class="bx bx-calendar"></i>
+                            </div>
+                            <div class="icon-wrapper bar-chart" data-tooltip="Bar Chart">
+                                <i class="bx bx-bar-chart"></i>
+                            </div>
+                            <div class="icon-wrapper ai" data-tooltip="AI">
+                                <img src="{% static 'assets/img/icons/misc/gemini-logo.png' %}" alt="Gemini" class="gemini-icon" style="width: 24px;">
+                            </div>
+                        </div>
+                        <div id="container" style="width: 100%; height: 400px; display: none;"></div>
+                        <!-- AI Modal -->
+                        <div id="aiModal" class="ai-modal">
+                            <div class="ai-modal-content">
+                                <span id="aiClose" class="ai-close">&times;</span>
+                                <div id="aiLoading" class="ai-loading"></div>
+                                <div id="aiResponse" class="ai-response">
+                                </div>
+                            </div>
+                        </div>
+                        <!-- total traffic aggregation bar chart -->
+                        <div id="container-bar-chart-tools" class="icon-bar">
+                            <div class="icon-wrapper day" data-tooltip="Day">
+                                <i class="bx bx-calendar-event"></i>
+                            </div>
+                            <div class="icon-wrapper week" data-tooltip="Week">
+                                <i class="bx bx-calendar-week"></i>
+                            </div>
+                            <div class="icon-wrapper month" data-tooltip="Month">
+                                <i class="bx bx-calendar"></i>
+                            </div>
+                            <div class="icon-wrapper line-chart" data-tooltip="Line Chart">
+                                <i class="bx bx-line-chart"></i>
+                            </div>
+                            <div class="icon-wrapper ai" data-tooltip="AI">
+                                <img src="{% static 'assets/img/icons/misc/gemini-logo.png' %}" alt="Gemini" class="gemini-icon" style="width: 24px;">
+                            </div>
+                        </div>
+                        <div id="container-bar-chart" style="width: 100%; height: 400px;"></div>
+                        <!-- total traffic aggregation by branches -->
+                        <div id="second-container-tools" class="icon-bar" style="display: none;">
+                            <div class="icon-wrapper day" data-tooltip="Day">
+                                <i class="bx bx-calendar-event"></i>
+                            </div>
+                            <div class="icon-wrapper week" data-tooltip="Week">
+                                <i class="bx bx-calendar-week"></i>
+                            </div>
+                            <div class="icon-wrapper month" data-tooltip="Month">
+                                <i class="bx bx-calendar"></i>
+                            </div>
+                            <div class="icon-wrapper pie-chart" data-tooltip="Pie Chart">
+                                <i class="bx bx-pie-chart"></i>
+                            </div>
+                            <div class="icon-wrapper ai" data-tooltip="AI">
+                                <img src="{% static 'assets/img/icons/misc/gemini-logo.png' %}" alt="Gemini" class="gemini-icon" style="width: 24px;">
+                            </div>
+                        </div>
+                        <div id="second-container" style="width: 100%; height: 400px; display: none;"></div>
+                        <!-- total traffic aggregation pie chart by branches -->
+                        <div id="second-container-pie-chart-tools" class="icon-bar" style="display: none;">
+                            <div class="icon-wrapper line-chart" data-tooltip="Line Chart">
+                                <i class="bx bx-line-chart"></i>
+                            </div>
+                            <div class="icon-wrapper ai" data-tooltip="AI">
+                                <img src="{% static 'assets/img/icons/misc/gemini-logo.png' %}" alt="Gemini" class="gemini-icon" style="width: 24px;">
+                            </div>
+                        </div>
+                        <div id="second-container-pie-chart" style="width: 100%; height: 400px; display: none;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row" style="margin-left: 0px;">
+            <div class="col-lg-3" id="holiday-container">
+                <div class="card" id="holiday-card" style="background-clip: padding-box;
+                border-style: solid;
+                box-shadow: none;
+                border-width: 1px;
+                border-color: #e5e5e5;
+                border-radius: 12px;
+                height: 100%;  
+                padding: 10px">
+                    <div class="demo-inline-spacing mt-3" style="margin-bottom: 25px;">
+                        <ul class="list-group list-group-timeline">
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-9">
+                <div class="row" id="campaign-fill">
+                </div>
+            </div>
+        </div>
+    </div><br>
+</div>
+<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" style="display: none;">
+{% endblock %}
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/jalaali-js/dist/jalaali.min.js"></script>
+<!-- JQuery and Toastr Scripts -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment-jalaali@0.10.4/build/moment-jalaali.min.js"></script>
+<!-- Jdatetime -->
+<script src="https://cdn.jsdelivr.net/npm/jalaali-js@1.2.6/dist/jalaali.min.js"></script>
+<!-- AI Initialization -->
+<script>
+    let aiStartDate = "";
+    let aiEndDate = "";
+    let aiBranchIds = [];
+</script>
+<!-- Error Handling  -->
+<script>
+    document.querySelector("#filter-proxy-button").addEventListener("click", (e) => {
+        let m = 0;
+        if (document.getElementById("select-all").checked) {
+            m += 1
+        }
+        document.querySelectorAll(".fake-check").forEach(
+        element => {
+                if (element.checked) {
+                    m += 1
+                }
+            }
+        );
+        if (m === 0) {
+            Swal.fire({
+                icon: "error",
+                title: "خطا",
+                text: "یک مورد را انتخاب کنید",
+                confirmButtonColor: '#5a8dee',
+                confirmButtonText: 'بستن' 
+            });
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    });
+</script>
+<!-- Plot Bands Functions -->
+<script>
+    function persianToEnglishDigits(str) {
+        const persianDigits = '۰۱۲۳۴۵۶۷۸۹';
+        return str.replace(/[۰-۹]/g, d => persianDigits.indexOf(d));
+    }
+
+    function persianDateToJSDate(persianDateStr) {
+        // Convert Persian digits to English digits
+        const englishDateStr = persianToEnglishDigits(persianDateStr);
+
+        // Split into parts
+        const [year, month, day] = englishDateStr.split('/').map(Number);
+
+        // JS months are 0-based
+        return new Date(year, month - 1, day);
+    }
+
+    function englishDateToJSDate(englishDateStr) {
+        const [year, month, day] = englishDateStr.split('/').map(Number);
+        return new Date(year, month - 1, day);
+    }
+
+    function addHighlight(chart, fromDate, toDate, color, id) {
+        const categories = chart.xAxis[0].categories;
+        let fromIndex = categories.indexOf(fromDate);
+        let toIndex = categories.indexOf(toDate);
+        const first = categories[0];
+        const last = categories[categories.length - 1];
+        console.log(fromDate, toDate);
+        console.log(first, last)
+        console.log(persianDateToJSDate(fromDate), persianDateToJSDate(first))
+        if (persianDateToJSDate(fromDate) < persianDateToJSDate(first)) {
+            fromIndex = categories.indexOf(first);
+        }
+        console.log(persianDateToJSDate(toDate), persianDateToJSDate(last));
+        if (persianDateToJSDate(toDate) > persianDateToJSDate(last)) {
+            toIndex = categories.indexOf(last);
+        }
+        if (fromIndex !== -1 && toIndex !== -1) {
+            chart.xAxis[0].addPlotBand({
+                from: fromIndex - 0.5,
+                to: toIndex + 0.5,
+                color,
+                id
+            });
+            console.log(`✅ Added highlight ${id} from ${fromDate} to ${toDate}`);
+        } else {
+            console.warn("⚠️ Could not find indices for:", fromDate, toDate);
+        }
+    }
+
+    function parseWeekNumber(weekStr) {
+        // Remove "هفته" and trim whitespace
+        const numStr = weekStr.replace("هفته", "").trim();
+        // Convert Persian digits to English digits first
+        const persianDigits = "۰۱۲۳۴۵۶۷۸۹";
+        const englishNumStr = numStr.replace(/[۰-۹]/g, d => persianDigits.indexOf(d));
+        // Convert to integer
+        return parseInt(englishNumStr, 10);
+    }
+
+    function addWeeklyHighlight(chart, fromWeek, toWeek, color, id) {
+        const categories = chart.xAxis[0].categories;
+        let fromIndex = categories.indexOf(fromWeek);
+        let toIndex = categories.indexOf(toWeek);
+        const first = categories[0];
+        const last = categories[categories.length - 1];
+        console.log(fromWeek, toWeek);
+        console.log(first, last)
+        if (parseWeekNumber(fromWeek) < parseWeekNumber(first)) {
+            fromIndex = categories.indexOf(first);
+        }
+        if (parseWeekNumber(toWeek) > parseWeekNumber(last)) {
+            toIndex = categories.indexOf(last);
+        }
+        if (fromIndex !== -1 && toIndex !== -1) {
+            chart.xAxis[0].addPlotBand({
+                from: fromIndex - 0.5,
+                to: toIndex + 0.5,
+                color,
+                id
+            });
+            console.log(`✅ Added highlight ${id} from ${fromWeek} to ${toWeek}`);
+        } else {
+            console.warn("⚠️ Could not find indices for:", fromWeek, toWeek);
+        }
+    }
+
+    function removeHighChart(chart, id) {
+        chart.xAxis[0].removePlotBand(id);
+        console.log(`❌ Removed highlight ${id}`);
+    }
+
+    function englishToPersianNumber(str) {
+        const persianDigits = '۰۱۲۳۴۵۶۷۸۹';
+        return str.replace(/\d/g, d => persianDigits[d]);
+    }
+
+    function randomPlotBandColor(alpha = 0.15) {
+        const r = Math.floor(Math.random() * 120) + 80; 
+        const g = Math.floor(Math.random() * 120) + 80;
+        const b = Math.floor(Math.random() * 120) + 80;
+
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+</script>
+<!-- Weekly Plot Bands Functions -->
+<script>
+    // Convert Persian digits to English digits
+    function persianToEnglishNumber(str) {
+        const persianDigits = '۰۱۲۳۴۵۶۷۸۹';
+        return str.replace(/[۰-۹]/g, d => persianDigits.indexOf(d));
+    }
+
+    // Convert Persian-date string to JS Date (Gregorian)
+    function persianDateToJSDate(persianDate) {
+        const [jy, jm, jd] = persianToEnglishNumber(persianDate)
+            .split("/")
+            .map(Number);
+        // Convert Jalali → Gregorian
+        const g = jalaali.toGregorian(jy, jm, jd);
+        return new Date(g.gy, g.gm - 1, g.gd);
+    }
+
+    // Main function
+    function slicePersianDates(masterList, startDate, endDate) {
+        const jsDates = masterList.map(d => persianDateToJSDate(d));
+
+        let startIndex = 0;
+        let endIndex = jsDates.length - 1;
+
+        if (startDate) {
+            const startJS = persianDateToJSDate(startDate);
+            startIndex = jsDates.findIndex(d => d.getTime() >= startJS.getTime());
+            if (startIndex === -1) startIndex = 0;
+        }
+
+        if (endDate) {
+            const endJS = persianDateToJSDate(endDate);
+            endIndex = jsDates.findIndex(d => d.getTime() > endJS.getTime());
+            if (endIndex === -1) endIndex = jsDates.length;
+            else endIndex = endIndex - 1; // include the date itself
+        }
+
+        return masterList.slice(startIndex, endIndex + 1);
+    }
+</script>
+<!-- Holiday Spotter -->
+<script>
+    const holidayDates = []
+    const fridays = []
+    let timelineHolidays = []
+    $("#filter-form").on("submit", function (e) {
+        const events = [
+            "جشن نوروز/جشن سال نو",
+            "شب قدر",
+            "عید سعید فطر",
+            "روز جمهوری اسلامی",
+            "تعطیل به مناسبت عید سعید فطر",
+            "جشن سیزده به در",
+            "شهادت امام جعفر صادق علیه السلام",
+            "ولادت امام رضا علیه السلام",
+            "رحلت حضرت امام خمینی",
+            "شهادت امام محمد باقر علیه السلام",
+            "قیام 15 خرداد",
+            "عید سعید قربان",
+            "عید سعید غدیر خم",
+            "تاسوعای حسینی",
+            "عاشورای حسینی",
+            "اربعین حسینی",
+            "رحلت رسول اکرم؛شهادت امام حسن مجتبی علیه السلام",
+            "شهادت امام رضا علیه السلام",
+            "شهادت امام حسن عسکری علیه السلام",
+            "میلاد رسول اکرم و امام جعفر صادق علیه السلام",
+            "شهادت حضرت فاطمه زهرا سلام الله علیها",
+            "ولادت امام علی علیه السلام و روز پدر",
+            "مبعث رسول اکرم (ص)",
+            "ولادت حضرت قائم عجل الله تعالی فرجه و جشن نیمه شعبان",
+            "شهادت حضرت علی علیه السلام",
+            "روز ملی شدن صنعت نفت ایران"
+        ];
+        const startDate = $("#start-date").val();
+        const endDate = $("#end-date").val();
+        $.ajax({
+            url: "/api/holiday-spot",
+            data: {
+                "start-date": startDate,
+                "end-date": endDate
+            },
+            traditional: true,
+            success: function (data) {
+                data.forEach(item => {
+                    if (item.descriptions[0] !== 'جمعه') {
+                        holidayDates.push(item.date);
+                    }
+                });
+                data.forEach(item => {
+                    if (item.descriptions[0] === 'جمعه') {
+                        fridays.push(item.date);
+                    }
+                });
+                timelineHolidays = data;
+                if (timelineHolidays.length > 0) {
+                    timelineHolidays.forEach(item => {
+                        item.descriptions = item.descriptions.filter(i => events.includes(i));
+                        if (item.descriptions.length > 1) {
+                            item.descriptions.length = 1;
+                        }
+                    });
+                }
+                timelineHolidays = timelineHolidays.filter(i => i.descriptions.length > 0)
+                const holidayContainer = document.querySelector("#holiday-container");
+                if (timelineHolidays.length === 0) {
+                    document.querySelector(".list-group-timeline").innerHTML = "<p style='display: flex; justify-content: center; align-items: center; font-weight: bold;'>مناسبتی وجود ندارد</p>";
+                }
+                if (timelineHolidays.length > 0) {
+                    document.querySelector(".list-group-timeline").innerHTML = "";
+                }
+                if (timelineHolidays.length > 3) {
+                    document.getElementById("holiday-card").style.height = "";
+                } else {
+                    document.getElementById("holiday-card").style.height = "100%";
+                }
+                timelineHolidays.forEach(i => {
+                    if (i.descriptions.length !== 0) {
+                        const rowhtml = `
+                        <li class="list-group-item list-group-timeline-primary">
+                            <span class="holiday-date" style="background-color: #5a8dee; border-radius: 5px; color: white; padding-left: 5px; padding-right: 5px; padding-top: 2.5px; padding-bottom: 2.5px; margin-left: 25px;">${i.date}</span>
+                            <span class="description">${i.descriptions[0]}</span>
+                        </li> 
+                        `
+                        document.querySelector(".list-group-timeline").insertAdjacentHTML("beforeend", rowhtml);
+                    } 
+                });
+            }
+        });
+    });
+</script>
+<!-- Initial HighChart Chart Paint (Aggregation) Raw JavaScript -->
+<script>
+    // getJalaliDateRange returns the last 7 days
+    function getJalaliDateRange() {
+        const today = new Date();
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(today.getDate() - 7);
+
+        function toJalaliStr(date) {
+            const { jy, jm, jd } = jalaali.toJalaali(date);
+            return `${jy}-${String(jm).padStart(2, "0")}-${String(jd).padStart(2, "0")}`;
+        }
+
+        const inStartDate = toJalaliStr(sevenDaysAgo);
+        const inEndDate = toJalaliStr(today);
+
+        return { inStartDate, inEndDate };
+    }
+    // This triggers on page load
+    document.addEventListener("DOMContentLoaded", () => {
+        // The last 7 days: start and end
+        const {inStartDate, inEndDate} = getJalaliDateRange();
+        // This takes care of campaigns in the last 7 days
+        fetch(`{% url 'invoice_counter' url_hash=request.user.profile.merchant.url_hash %}?start-date=${inStartDate}&end-date=${inEndDate}`, {
+                method: 'GET',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.json();
+        })
+        .then(data => {
+            document.querySelector("#campaign-fill").innerHTML = "";
+            if (data.campaigns.length === 0) {
+                const card = document.createElement("div");
+                card.classList.add("card");
+                card.classList.add("h-100");
+                card.setAttribute("style", "border-radius: 12px; border-color: #e5e5e5; box-shadow: none !important; border-width: 1px; display: flex; justify-content: center; align-items: center; font-weight: bold;");
+                const i = document.createElement("i");
+                i.classList.add("bx");
+                i.classList.add("bx-box");
+                i.style.fontSize = "48px";
+                const p = document.createElement("p");
+                p.innerText = "هیچ کمپینی یافت نشد";
+                card.appendChild(i);
+                card.appendChild(p);
+                document.querySelector("#campaign-fill").appendChild(card);
+            } else {
+                document.querySelector("#campaign-fill").innerHTML = "";
+                data.campaigns.forEach(campaign => {
+                    const rowhtml = `
+                            <div class="col-lg-4" style="margin-top: 10px; margin-bottom: 10px;">
+                            <div class="card" style="
+                            background-clip: padding-box;
+                            border-style: solid;
+                            box-shadow: none;
+                            border-width: 1px;
+                            border-color: #e5e5e5;
+                            background-color: #F9F9F9;
+                            border-radius: 12px;
+                            padding: 10px;">
+                                <div class="card-header d-flex align-items-center justify-content-between">
+                                    <h5 class="card-title mb-0">${campaign.campaign_name}</h5>
+                                </div>
+                                <div class="card-body pb-3">
+                                    <ul class="p-0 m-0">
+                                    <li class="d-flex align-items-center mb-3">
+                                    <div class="avatar avatar-sm flex-shrink-0 me-3">
+                                    <span class="avatar-initial rounded-circle bg-label-success">
+                                    <i class="bx bx-show"></i></span>
+                                    </div>
+                                    <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2"> <div class="me-2">
+                                    <p class="mb-0">نمایش</p>
+                                    <small class="text-muted">نمایش بازه در نمودار</small>
+                                    </div> <div class="item-progress"><input type='checkbox' class='display-plot' />
+                                    </div>
+                                    </div>
+                                    </li>
+                                    <li class="d-flex align-items-center mb-3">
+                                        <div class="avatar avatar-sm flex-shrink-0 me-3">
+                                        <span class="avatar-initial rounded-circle bg-label-primary"><i class="bx bx-time"></i></span>
+                                        </div>
+                                        <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                        <div class="me-2">
+                                            <p class="mb-0">شروع</p>
+                                            <small class="text-muted">تاریخ شروع کمپین</small>
+                                        </div>
+                                        <div class="item-progress greg-date">${campaign.campaign_start_date}</div>
+                                        </div>
+                                    </li>
+                                    <li class="d-flex align-items-center mb-3">
+                                        <div class="avatar avatar-sm flex-shrink-0 me-3">
+                                        <span class="avatar-initial rounded-circle bg-label-info"><i class="bx bx-stopwatch"></i></span>
+                                        </div>
+                                        <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                        <div class="me-2">
+                                            <p class="mb-0">پایان</p>
+                                            <small class="text-muted">تاریخ پایان کمپین</small>
+                                        </div>
+                                        <div class="item-progress greg-date">${campaign.campaign_end_date}</div>
+                                        </div>
+                                    </li>
+                                    <li class="d-flex align-items-center mb-3">
+                                        <div class="avatar avatar-sm flex-shrink-0 me-3">
+                                        <span class="avatar-initial rounded-circle bg-label-danger"><i class="bx bx-tag"></i></span>
+                                        </div>
+                                        <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                        <div class="me-2">
+                                            <p class="mb-0">نوع</p>
+                                            <small class="text-muted">مثال: فروش و ...</small>
+                                        </div>
+                                        <div class="item-progress">${campaign.campaign_type}</div>
+                                        </div>
+                                    </li>
+                                    <li class="d-flex align-items-center">
+                                        <div class="avatar avatar-sm flex-shrink-0 me-3">
+                                        <span class="avatar-initial rounded-circle bg-label-success"><i class="bx bx-dollar"></i></span>
+                                        </div>
+                                        <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                        <div class="me-2">
+                                            <p class="mb-0">هزینه</p>
+                                            <small class="text-muted">مجموع هزینه‌ها</small>
+                                        </div>
+                                        <div class="item-progress campaign-cost">${campaign.campaign_cost}</div>
+                                        </div>
+                                    </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        `
+                    document.querySelector("#campaign-fill").insertAdjacentHTML("beforeend", rowhtml);
+                });
+            }
+            
+            function jalaliDateConvertor() {
+                document.querySelectorAll(".greg-date").forEach(el => {
+                    const gregorian = el.innerHTML.split("-");
+                    const gYear = parseInt(gregorian[0]);
+                    const gMonth = parseInt(gregorian[1]);
+                    const gDay = parseInt(gregorian[2]);
+                    const jdate = jalaali.toJalaali(gYear, gMonth, gDay);
+                    el.innerText = `${jdate.jy}/${String(jdate.jm).padStart(2, '0')}/${String(jdate.jd).padStart(2, '0')}`;
+                    });
+            }
+            document.querySelectorAll(".campaign-cost").forEach(el => {
+                const cost = Number(el.innerText);
+                const separatedCost = cost.toLocaleString('fa-IR');
+                el.innerText = separatedCost;
+            })
+            setTimeout(jalaliDateConvertor, 500);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+        });
+        // Selected events for holiday display
+        const inevents = [
+            "جشن نوروز/جشن سال نو",
+            "شب قدر",
+            "عید سعید فطر",
+            "روز جمهوری اسلامی",
+            "تعطیل به مناسبت عید سعید فطر",
+            "جشن سیزده به در",
+            "شهادت امام جعفر صادق علیه السلام",
+            "ولادت امام رضا علیه السلام",
+            "رحلت حضرت امام خمینی",
+            "شهادت امام محمد باقر علیه السلام",
+            "قیام 15 خرداد",
+            "عید سعید قربان",
+            "عید سعید غدیر خم",
+            "تاسوعای حسینی",
+            "عاشورای حسینی",
+            "اربعین حسینی",
+            "رحلت رسول اکرم؛شهادت امام حسن مجتبی علیه السلام",
+            "شهادت امام رضا علیه السلام",
+            "شهادت امام حسن عسکری علیه السلام",
+            "میلاد رسول اکرم و امام جعفر صادق علیه السلام",
+            "شهادت حضرت فاطمه زهرا سلام الله علیها",
+            "ولادت امام علی علیه السلام و روز پدر",
+            "مبعث رسول اکرم (ص)",
+            "ولادت حضرت قائم عجل الله تعالی فرجه و جشن نیمه شعبان",
+            "شهادت حضرت علی علیه السلام",
+            "روز ملی شدن صنعت نفت ایران"
+        ];
+        // Holidays in the last 7 days
+        const startDate = inStartDate;
+        const endDate = inEndDate;
+        // Takes care of holiday display
+        $.ajax({
+            url: "/api/holiday-spot",
+            data: {
+                "start-date": startDate,
+                "end-date": endDate
+            },
+            traditional: true,
+            success: function (data) {
+                data.forEach(item => {
+                    if (item.descriptions[0] !== 'جمعه') {
+                        holidayDates.push(item.date);
+                    }
+                });
+                data.forEach(item => {
+                    if (item.descriptions[0] === 'جمعه') {
+                        fridays.push(item.date);
+                    }
+                });
+                timelineHolidays = data;
+                if (timelineHolidays.length > 0) {
+                    timelineHolidays.forEach(item => {
+                        item.descriptions = item.descriptions.filter(i => inevents.includes(i));
+                        if (item.descriptions.length > 1) {
+                            item.descriptions.length = 1;
+                        }
+                    });
+                }
+                timelineHolidays = timelineHolidays.filter(i => i.descriptions.length > 0)
+                const holidayContainer = document.querySelector("#holiday-container");
+                if (timelineHolidays.length === 0) {
+                    document.querySelector(".list-group-timeline").innerHTML = "<p style='display: flex; justify-content: center; align-items: center; font-weight: bold;'>مناسبتی وجود ندارد</p>";
+                }
+                if (timelineHolidays.length > 0) {
+                    document.querySelector(".list-group-timeline").innerHTML = "";
+                }
+                if (timelineHolidays.length > 3) {
+                    document.getElementById("holiday-card").style.height = "";
+                } else {
+                    document.getElementById("holiday-card").style.height = "100%";
+                }
+                timelineHolidays.forEach(i => {
+                    if (i.descriptions.length !== 0) {
+                        const rowhtml = `
+                        <li class="list-group-item list-group-timeline-primary">
+                            <span class="holiday-date" style="background-color: #5a8dee; border-radius: 5px; color: white; padding-left: 5px; padding-right: 5px; padding-top: 2.5px; padding-bottom: 2.5px; margin-left: 25px;">${i.date}</span>
+                            <span class="description">${i.descriptions[0]}</span>
+                        </li> 
+                        `
+                        document.querySelector(".list-group-timeline").insertAdjacentHTML("beforeend", rowhtml);
+                    } 
+                });
+            }
+        });
+        // This takes care of people counting data
+        fetch(`{% url 'people_counter' url_hash=request.user.profile.merchant.url_hash %}?start-date=${inStartDate}&end-date=${inEndDate}`, {
+            method: 'GET',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.json();
+        })
+        .then(data => {
+            const total = data.entry_totals.reduce((a, b) => a + b, 0);
+            const newCategories = data.dates.map(dateStr => {
+                const date = new Date(dateStr);
+                return date.toLocaleDateString('fa-IR', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit'
+                });
+            });
+            // Initial Line Chart Monthly Display Button Logic
+            // Initial Line Chart Monthly Display Button Function
+            function initialHandleMonthlyChart () {
+                const apiUrl = "/api/normal-monthly-display";
+                const x = newCategories;
+                const y = data.entry_totals;
+                const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                fetch(apiUrl, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": csrftoken,
+                    },
+                    body: JSON.stringify({x: x, y: y})
+                }).then(response => {
+                    if (!response.ok) throw new Error("Invalid Response");
+                    return response.json()
+                }).then(d => {
+                    // Line Chart Update
+                    lineChart.update({
+                        xAxis: { 
+                            categories: d.months,
+                            labels: {
+                                useHTML: true,  
+                                formatter: function () {
+                                        const value = this.value; 
+                                        if (holidayDates.includes(value)) {
+                                            return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                        }
+                                        if (fridays.includes(value)) {
+                                            return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                        }
+                                        return value; 
+                                    }
+                                } 
+                            },
+                        series: [{ name: `ترافیک (${Number(total).toLocaleString('fa-IR')})`, data: d.values}
+                        ],
+                    });
+                    //  Bar Chart Update
+                    barChart.update({
+                        xAxis: { 
+                            categories: d.months,
+                            labels: {
+                                useHTML: true,  
+                                formatter: function () {
+                                        const value = this.value; 
+                                        if (holidayDates.includes(value)) {
+                                            return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                        }
+                                        if (fridays.includes(value)) {
+                                            return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                        }
+                                        return value; 
+                                    }
+                                } 
+                            },
+                        series: [{ name: `ترافیک (${Number(total).toLocaleString('fa-IR')})`, data: d.values},
+                        {data: data.exit_totals}
+                        ],
+                    });
+                    // Remove Plot for Month Display
+                    setTimeout(() => {
+                        const plots = document.querySelectorAll(".display-plot");
+                        document.querySelectorAll(".display-plot").forEach((i, index) => {
+                            i.checked = false;
+                            removeHighChart(lineChart, index);
+                            removeHighChart(barChart, index);
+                        });
+                    }, 500);
+                });
+            }
+            // Initial Line Chart Monthly Event Listener
+            $("#container-tools .month").off("click").on("click", initialHandleMonthlyChart);
+            // Initial Line Chart Weekly Display Button Logic
+            // Initial Line Chart Weekly Display Button Function
+            function initialHandleWeeklyChart () {
+                const apiUrl = "/api/normal-weekly-display";
+                const x = newCategories;
+                console.log(x)
+                const y = data.entry_totals;
+                const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                fetch(apiUrl, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": csrftoken,
+                    },
+                    body: JSON.stringify({x: x, y: y})
+                }).then(response => {
+                    if (!response.ok) throw new Error("Invalid Response");
+                    return response.json()
+                }).then(d => {
+                    // Line Chart Update
+                    lineChart.update({
+                        xAxis: { 
+                            categories: d.weeks,
+                            labels: {
+                                useHTML: true,  
+                                formatter: function () {
+                                        const value = this.value; 
+                                        if (holidayDates.includes(value)) {
+                                            return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                        }
+                                        if (fridays.includes(value)) {
+                                            return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                        }
+                                        return value; 
+                                    }
+                                } 
+                            },
+                        series: [{ name: `ترافیک (${Number(total).toLocaleString('fa-IR')})`, data: d.values}
+                        ],
+                    });
+                    //  Bar Chart Update
+                    barChart.update({
+                        xAxis: { 
+                            categories: d.weeks,
+                            labels: {
+                                useHTML: true,  
+                                formatter: function () {
+                                        const value = this.value; 
+                                        if (holidayDates.includes(value)) {
+                                            return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                        }
+                                        if (fridays.includes(value)) {
+                                            return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                        }
+                                        return value; 
+                                    }
+                                } 
+                            },
+                        series: [{ name: `ترافیک (${Number(total).toLocaleString('fa-IR')})`, data: d.values},
+                        {data: data.exit_totals}
+                        ],
+                    });
+                    // Campaign Plot Bands
+                    setTimeout(() => {
+                        const plots = document.querySelectorAll(".display-plot");
+                        console.log("Found checkboxes:", plots.length);
+                        // Remove the plot bands on form reload
+                        document.querySelectorAll(".display-plot").forEach((item, index) => {
+                            item.checked = false;
+                            removeHighChart(lineChart, index);
+                            removeHighChart(barChart, index);
+                        });
+                        plots.forEach((item, index) => {
+                            item.addEventListener("change", () => {
+                                const ul = item.closest("ul"); 
+                                if (!ul) return;
+
+                                const liItems = ul.querySelectorAll("li");
+                                if (liItems.length < 3) {
+                                    console.warn("Not enough li items");
+                                    return;
+                                }
+
+                                const startDate = englishToPersianNumber(liItems[1].querySelector(".greg-date")?.innerText?.trim());
+                                const endDate = englishToPersianNumber(liItems[2].querySelector(".greg-date")?.innerText?.trim());
+                                const campaignWeeks = slicePersianDates(newCategories, startDate, endDate);
+                                fetch(apiUrl, {
+                                    method: "POST",
+                                    headers: {
+                                        "Content-Type": "application/json",
+                                        "X-CSRFToken": csrftoken,
+                                    },
+                                    body: JSON.stringify({x: campaignWeeks, y: y})
+                                }).then(response => {
+                                    if (!response.ok) throw new Error("Invalid Response");
+                                    return response.json()
+                                }).then(x => {
+                                    let weeks  = x.weeks;
+                                    console.log(weeks)
+                                    const firstWeek = weeks[0];
+                                    const lastWeek = weeks[weeks.length - 1];
+                                    if (item.checked) {
+                                        console.log("✅ Checkbox checked", { firstWeek, lastWeek });
+                                        addWeeklyHighlight(lineChart, firstWeek, lastWeek, randomPlotBandColor(), index);
+                                        addWeeklyHighlight(barChart, firstWeek, lastWeek, randomPlotBandColor(), index);
+                                    } else {
+                                        console.log("❌ Checkbox unchecked");
+                                        removeHighChart(lineChart, index);
+                                        removeHighChart(barChart, index);
+                                    }
+                                });
+                            });
+                        });
+                    }, 500);
+                });
+            }
+            // Initial Line Chart Weekly Display Button Event Listener
+            $("#container-tools .week").off("click").on("click", initialHandleWeeklyChart);
+            // Initial Line Chart Daily Display Button Logic
+            // Initial Line Chart Daily Display Function
+            function initialHandleDailyChart() {
+                lineChart.update({
+                    xAxis: { 
+                        categories: newCategories,
+                        labels: {
+                            useHTML: true,  
+                            formatter: function () {
+                                    const value = this.value; 
+                                    if (holidayDates.includes(value)) {
+                                        return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                    }
+                                    if (fridays.includes(value)) {
+                                        return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                    }
+                                    return value; 
+                                }
+                            } 
+                        },
+                    series: [{ name: `ترافیک (${Number(total).toLocaleString('fa-IR')})`, data: data.entry_totals},
+                    {data: data.exit_totals}
+                    ],
+                });
+                barChart.update({
+                    xAxis: { 
+                        categories: newCategories,
+                        labels: {
+                            useHTML: true,  
+                            formatter: function () {
+                                    const value = this.value; 
+                                    if (holidayDates.includes(value)) {
+                                        return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                    }
+                                    if (fridays.includes(value)) {
+                                        return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                    }
+                                    return value; 
+                                }
+                            } 
+                        },
+                    series: [{ name: `ترافیک (${Number(total).toLocaleString('fa-IR')})`, data: data.entry_totals},
+                    {data: data.exit_totals}
+                    ],
+                });
+                // Campaign Plot Bands
+                setTimeout(() => {
+                    const plots = document.querySelectorAll(".display-plot");
+                    console.log("Found checkboxes:", plots.length);
+                    // Remove the plot bands on form reload
+                    document.querySelectorAll(".display-plot").forEach((item, index) => {
+                        item.checked = false;
+                        removeHighChart(lineChart, index);
+                        removeHighChart(barChart, index);
+                    });
+                    plots.forEach((item, index) => {
+                        item.addEventListener("change", () => {
+                            const ul = item.closest("ul"); // go up to parent list
+                            if (!ul) return;
+
+                            const liItems = ul.querySelectorAll("li");
+                            if (liItems.length < 3) {
+                                console.warn("Not enough li items");
+                                return;
+                            }
+
+                            const startDate = englishToPersianNumber(liItems[1].querySelector(".greg-date")?.innerText?.trim());
+                            const endDate = englishToPersianNumber(liItems[2].querySelector(".greg-date")?.innerText?.trim());
+                            
+                            if (item.checked) {
+                                console.log("✅ Checkbox checked", { startDate, endDate });
+                                addHighlight(lineChart, startDate, endDate, randomPlotBandColor(), index);
+                                addHighlight(barChart, startDate, endDate, randomPlotBandColor(), index);
+                            } else {
+                                console.log("❌ Checkbox unchecked");
+                                removeHighChart(lineChart, index);
+                                removeHighChart(barChart, index);
+                            }
+                        });
+                    });
+                }, 500);
+            }
+            // Initial Line Chart Daily Display Event Listener
+            $("#container-tools .day").off("click").on("click", initialHandleDailyChart);
+
+            // Initial Bar Chart Monthly Display Button Logic
+            // Initial Bar Chart Monthly Display Function
+            // The same function above is used
+            // Initial Bar Chart Monthly Event Listener
+            $("#container-bar-chart-tools .month").off("click").on("click", initialHandleMonthlyChart);
+
+            // Initial Bar Chart Weekly Display Button Logic
+            // Initial Bar Chart Weekly Display Function
+            // The same function above is used
+            // Initial Bar Chart Weekly Event Listener
+            $("#container-bar-chart-tools .week").off("click").on("click", initialHandleWeeklyChart);
+
+            // Initial Bar Chart Daily Display Button Logic
+            // Initial Bar Chart Daily Display Function
+            // The same function above is used
+            // Initial Bar Chart Daily Event Listener
+            $("#container-bar-chart-tools .day").off("click").on("click", initialHandleDailyChart);
+
+            // Initial Line Chart 
+            lineChart.update({
+                xAxis: { 
+                    categories: newCategories,
+                    labels: {
+                        useHTML: true,  
+                        formatter: function () {
+                                const value = this.value; 
+                                if (holidayDates.includes(value)) {
+                                    return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                }
+                                if (fridays.includes(value)) {
+                                    return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                }
+                                return value; 
+                            }
+                        } 
+                    },
+                series: [{ name: `ترافیک (${Number(total).toLocaleString('fa-IR')})`, data: data.entry_totals},
+                {data: data.exit_totals}
+                ],
+            });
+            // Bar Line Chart 
+            barChart.update({
+                xAxis: { 
+                    categories: newCategories,
+                    labels: {
+                        useHTML: true,  
+                        formatter: function () {
+                                const value = this.value; 
+                                if (holidayDates.includes(value)) {
+                                    return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                }
+                                if (fridays.includes(value)) {
+                                    return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                }
+                                return value; 
+                            }
+                        } 
+                    },
+                series: [{ name: `ترافیک (${Number(total).toLocaleString('fa-IR')})`, data: data.entry_totals},
+                {data: data.exit_totals}
+                ],
+            });
+            // Campaign Plot Bands
+            setTimeout(() => {
+                const plots = document.querySelectorAll(".display-plot");
+                console.log("Found checkboxes:", plots.length);
+                // Remove the plot bands on form reload
+                document.querySelectorAll(".display-plot").forEach((item, index) => {
+                    item.checked = false;
+                    removeHighChart(lineChart, index);
+                    removeHighChart(barChart, index);
+                });
+                plots.forEach((item, index) => {
+                    item.addEventListener("change", () => {
+                        const ul = item.closest("ul"); // go up to parent list
+                        if (!ul) return;
+
+                        const liItems = ul.querySelectorAll("li");
+                        if (liItems.length < 3) {
+                            console.warn("Not enough li items");
+                            return;
+                        }
+
+                        const startDate = englishToPersianNumber(liItems[1].querySelector(".greg-date")?.innerText?.trim());
+                        const endDate = englishToPersianNumber(liItems[2].querySelector(".greg-date")?.innerText?.trim());
+                        
+                        if (item.checked) {
+                            console.log("✅ Checkbox checked", { startDate, endDate });
+                            addHighlight(lineChart, startDate, endDate, randomPlotBandColor(), index);
+                            addHighlight(barChart, startDate, endDate, randomPlotBandColor(), index);
+                        } else {
+                            console.log("❌ Checkbox unchecked");
+                            removeHighChart(lineChart, index);
+                            removeHighChart(barChart, index);
+                        }
+                    });
+                });
+            }, 500);
+
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('خطا در بارگذاری داده‌ها. لطفاً دوباره تلاش کنید.');
+        });
+    });
+</script>
+<!-- Initial HighChart Chart Paint (Branch Separation) JQuery -->
+<script>
+    // Since the holiday section and the campaign sections are taken care of above, this part is only dedicated to the chart display
+    // This triggers on page load
+    document.addEventListener("DOMContentLoaded", () => {
+        // Get the last 7 days: start and end
+        const {inStartDate, inEndDate} = getJalaliDateRange();
+        // Branch pks colloected from DOM 
+        const inBranches = []
+        document.querySelector(".branches-grid").querySelectorAll(".form-check").forEach(i => {
+            if (i.querySelector(".form-check-input").value !== "on") {
+                inBranches.push(i.querySelector(".form-check-input").value);
+            }
+        });
+        // Send an ajax request on page load based on the last 7 days and only affects the charts
+        $.ajax({
+            url: "/api/multi-branch-data",
+            data: {
+                "start-date": inStartDate,
+                "end-date": inEndDate,
+                "branch": inBranches
+            },
+            traditional: true, 
+            success: function (data) {
+                const rawCategories = data.dates;
+                const categories = rawCategories.map(dateStr => {
+                const date = new Date(dateStr);
+                return date.toLocaleDateString('fa-IR', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit'
+                });
+                });
+                const series = Object.entries(data.branches).map(([id, branchData]) => {
+                    const total = branchData.entry_totals.reduce((a, b) => a + b, 0);
+                    return {
+                    name: `${branchData.name} (${Number(total).toLocaleString('fa-IR')})`,
+                    data: branchData.entry_totals
+                    }
+                });
+                // Convert series into pie format
+                const pieData = series.map(branchItem => {
+                    const total = branchItem.data.reduce((sum, val) => sum + val, 0);
+                    return { name: branchItem.name, y: total };
+                });
+                const secondContainer = Highcharts.chart("second-container", {
+                    chart: { type: "line",
+                        borderColor: '#e5e5e5',  
+                        borderWidth: 1,           
+                        borderRadius: 12,         
+                        spacing: [30, 20, 30, 20],
+                        backgroundColor: '#ffffff',
+                        style: {
+                            fontFamily: 'Vazirmatn, sans-serif',
+                            fontSize: '20px'
+                            }
+                        },
+                    title: { text: "ترافیک تفکیکی",
+                        style: {
+                            fontFamily: 'Vazirmatn, sans-serif',
+                            fontSize: '25px',
+                            color: '#333'
+                        } 
+                    },
+                    xAxis: { categories,
+                        title: {
+                        text: "تاریخ",
+                        style: {
+                        fontSize: '20px',
+                        fontWeight: 'bold',
+                        fontFamily: 'Vazirmatn, sans-serif',
+                            }
+                        },
+                        labels: {
+                            useHTML: true,  
+                            formatter: function () {
+                                    const value = this.value; 
+                                    if (holidayDates.includes(value)) {
+                                        return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                    }
+                                    if (fridays.includes(value)) {
+                                        return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                    }
+                                        return value; 
+                                }
+                            } 
+                        },
+                    yAxis: { title: { text: "ترافیک",
+                        style: {
+                            fontSize: '20px',
+                            fontWeight: 'bold',
+                            fontFamily: 'Vazirmatn, sans-serif',
+                            } 
+                        } 
+                    },
+                    series: series,
+                    plotOptions: {
+                        series: {
+                            point: {
+                                events: {
+                                    click: function () {
+                                        const apiUrl = "/api/get-campaign-each-point";
+                                        const date = this.category;
+                                        const branch = this.series.name;
+                                        const body = document.querySelector("body");
+                                        const infoModal = document.querySelector("#info-modal");
+                                        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                                        fetch(apiUrl, {
+                                            method: "POST",
+                                            headers: {
+                                                "Content-Type": "application/json",
+                                                "X-CSRFToken": csrftoken,
+                                            },
+                                            body: JSON.stringify({date: date, branch: branch.replace(/\(.*?\)/, "").trim()})
+                                        }).then(response => {
+                                            if (!response.ok) throw new Error("Invalid Response");
+                                            return response.json()
+                                        }).then(data => {
+                                            let htmlCampaigns = data.map((camp, index) =>
+                                                `<p style='margin-bottom: 0px;' style='margin-bottom: 0px; margin-top: 0px;'>${index + 1}. ${camp.campaign_name}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${camp.campaign_type}</p>`
+                                            ).join('')
+                                            if (data.length === 0) {
+                                                htmlCampaigns = `<p>هیچ کمپینی یافت نشد.</p>`
+                                            }
+                                            Swal.fire({
+                                            html: `<h3 style='margin-bottom: 0px;'>${this.y}</h3><p style='margin-bottom: 0px; margin-top: 0px;'>${this.series.name.replace(/\(.*?\)/, "").trim()}</p><p style='margin-top: 0px;'>${this.category}</p>
+                                            <p style='margin-bottom: 0px;'>کمپین ها:</p>
+                                            ${htmlCampaigns}
+                                            `,
+                                            confirmButtonText: 'بستن',
+                                            confirmButtonColor: '#5a8dee'
+                                        });
+                                        })
+
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+                // Campaign Plot Bands
+                setTimeout(() => {
+                    const plots = document.querySelectorAll(".display-plot");
+                    console.log("Found checkboxes:", plots.length);
+                    // Remove the plot bands on form reload
+                    document.querySelectorAll(".display-plot").forEach((x, index) => {
+                        x.checked = false;
+                        removeHighChart(secondContainer, index);
+                    });
+                    plots.forEach((i, index) => {
+                        i.addEventListener("change", () => {
+                            const ul = i.closest("ul"); 
+                            if (!ul) return;
+
+                            const liItems = ul.querySelectorAll("li");
+                            if (liItems.length < 3) {
+                                console.warn("Not enough li items");
+                                return;
+                            }
+
+                            const startDate = englishToPersianNumber(liItems[1].querySelector(".greg-date")?.innerText?.trim());
+                            const endDate = englishToPersianNumber(liItems[2].querySelector(".greg-date")?.innerText?.trim());
+                            
+                            if (i.checked) {
+                                console.log("✅ Checkbox checked", { startDate, endDate });
+                                addHighlight(secondContainer, startDate, endDate, randomPlotBandColor(), index);
+                            } else {
+                                console.log("❌ Checkbox unchecked");
+                                removeHighChart(secondContainer, index);
+                            }
+                        });
+                    });
+                }, 500);
+                // Initial Line Chart By Branch Monthly Display Button Logic
+                // Initial Line Chart By Branch Monthly Display Button Function
+                function initialHandleBranchMonthlyDisplay() {
+                    const apiUrl = "/api/abnormal-monthly-display";
+                    const x = categories;
+                    const y = series;
+                    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                    fetch(apiUrl, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": csrftoken,
+                        },
+                        body: JSON.stringify({x: x, y: y})
+                    }).then(response => {
+                        if (!response.ok) throw new Error("Invalid Response");
+                        return response.json()
+                    }).then(data => {
+                        // Line Chart By Branch Update
+                        const secondContainer = Highcharts.chart("second-container", {
+                            chart: { type: "line",
+                                backgroundColor: '#ffffff',
+                                borderColor: '#e5e5e5',  
+                                borderWidth: 1,           
+                                borderRadius: 12,         
+                                spacing: [30, 20, 30, 20],
+                                style: {
+                                    fontFamily: 'Vazirmatn, sans-serif',
+                                    fontSize: '20px'
+                                    }
+                                },
+                            title: { text: "ترافیک تفکیکی",
+                                style: {
+                                    fontSize: '25px',
+                                    color: '#333',
+                                    fontFamily: 'Vazirmatn, sans-serif',
+                                } 
+                            },
+                            xAxis: { 
+                                categories: data.months,
+                                title: {
+                                text: "تاریخ",
+                                style: {
+                                fontSize: '20px',
+                                fontWeight: 'bold',
+                                fontFamily: 'Vazirmatn, sans-serif',
+                                    }
+                                },
+                                labels: {
+                                    useHTML: true,  
+                                    formatter: function () {
+                                            const value = this.value; 
+                                            if (holidayDates.includes(value)) {
+                                                return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                            }
+                                            if (fridays.includes(value)) {
+                                                return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                            }
+                                                return value; 
+                                        }
+                                    } 
+                                },
+                            yAxis: { title: { text: "ترافیک",
+                                style: {
+                                    fontSize: '20px',
+                                    fontWeight: 'bold'
+                                    } 
+                                } 
+                            },
+                            series: data.values,
+                        });
+                        // Remove Plot for Month Display
+                        setTimeout(() => {
+                            const plots = document.querySelectorAll(".display-plot");
+                            document.querySelectorAll(".display-plot").forEach((i, index) => {
+                                i.checked = false;
+                                removeHighChart(secondContainer, index);
+                            });
+                        }, 500);
+                    });
+                }
+                // Initial Line Chart By Branch Monthly Display Event Listener
+                $("#second-container-tools .month").off("click").on("click", initialHandleBranchMonthlyDisplay);
+                // Initial Line Chart By Branch Weekly Display Button Logic
+                // Initial Line Chart By Branch Weekly Display Button Function
+                function initialHandleBranchWeeklyDisplay() {
+                    const apiUrl = "/api/abnormal-weekly-display";
+                    const x = categories;
+                    const y = series;
+                    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                    fetch(apiUrl, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": csrftoken,
+                        },
+                        body: JSON.stringify({x: x, y: y})
+                    }).then(response => {
+                        if (!response.ok) throw new Error("Invalid Response");
+                        return response.json()
+                    }).then(data => {
+                        // Line Chart By Branch Update
+                        const secondContainer = Highcharts.chart("second-container", {
+                            chart: { type: "line",
+                                backgroundColor: '#ffffff',
+                                borderColor: '#e5e5e5',  
+                                borderWidth: 1,           
+                                borderRadius: 12,         
+                                spacing: [30, 20, 30, 20],
+                                style: {
+                                    fontFamily: 'Vazirmatn, sans-serif',
+                                    fontSize: '20px'
+                                    }
+                                },
+                            title: { text: "ترافیک تفکیکی",
+                                style: {
+                                    fontSize: '25px',
+                                    color: '#333',
+                                    fontFamily: 'Vazirmatn, sans-serif',
+                                } 
+                            },
+                            xAxis: { 
+                                categories: data.weeks,
+                                title: {
+                                text: "تاریخ",
+                                style: {
+                                fontSize: '20px',
+                                fontWeight: 'bold',
+                                fontFamily: 'Vazirmatn, sans-serif',
+                                    }
+                                },
+                                labels: {
+                                    useHTML: true,  
+                                    formatter: function () {
+                                            const value = this.value; 
+                                            if (holidayDates.includes(value)) {
+                                                return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                            }
+                                            if (fridays.includes(value)) {
+                                                return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                            }
+                                                return value; 
+                                        }
+                                    } 
+                                },
+                            yAxis: { title: { text: "ترافیک",
+                                style: {
+                                    fontSize: '20px',
+                                    fontWeight: 'bold'
+                                    } 
+                                } 
+                            },
+                            series: data.values,
+                        });
+                        // Campaign Plot Bands
+                        setTimeout(() => {
+                            const plots = document.querySelectorAll(".display-plot");
+                            console.log("Found checkboxes:", plots.length);
+                            // Remove the plot bands on form reload
+                            document.querySelectorAll(".display-plot").forEach((item, index) => {
+                                item.checked = false;
+                                removeHighChart(secondContainer, index);
+                            });
+                            plots.forEach((item, index) => {
+                                item.addEventListener("change", () => {
+                                    const ul = item.closest("ul"); 
+                                    if (!ul) return;
+
+                                    const liItems = ul.querySelectorAll("li");
+                                    if (liItems.length < 3) {
+                                        console.warn("Not enough li items");
+                                        return;
+                                    }
+
+                                    const startDate = englishToPersianNumber(liItems[1].querySelector(".greg-date")?.innerText?.trim());
+                                    const endDate = englishToPersianNumber(liItems[2].querySelector(".greg-date")?.innerText?.trim());
+                                    const campaignWeeks = slicePersianDates(categories, startDate, endDate);
+                                    fetch(apiUrl, {
+                                        method: "POST",
+                                        headers: {
+                                            "Content-Type": "application/json",
+                                            "X-CSRFToken": csrftoken,
+                                        },
+                                        body: JSON.stringify({x: campaignWeeks, y: y})
+                                    }).then(response => {
+                                        if (!response.ok) throw new Error("Invalid Response");
+                                        return response.json()
+                                    }).then(x => {
+                                        let weeks  = x.weeks;
+                                        console.log(weeks)
+                                        const firstWeek = weeks[0];
+                                        const lastWeek = weeks[weeks.length - 1];
+                                        if (item.checked) {
+                                            console.log("✅ Checkbox checked", { firstWeek, lastWeek });
+                                            addWeeklyHighlight(secondContainer, firstWeek, lastWeek, randomPlotBandColor(), index);
+                                        } else {
+                                            console.log("❌ Checkbox unchecked");
+                                            removeHighChart(secondContainer, index);
+                                        }
+                                    });
+                                });
+                            });
+                        }, 500);
+                    });
+                }
+                // Initial Line Chart By Branch Weekly Display Event Listener
+                $("#second-container-tools .week").off("click").on("click", initialHandleBranchWeeklyDisplay);
+                // Initial Line Chart By Branch Daily Display Logic
+                // Initial Line Chart By Branch Daily Display Function
+                function initialHandleBranchDailyDisplay() {
+                    const secondContainer = Highcharts.chart("second-container", {
+                        chart: { type: "line",
+                            backgroundColor: '#ffffff',
+                            borderColor: '#e5e5e5',  
+                            borderWidth: 1,           
+                            borderRadius: 12,         
+                            spacing: [30, 20, 30, 20],
+                            style: {
+                                fontFamily: 'Vazirmatn, sans-serif',
+                                fontSize: '20px'
+                                }
+                            },
+                        title: { text: "ترافیک تفکیکی",
+                            style: {
+                                fontSize: '25px',
+                                color: '#333',
+                                fontFamily: 'Vazirmatn, sans-serif',
+                            } 
+                        },
+                        xAxis: { categories,
+                            title: {
+                            text: "تاریخ",
+                            style: {
+                            fontSize: '20px',
+                            fontWeight: 'bold',
+                            fontFamily: 'Vazirmatn, sans-serif',
+                                }
+                            },
+                            labels: {
+                                useHTML: true,  
+                                formatter: function () {
+                                        const value = this.value; 
+                                        if (holidayDates.includes(value)) {
+                                            return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                        }
+                                        if (fridays.includes(value)) {
+                                            return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                        }
+                                            return value; 
+                                    }
+                                } 
+                            },
+                        yAxis: { title: { text: "ترافیک",
+                            style: {
+                                fontSize: '20px',
+                                fontWeight: 'bold'
+                                } 
+                            } 
+                        },
+                        series: series,
+                        plotOptions: {
+                            series: {
+                                point: {
+                                    events: {
+                                        click: function () {
+                                            const apiUrl = "/api/get-campaign-each-point";
+                                            const date = this.category;
+                                            const branch = this.series.name;
+                                            const body = document.querySelector("body");
+                                            const infoModal = document.querySelector("#info-modal");
+                                            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                                            fetch(apiUrl, {
+                                                method: "POST",
+                                                headers: {
+                                                    "Content-Type": "application/json",
+                                                    "X-CSRFToken": csrftoken,
+                                                },
+                                                body: JSON.stringify({date: date, branch: branch.replace(/\(.*?\)/, "").trim()})
+                                            }).then(response => {
+                                                if (!response.ok) throw new Error("Invalid Response");
+                                                return response.json()
+                                            }).then(data => {
+                                                let htmlCampaigns = data.map((camp, index) =>
+                                                    `<p style='margin-bottom: 0px;' style='margin-bottom: 0px; margin-top: 0px;'>${index + 1}. ${camp.campaign_name}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${camp.campaign_type}</p>`
+                                                ).join('')
+                                                if (data.length === 0) {
+                                                    htmlCampaigns = `<p>هیچ کمپینی یافت نشد.</p>`
+                                                }
+                                                Swal.fire({
+                                                html: `<h3 style='margin-bottom: 0px;'>${this.y}</h3><p style='margin-bottom: 0px; margin-top: 0px;'>${this.series.name.replace(/\(.*?\)/, "").trim()}</p><p style='margin-top: 0px;'>${this.category}</p>
+                                                <p style='margin-bottom: 0px;'>کمپین ها:</p>
+                                                ${htmlCampaigns}
+                                                `,
+                                                confirmButtonText: 'بستن',
+                                                confirmButtonColor: '#5a8dee'
+                                            });
+                                            })
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                    // Campaign Plot Bands
+                    setTimeout(() => {
+                        const plots = document.querySelectorAll(".display-plot");
+                        console.log("Found checkboxes:", plots.length);
+                        // Remove the plot bands on form reload
+                        document.querySelectorAll(".display-plot").forEach((i, index) => {
+                            i.checked = false;
+                            removeHighChart(secondContainer, index);
+                        });
+                        plots.forEach((i, index) => {
+                            i.addEventListener("change", () => {
+                                const ul = i.closest("ul"); 
+                                if (!ul) return;
+
+                                const liItems = ul.querySelectorAll("li");
+                                if (liItems.length < 3) {
+                                    console.warn("Not enough li items");
+                                    return;
+                                }
+
+                                const startDate = englishToPersianNumber(liItems[1].querySelector(".greg-date")?.innerText?.trim());
+                                const endDate = englishToPersianNumber(liItems[2].querySelector(".greg-date")?.innerText?.trim());
+                                
+                                if (i.checked) {
+                                    console.log("✅ Checkbox checked", { startDate, endDate });
+                                    addHighlight(secondContainer, startDate, endDate, randomPlotBandColor(), index);
+                                } else {
+                                    console.log("❌ Checkbox unchecked");
+                                    removeHighChart(secondContainer, index);
+                                }
+                            });
+                        });
+                    }, 800);
+                }
+                // Initial Line Chart By Branch Daily Display Event Listener
+                $("#second-container-tools .day").off("click").on("click", initialHandleBranchDailyDisplay);
+                Highcharts.chart('second-container-pie-chart', {
+                    chart: {
+                        type: 'pie',
+                        backgroundColor: '#ffffff',
+                        borderColor: '#e5e5e5',
+                        borderWidth: 1,
+                        borderRadius: 12,
+                        style: { fontFamily: 'Vazirmatn, sans-serif' }
+                    },
+                    title: {
+                        text: 'توزیع کل ترافیک شعب',
+                        style: { fontSize: '25px', fontFamily: 'Vazirmatn, sans-serif' }
+                    },
+                    subtitle: {
+                        text: `از ${categories[0]} تا ${categories[categories.length - 1]}`,
+                        style: { fontSize: '14px', fontFamily: 'Vazirmatn, sans-serif' }
+                    },
+                    tooltip: {
+                        pointFormat: '<b>{point.y}</b> ({point.percentage:.1f}%)'
+                    },
+                    plotOptions: {
+                        pie: {
+                            allowPointSelect: true,
+                            cursor: 'pointer',
+                            dataLabels: {
+                                enabled: true,
+                                format: '{point.name}: ({point.percentage:.1f}%)',
+                                style: { fontSize: '14px', fontFamily: 'Vazirmatn, sans-serif' }
+                            },
+                            showInLegend: true
+                        }
+                    },
+                    series: [{
+                        name: 'ترافیک',
+                        colorByPoint: true,
+                        data: pieData   // aggregated data here
+                    }]
+                });
+
+            },
+            error: function (xhr) {
+                console.error("Error loading data");
+            }
+        });
+    });
+</script>
+<!-- HighChart Chart Paint (Aggregation) Raw JavaScript / Invoices Paint Display Raw Javascript -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const rawCategories = JSON.parse('{{ dates|safe }}');  
+        const categories = rawCategories.map(dateStr => {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('fa-IR', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            });
+        });
+        const entry_totals = JSON.parse('{{ entry_totals|safe }}');
+        const exit_totals = JSON.parse('{{ exit_totals|safe }}');
+        lineChart = Highcharts.chart('container', {
+        chart: {
+            type: 'line',
+            backgroundColor: '#ffffff',
+            borderColor: '#e5e5e5',  
+            borderWidth: 1,           
+            borderRadius: 12,         
+            spacing: [30, 20, 30, 20],
+            style: {
+                fontFamily: 'Vazirmatn, sans-serif',
+                fontSize: '20px'
+            }
+        },
+        title: {
+            text: "ترافیک تجمیعی",
+            style: {
+                fontSize: '25px',
+                color: '#333',
+                fontFamily: 'Vazirmatn, sans-serif',
+            }
+        },
+        xAxis: {
+            categories: categories,
+            title: {
+                text: "تاریخ",
+                style: {
+                    fontSize: '20px',
+                    fontWeight: 'bold',
+                    fontFamily: 'Vazirmatn, sans-serif',
+                }
+            }
+        },
+        yAxis: {
+            title: {
+                text: "ترافیک",
+                style: {
+                    fontSize: '20px',
+                    fontWeight: 'bold',
+                    fontFamily: 'Vazirmatn, sans-serif',
+                }
+            }
+        },
+        tooltip: {
+            backgroundColor: 'white',
+            borderColor: '#ccc',
+            borderRadius: 8,
+            shadow: true,
+            style: { fontSize: '15px' },
+            shared: true, 
+        },
+        plotOptions: {
+            series: {
+                lineWidth: 3, 
+                marker: {
+                    enabled: true,
+                    radius: 5,
+                    states: { hover: { radius: 7.5 } }
+                },
+                states: {
+                    hover: { lineWidthPlus: 1 }
+                },
+                point: {
+                    events: {
+                        click: function () {
+                            const apiUrl = "/api/get-campaign-each-point";
+                            const date = this.category;
+                            const branch = this.series.name;
+                            const body = document.querySelector("body");
+                            const infoModal = document.querySelector("#info-modal");
+                            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                            fetch(apiUrl, {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    "X-CSRFToken": csrftoken,
+                                },
+                                body: JSON.stringify({date: date, branch: branch})
+                            }).then(response => {
+                                if (!response.ok) throw new Error("Invalid Response");
+                                return response.json()
+                            }).then(data => {
+                                let htmlCampaigns = data.map((camp, index) =>
+                                    `<p style='margin-bottom: 0px;' style='margin-bottom: 0px; margin-top: 0px;'>${index + 1}. ${camp.campaign_name}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${camp.campaign_type}</p>`
+                                ).join('')
+                                if (data.length === 0) {
+                                    htmlCampaigns = `<p>هیچ کمپینی یافت نشد.</p>`
+                                }
+                                Swal.fire({
+                                html: `<h3 style='margin-bottom: 0px;'>${this.y}</h3><p>${this.category}</p>
+                                <p style='margin-bottom: 0px;'>کمپین ها:</p>
+                                ${htmlCampaigns}
+                                `,
+                                confirmButtonText: 'بستن',
+                                confirmButtonColor: '#5a8dee'
+                            });
+                            })
+                        }
+                    }
+                }
+            }
+        },
+        series: [
+            {   
+                name: `ترافیک`,
+                data: entry_totals
+            }
+        ]
+        });
+        barChart = Highcharts.chart('container-bar-chart', {
+        chart: {
+            type: 'column',
+            backgroundColor: '#ffffff',
+            borderColor: '#e5e5e5',  
+            borderWidth: 1,           
+            borderRadius: 12,         
+            spacing: [30, 20, 30, 20],
+            style: {
+                fontFamily: 'Vazirmatn, sans-serif',
+                fontSize: '20px'
+            }
+        },
+        title: {
+            text: "ترافیک تجمیعی",
+            style: {
+                fontSize: '25px',
+                color: '#333',
+                fontFamily: 'Vazirmatn, sans-serif',
+            }
+        },
+        xAxis: {
+            categories: categories,
+            title: {
+                text: "تاریخ",
+                style: {
+                    fontSize: '20px',
+                    fontWeight: 'bold',
+                    fontFamily: 'Vazirmatn, sans-serif',
+                }
+            }
+        },
+        yAxis: {
+            title: {
+                text: "ترافیک",
+                style: {
+                    fontSize: '20px',
+                    fontWeight: 'bold',
+                    fontFamily: 'Vazirmatn, sans-serif',
+                }
+            }
+        },
+        tooltip: {
+            backgroundColor: 'white',
+            borderColor: '#ccc',
+            borderRadius: 8,
+            shadow: true,
+            style: { fontSize: '15px' },
+            shared: true, 
+        },
+        plotOptions: {
+            series: {
+                lineWidth: 3, 
+                marker: {
+                    enabled: true,
+                    radius: 5,
+                    states: { hover: { radius: 7.5 } }
+                },
+                states: {
+                    hover: { lineWidthPlus: 1 }
+                },
+                point: {
+                    events: {
+                        click: function () {
+                            const apiUrl = "/api/get-campaign-each-point";
+                            const date = this.category;
+                            const branch = this.series.name;
+                            const body = document.querySelector("body");
+                            const infoModal = document.querySelector("#info-modal");
+                            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                            fetch(apiUrl, {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    "X-CSRFToken": csrftoken,
+                                },
+                                body: JSON.stringify({date: date, branch: branch})
+                            }).then(response => {
+                                if (!response.ok) throw new Error("Invalid Response");
+                                return response.json()
+                            }).then(data => {
+                                let htmlCampaigns = data.map((camp, index) =>
+                                    `<p style='margin-bottom: 0px;' style='margin-bottom: 0px; margin-top: 0px;'>${index + 1}. ${camp.campaign_name}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${camp.campaign_type}</p>`
+                                ).join('')
+                                if (data.length === 0) {
+                                    htmlCampaigns = `<p>هیچ کمپینی یافت نشد.</p>`
+                                }
+                                Swal.fire({
+                                html: `<h3 style='margin-bottom: 0px;'>${this.y}</h3><p>${this.category}</p>
+                                <p style='margin-bottom: 0px;'>کمپین ها:</p>
+                                ${htmlCampaigns}
+                                `,
+                                confirmButtonText: 'بستن',
+                                confirmButtonColor: '#5a8dee'
+                            });
+                            })
+                        }
+                    }
+                }
+            }
+        },
+        series: [
+            {   
+                name: `ترافیک`,
+                data: entry_totals
+            }
+        ]
+        });
+        document.getElementById('filter-form').addEventListener('submit', function(event) {
+            event.preventDefault(); 
+            const form = this;
+            const formData = new FormData(form);
+            const queryString = new URLSearchParams(formData).toString();
+            const params = new URLSearchParams(formData);
+            aiStartDate = params.get("start-date");
+            aiEndDate = params.get("end-date");
+            aiBranchIds = params.getAll("branch");
+            const loadingOverlay = document.getElementById('loading-overlay');
+            loadingOverlay.style.display = 'flex';
+            fetch(`{% url 'people_counter' url_hash=request.user.profile.merchant.url_hash %}?${queryString}`, {
+                method: 'GET',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            })
+            .then(data => {
+                // Overall Category Update
+                const total = data.entry_totals.reduce((a, b) => a + b, 0);
+                const newCategories = data.dates.map(dateStr => {
+                    const date = new Date(dateStr);
+                    return date.toLocaleDateString('fa-IR', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit'
+                    });
+                });
+                // Overall Line Chart Update
+                lineChart.update({
+                    xAxis: { 
+                        categories: newCategories,
+                        labels: {
+                            useHTML: true,  
+                            formatter: function () {
+                                    const value = this.value; 
+                                    if (holidayDates.includes(value)) {
+                                        return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                    }
+                                    if (fridays.includes(value)) {
+                                        return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                    }
+                                    return value; 
+                                }
+                            } 
+                        },
+                    series: [{ name: `ترافیک (${Number(total).toLocaleString('fa-IR')})`, data: data.entry_totals},
+                    {data: data.exit_totals}
+                    ],
+                });
+                // Line Chart Monthly Display Button Logic
+                // Line Chart Monthly Display Function
+                function handleMonthlyDisplay() {
+                    const apiUrl = "/api/normal-monthly-display";
+                    const x = newCategories;
+                    const y = data.entry_totals;
+                    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                    fetch(apiUrl, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": csrftoken,
+                        },
+                        body: JSON.stringify({x: x, y: y})
+                    }).then(response => {
+                        if (!response.ok) throw new Error("Invalid Response");
+                        return response.json()
+                    }).then(d => {
+                        // Line Chart Update
+                        lineChart.update({
+                            xAxis: { 
+                                categories: d.months,
+                                labels: {
+                                    useHTML: true,  
+                                    formatter: function () {
+                                            const value = this.value; 
+                                            if (holidayDates.includes(value)) {
+                                                return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                            }
+                                            if (fridays.includes(value)) {
+                                                return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                            }
+                                            return value; 
+                                        }
+                                    } 
+                                },
+                            series: [{ name: `ترافیک (${Number(total).toLocaleString('fa-IR')})`, data: d.values}
+                            ],
+                        });
+                        //  Bar Chart Update
+                        barChart.update({
+                            xAxis: { 
+                                categories: d.months,
+                                labels: {
+                                    useHTML: true,  
+                                    formatter: function () {
+                                            const value = this.value; 
+                                            if (holidayDates.includes(value)) {
+                                                return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                            }
+                                            if (fridays.includes(value)) {
+                                                return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                            }
+                                            return value; 
+                                        }
+                                    } 
+                                },
+                            series: [{ name: `ترافیک (${Number(total).toLocaleString('fa-IR')})`, data: d.values},
+                            {data: data.exit_totals}
+                            ],
+                        });
+                        // Remove Plot for Month Display
+                        setTimeout(() => {
+                            const plots = document.querySelectorAll(".display-plot");
+                            document.querySelectorAll(".display-plot").forEach((i, index) => {
+                                i.checked = false;
+                                removeHighChart(lineChart, index);
+                                removeHighChart(barChart, index);
+                            });
+                        }, 500);
+                    });
+                }
+                // Line Chart Monthly Display Event Listeners
+                $("#container-tools .month").off("click").on("click", handleMonthlyDisplay);
+                // Line Chart Weekly Display Button Logic
+                // Line Chart Weekly Display Function
+                function handleWeeklyDisplay() {
+                    const apiUrl = "/api/normal-weekly-display";
+                    const x = newCategories;
+                    const y = data.entry_totals;
+                    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                    fetch(apiUrl, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": csrftoken,
+                        },
+                        body: JSON.stringify({x: x, y: y})
+                    }).then(response => {
+                        if (!response.ok) throw new Error("Invalid Response");
+                        return response.json()
+                    }).then(d => {
+                        // Line Chart Update
+                        lineChart.update({
+                            xAxis: { 
+                                categories: d.weeks,
+                                labels: {
+                                    useHTML: true,  
+                                    formatter: function () {
+                                            const value = this.value; 
+                                            if (holidayDates.includes(value)) {
+                                                return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                            }
+                                            if (fridays.includes(value)) {
+                                                return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                            }
+                                            return value; 
+                                        }
+                                    } 
+                                },
+                            series: [{ name: `ترافیک (${Number(total).toLocaleString('fa-IR')})`, data: d.values}
+                            ],
+                        });
+                        //  Bar Chart Update
+                        barChart.update({
+                            xAxis: { 
+                                categories: d.weeks,
+                                labels: {
+                                    useHTML: true,  
+                                    formatter: function () {
+                                            const value = this.value; 
+                                            if (holidayDates.includes(value)) {
+                                                return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                            }
+                                            if (fridays.includes(value)) {
+                                                return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                            }
+                                            return value; 
+                                        }
+                                    } 
+                                },
+                            series: [{ name: `ترافیک (${Number(total).toLocaleString('fa-IR')})`, data: d.values},
+                            {data: data.exit_totals}
+                            ],
+                        });
+                        // Campaign Plot Bands
+                        setTimeout(() => {
+                            const plots = document.querySelectorAll(".display-plot");
+                            console.log("Found checkboxes:", plots.length);
+                            // Remove the plot bands on form reload
+                            document.querySelectorAll(".display-plot").forEach((item, index) => {
+                                item.checked = false;
+                                removeHighChart(lineChart, index);
+                                removeHighChart(barChart, index);
+                            });
+                            plots.forEach((item, index) => {
+                                item.addEventListener("change", () => {
+                                    const ul = item.closest("ul"); 
+                                    if (!ul) return;
+
+                                    const liItems = ul.querySelectorAll("li");
+                                    if (liItems.length < 3) {
+                                        console.warn("Not enough li items");
+                                        return;
+                                    }
+
+                                    const startDate = englishToPersianNumber(liItems[1].querySelector(".greg-date")?.innerText?.trim());
+                                    const endDate = englishToPersianNumber(liItems[2].querySelector(".greg-date")?.innerText?.trim());
+                                    const campaignWeeks = slicePersianDates(newCategories, startDate, endDate);
+                                    fetch(apiUrl, {
+                                        method: "POST",
+                                        headers: {
+                                            "Content-Type": "application/json",
+                                            "X-CSRFToken": csrftoken,
+                                        },
+                                        body: JSON.stringify({x: campaignWeeks, y: y})
+                                    }).then(response => {
+                                        if (!response.ok) throw new Error("Invalid Response");
+                                        return response.json()
+                                    }).then(x => {
+                                        let weeks  = x.weeks;
+                                        console.log(weeks)
+                                        const firstWeek = weeks[0];
+                                        const lastWeek = weeks[weeks.length - 1];
+                                        if (item.checked) {
+                                            console.log("✅ Checkbox checked", { firstWeek, lastWeek });
+                                            addWeeklyHighlight(lineChart, firstWeek, lastWeek, randomPlotBandColor(), index);
+                                            addWeeklyHighlight(barChart, firstWeek, lastWeek, randomPlotBandColor(), index);
+                                        } else {
+                                            console.log("❌ Checkbox unchecked");
+                                            removeHighChart(lineChart, index);
+                                            removeHighChart(barChart, index);
+                                        }
+                                    });
+                                });
+                            });
+                        }, 500);
+                    });
+                }
+                // Line Chart Monthly Display Event Listener
+                $("#container-tools .week").off("click").on("click", handleWeeklyDisplay);
+                // Line Chart Daily Display Button
+                document.querySelector("#container-tools .day").addEventListener("click", () => {
+                    // Line Chart Update
+                    lineChart.update({
+                        xAxis: { 
+                            categories: newCategories,
+                            labels: {
+                                useHTML: true,  
+                                formatter: function () {
+                                        const value = this.value; 
+                                        if (holidayDates.includes(value)) {
+                                            return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                        }
+                                        if (fridays.includes(value)) {
+                                            return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                        }
+                                        return value; 
+                                    }
+                                } 
+                            },
+                        series: [{ name: `ترافیک (${Number(total).toLocaleString('fa-IR')})`, data: data.entry_totals},
+                        {data: data.exit_totals}
+                        ]
+                    });
+                    // Bar Chart Update
+                    barChart.update({
+                        xAxis: { 
+                            categories: newCategories,
+                            labels: {
+                                useHTML: true,  
+                                formatter: function () {
+                                        const value = this.value; 
+                                        if (holidayDates.includes(value)) {
+                                            return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                        }
+                                        if (fridays.includes(value)) {
+                                            return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                        }
+                                        return value; 
+                                    }
+                                } 
+                            },
+                        series: [{ name: `ترافیک (${Number(total).toLocaleString('fa-IR')})`, data: data.entry_totals},
+                        {data: data.exit_totals}
+                        ],
+                    });
+                });
+                // Overall Bar Chart Update
+                barChart.update({
+                    xAxis: { 
+                        categories: newCategories,
+                        labels: {
+                            useHTML: true,  
+                            formatter: function () {
+                                    const value = this.value; 
+                                    if (holidayDates.includes(value)) {
+                                        return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                    }
+                                    if (fridays.includes(value)) {
+                                        return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                    }
+                                    return value; 
+                                }
+                            } 
+                        },
+                    series: [{ name: `ترافیک (${Number(total).toLocaleString('fa-IR')})`, data: data.entry_totals},
+                    {data: data.exit_totals}
+                    ],
+                });
+                // Bar Chart Monthly Display Button Logic
+                // Bar Chart Monthly Display Function
+                // The function is the same as line chart monthly display logic
+                // Bar Chart Monthly Display Event Listener
+                $("#container-bar-chart-tools .month").off("click").on("click", handleMonthlyDisplay);
+
+                // Bar Chart Weekly Display Button Logic
+                // Bar Chart Monthly Display Function
+                // The function is the same as line chart monthly display logic
+                // Bar Chart Weekly Display Event Listener
+                $("#container-bar-chart-tools .week").off("click").on("click", handleWeeklyDisplay);
+
+                // Bar Chart Daily Display Button
+                document.querySelector("#container-bar-chart-tools .day").addEventListener("click", () => {
+                    // Line Chart Update
+                    lineChart.update({
+                        xAxis: { 
+                            categories: newCategories,
+                            labels: {
+                                useHTML: true,  
+                                formatter: function () {
+                                        const value = this.value; 
+                                        if (holidayDates.includes(value)) {
+                                            return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                        }
+                                        if (fridays.includes(value)) {
+                                            return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                        }
+                                        return value; 
+                                    }
+                                } 
+                            },
+                        series: [{ name: `ترافیک (${Number(total).toLocaleString('fa-IR')})`, data: data.entry_totals},
+                        {data: data.exit_totals}
+                        ]
+                    });
+                    // Bar Chart Update
+                    barChart.update({
+                        xAxis: { 
+                            categories: newCategories,
+                            labels: {
+                                useHTML: true,  
+                                formatter: function () {
+                                        const value = this.value; 
+                                        if (holidayDates.includes(value)) {
+                                            return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                        }
+                                        if (fridays.includes(value)) {
+                                            return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                        }
+                                        return value; 
+                                    }
+                                } 
+                            },
+                        series: [{ name: `ترافیک (${Number(total).toLocaleString('fa-IR')})`, data: data.entry_totals},
+                        {data: data.exit_totals}
+                        ],
+                    });
+                    // Campaign Plot Bands
+                    setTimeout(() => {
+                        const plots = document.querySelectorAll(".display-plot");
+                        console.log("Found checkboxes:", plots.length);
+                        // Remove the plot bands on form reload
+                        document.querySelectorAll(".display-plot").forEach((item, index) => {
+                            item.checked = false;
+                            removeHighChart(lineChart, index);
+                            removeHighChart(barChart, index);
+                        });
+                        plots.forEach((item, index) => {
+                            item.addEventListener("change", () => {
+                                const ul = item.closest("ul"); // go up to parent list
+                                if (!ul) return;
+
+                                const liItems = ul.querySelectorAll("li");
+                                if (liItems.length < 3) {
+                                    console.warn("Not enough li items");
+                                    return;
+                                }
+
+                                const startDate = englishToPersianNumber(liItems[1].querySelector(".greg-date")?.innerText?.trim());
+                                const endDate = englishToPersianNumber(liItems[2].querySelector(".greg-date")?.innerText?.trim());
+                                
+                                if (item.checked) {
+                                    console.log("✅ Checkbox checked", { startDate, endDate });
+                                    addHighlight(lineChart, startDate, endDate, randomPlotBandColor(), index);
+                                    addHighlight(barChart, startDate, endDate, randomPlotBandColor(), index);
+                                } else {
+                                    console.log("❌ Checkbox unchecked");
+                                    removeHighChart(lineChart, index);
+                                    removeHighChart(barChart, index);
+                                }
+                            });
+                        });
+                    }, 500);
+                });
+                // Campaign Plot Bands
+                setTimeout(() => {
+                    const plots = document.querySelectorAll(".display-plot");
+                    console.log("Found checkboxes:", plots.length);
+                    // Remove the plot bands on form reload
+                    document.querySelectorAll(".display-plot").forEach((item, index) => {
+                        item.checked = false;
+                        removeHighChart(lineChart, index);
+                        removeHighChart(barChart, index);
+                    });
+                    plots.forEach((item, index) => {
+                        item.addEventListener("change", () => {
+                            const ul = item.closest("ul"); // go up to parent list
+                            if (!ul) return;
+
+                            const liItems = ul.querySelectorAll("li");
+                            if (liItems.length < 3) {
+                                console.warn("Not enough li items");
+                                return;
+                            }
+
+                            const startDate = englishToPersianNumber(liItems[1].querySelector(".greg-date")?.innerText?.trim());
+                            const endDate = englishToPersianNumber(liItems[2].querySelector(".greg-date")?.innerText?.trim());
+                            
+                            if (item.checked) {
+                                console.log("✅ Checkbox checked", { startDate, endDate });
+                                addHighlight(lineChart, startDate, endDate, randomPlotBandColor(), index);
+                                addHighlight(barChart, startDate, endDate, randomPlotBandColor(), index);
+                            } else {
+                                console.log("❌ Checkbox unchecked");
+                                removeHighChart(lineChart, index);
+                                removeHighChart(barChart, index);
+                            }
+                        });
+                    });
+                }, 500);
+                // Campaign UI Update
+                document.querySelector("#campaign-fill").innerHTML = "";
+                if (data.campaigns.length === 0) {
+                    const card = document.createElement("div");
+                    card.classList.add("card");
+                    card.classList.add("h-100");
+                    card.setAttribute("style", "border-radius: 12px; border-color: #e5e5e5; box-shadow: none !important; border-width: 1px; display: flex; justify-content: center; align-items: center; font-weight: bold;");
+                    const i = document.createElement("i");
+                    i.classList.add("bx");
+                    i.classList.add("bx-box");
+                    i.style.fontSize = "48px";
+                    const p = document.createElement("p");
+                    p.innerText = "هیچ کمپینی یافت نشد";
+                    card.appendChild(i);
+                    card.appendChild(p);
+                    document.querySelector("#campaign-fill").appendChild(card);
+                } else {
+                    document.querySelector("#campaign-fill").innerHTML = "";
+                    data.campaigns.forEach(campaign => {
+                        const rowhtml = `
+                                <div class="col-lg-4" style="margin-top: 10px; margin-bottom: 10px;">
+                                <div class="card" style="
+                                background-clip: padding-box;
+                                border-style: solid;
+                                box-shadow: none;
+                                border-width: 1px;
+                                border-color: #e5e5e5;
+                                background-color: #F9F9F9;
+                                border-radius: 12px;
+                                padding: 10px;">
+                                    <div class="card-header d-flex align-items-center justify-content-between">
+                                        <h5 class="card-title mb-0">${campaign.campaign_name}</h5>
+                                    </div>
+                                    <div class="card-body pb-3">
+                                        <ul class="p-0 m-0">
+                                        <li class="d-flex align-items-center mb-3">
+                                        <div class="avatar avatar-sm flex-shrink-0 me-3">
+                                        <span class="avatar-initial rounded-circle bg-label-success">
+                                        <i class="bx bx-show"></i></span>
+                                        </div>
+                                        <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2"> <div class="me-2">
+                                        <p class="mb-0">نمایش</p>
+                                        <small class="text-muted">نمایش بازه در نمودار</small>
+                                        </div> <div class="item-progress"><input type='checkbox' class='display-plot' />
+                                        </div>
+                                        </div>
+                                        </li>
+                                        <li class="d-flex align-items-center mb-3">
+                                            <div class="avatar avatar-sm flex-shrink-0 me-3">
+                                            <span class="avatar-initial rounded-circle bg-label-primary"><i class="bx bx-time"></i></span>
+                                            </div>
+                                            <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                            <div class="me-2">
+                                                <p class="mb-0">شروع</p>
+                                                <small class="text-muted">تاریخ شروع کمپین</small>
+                                            </div>
+                                            <div class="item-progress greg-date">${campaign.campaign_start_date}</div>
+                                            </div>
+                                        </li>
+                                        <li class="d-flex align-items-center mb-3">
+                                            <div class="avatar avatar-sm flex-shrink-0 me-3">
+                                            <span class="avatar-initial rounded-circle bg-label-info"><i class="bx bx-stopwatch"></i></span>
+                                            </div>
+                                            <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                            <div class="me-2">
+                                                <p class="mb-0">پایان</p>
+                                                <small class="text-muted">تاریخ پایان کمپین</small>
+                                            </div>
+                                            <div class="item-progress greg-date">${campaign.campaign_end_date}</div>
+                                            </div>
+                                        </li>
+                                        <li class="d-flex align-items-center mb-3">
+                                            <div class="avatar avatar-sm flex-shrink-0 me-3">
+                                            <span class="avatar-initial rounded-circle bg-label-danger"><i class="bx bx-tag"></i></span>
+                                            </div>
+                                            <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                            <div class="me-2">
+                                                <p class="mb-0">نوع</p>
+                                                <small class="text-muted">مثال: فروش و ...</small>
+                                            </div>
+                                            <div class="item-progress">${campaign.campaign_type}</div>
+                                            </div>
+                                        </li>
+                                        <li class="d-flex align-items-center mb-3">
+                                            <div class="avatar avatar-sm flex-shrink-0 me-3">
+                                            <span class="avatar-initial rounded-circle bg-label-success"><i class="bx bx-dollar"></i></span>
+                                            </div>
+                                            <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                            <div class="me-2">
+                                                <p class="mb-0">هزینه</p>
+                                                <small class="text-muted">مجموع هزینه‌ها</small>
+                                            </div>
+                                            <div class="item-progress campaign-cost">${campaign.campaign_cost}</div>
+                                            </div>
+                                        </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            `
+                        document.querySelector("#campaign-fill").insertAdjacentHTML("beforeend", rowhtml);
+                    });
+                }
+                loadingOverlay.style.display = 'none';
+                function jalaliDateConvertor() {
+                document.querySelectorAll(".greg-date").forEach(el => {
+                    const gregorian = el.innerHTML.split("-");
+                    const gYear = parseInt(gregorian[0]);
+                    const gMonth = parseInt(gregorian[1]);
+                    const gDay = parseInt(gregorian[2]);
+                    const jdate = jalaali.toJalaali(gYear, gMonth, gDay);
+                    el.innerText = `${jdate.jy}/${String(jdate.jm).padStart(2, '0')}/${String(jdate.jd).padStart(2, '0')}`;
+                    });
+                }
+                document.querySelectorAll(".campaign-cost").forEach(el => {
+                    const cost = Number(el.innerText);
+                    const separatedCost = cost.toLocaleString('fa-IR');
+                    el.innerText = separatedCost;
+                })
+                setTimeout(jalaliDateConvertor, 500);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                loadingOverlay.style.display = 'none';
+                alert('خطا در بارگذاری داده‌ها. لطفاً دوباره تلاش کنید.');
+            });
+        });
+    });
+    document.getElementById("select-all").addEventListener("change", () => {
+        const isChecked = document.getElementById("select-all").checked
+        document.querySelectorAll(".fake-check").forEach((item) => {
+            item.checked = isChecked
+        })
+    })
+</script>
+<!-- HighChart Chart Paint (Branch Separation) JQuery / Error Handling -->
+<script>
+    $("#filter-form").on("submit", function (e) {
+        const startDate = $("#start-date").val();
+        const endDate = $("#end-date").val();
+        const selectedBranches = $(".real-check:checked").map(function () {
+            return $(this).val();
+        }).get();
+        const form = document.querySelector("#filter-form");
+        const formData = new FormData(form);
+        const startDateUrl = formData.get("start-date");
+        const branchUrl = formData.getAll("branch");
+        if (!startDateUrl || startDateUrl.trim() === "") {
+            Swal.fire({
+            icon: "error",
+            title: "خطا",
+            text: "بازه زمانی مورد نظر را وارد کنید",
+            confirmButtonColor: '#5a8dee',
+            confirmButtonText: 'بستن' 
+            });
+            return;
+        }
+        let noCampaign;
+        if (document.getElementById("container").style.display !== "none" && document.getElementById("container-bar-chart").style.display !== "none" && selectedBranches.length === 0 && startDate) {
+            toastr.options = {
+                positionClass: 'toast-top-center',
+            }
+            toastr.warning("هیچ شعبه ای انتخاب نشد");
+            toastr.warning("همه شعب به صورت پیش فرض در نمودار نمایش داده میشوند");
+            noCampaign =  setTimeout(() => {
+                toastr.warning("برای مشاهده کمپین ها دوباره روی فیلتر کلیک کنید");
+            }, 7000);
+            document.querySelector("#select-all").checked = true;
+            document.querySelectorAll(".fake-check").forEach((el) => {
+                el.checked = true; 
+            });
+        } else {
+            clearTimeout(noCampaign)
+        }
+        if (document.getElementById("second-container").style.display !== "none" && document.getElementById("second-container-pie-chart").style.display !== "none" && branchUrl.length === 0) {
+            Swal.fire({
+            icon: "error",
+            title: "خطا",
+            text: "برای نمایش این قسمت باید حداقل یک فروشگاه انتخاب شود (کمپین ها بر اساس تاریخ و شعب نمایش داده میشوند)",
+            confirmButtonColor: '#5a8dee',
+            confirmButtonText: 'بستن' 
+            });
+        }
+        $.ajax({
+            url: "/api/multi-branch-data",
+            data: {
+                "start-date": startDate,
+                "end-date": endDate,
+                "branch": selectedBranches
+            },
+            traditional: true, 
+            success: function (data) {
+                const rawCategories = data.dates;
+                const categories = rawCategories.map(dateStr => {
+                    const date = new Date(dateStr);
+                    return date.toLocaleDateString('fa-IR', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit'
+                    });
+                });
+                const series = Object.entries(data.branches).map(([id, branchData]) => {
+                    const total = branchData.entry_totals.reduce((a, b) => a + b, 0);
+                    return {
+                    name: `${branchData.name} (${Number(total).toLocaleString('fa-IR')})`,
+                    data: branchData.entry_totals
+                    }
+                });
+                // Convert series into pie format
+                const pieData = series.map(branchItem => {
+                    const total = branchItem.data.reduce((sum, val) => sum + val, 0);
+                    return { name: branchItem.name, y: total };
+                });
+                // Line Chart By Branch Update
+                const secondContainer = Highcharts.chart("second-container", {
+                    chart: { type: "line",
+                        backgroundColor: '#ffffff',
+                        borderColor: '#e5e5e5',  
+                        borderWidth: 1,           
+                        borderRadius: 12,         
+                        spacing: [30, 20, 30, 20],
+                        style: {
+                            fontFamily: 'Vazirmatn, sans-serif',
+                            fontSize: '20px'
+                            }
+                        },
+                    title: { text: "ترافیک تفکیکی",
+                        style: {
+                            fontSize: '25px',
+                            color: '#333',
+                            fontFamily: 'Vazirmatn, sans-serif',
+                        } 
+                    },
+                    xAxis: { categories,
+                        title: {
+                        text: "تاریخ",
+                        style: {
+                        fontSize: '20px',
+                        fontWeight: 'bold',
+                        fontFamily: 'Vazirmatn, sans-serif',
+                            }
+                        },
+                        labels: {
+                            useHTML: true,  
+                            formatter: function () {
+                                    const value = this.value; 
+                                    if (holidayDates.includes(value)) {
+                                        return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                    }
+                                    if (fridays.includes(value)) {
+                                        return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                    }
+                                        return value; 
+                                }
+                            } 
+                        },
+                    yAxis: { title: { text: "ترافیک",
+                        style: {
+                            fontSize: '20px',
+                            fontWeight: 'bold'
+                            } 
+                        } 
+                    },
+                    series: series,
+                    plotOptions: {
+                        series: {
+                            point: {
+                                events: {
+                                    click: function () {
+                                        const apiUrl = "/api/get-campaign-each-point";
+                                        const date = this.category;
+                                        const branch = this.series.name;
+                                        const body = document.querySelector("body");
+                                        const infoModal = document.querySelector("#info-modal");
+                                        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                                        fetch(apiUrl, {
+                                            method: "POST",
+                                            headers: {
+                                                "Content-Type": "application/json",
+                                                "X-CSRFToken": csrftoken,
+                                            },
+                                            body: JSON.stringify({date: date, branch: branch.replace(/\(.*?\)/, "").trim()})
+                                        }).then(response => {
+                                            if (!response.ok) throw new Error("Invalid Response");
+                                            return response.json()
+                                        }).then(data => {
+                                            let htmlCampaigns = data.map((camp, index) =>
+                                                `<p style='margin-bottom: 0px;' style='margin-bottom: 0px; margin-top: 0px;'>${index + 1}. ${camp.campaign_name}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${camp.campaign_type}</p>`
+                                            ).join('')
+                                            if (data.length === 0) {
+                                                htmlCampaigns = `<p>هیچ کمپینی یافت نشد.</p>`
+                                            }
+                                            Swal.fire({
+                                            html: `<h3 style='margin-bottom: 0px;'>${this.y}</h3><p style='margin-bottom: 0px; margin-top: 0px;'>${this.series.name.replace(/\(.*?\)/, "").trim()}</p><p style='margin-top: 0px;'>${this.category}</p>
+                                            <p style='margin-bottom: 0px;'>کمپین ها:</p>
+                                            ${htmlCampaigns}
+                                            `,
+                                            confirmButtonText: 'بستن',
+                                            confirmButtonColor: '#5a8dee'
+                                        });
+                                        })
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+                // Campaign Plot Bands
+                setTimeout(() => {
+                    const plots = document.querySelectorAll(".display-plot");
+                    console.log("Found checkboxes:", plots.length);
+                    // Remove the plot bands on form reload
+                    document.querySelectorAll(".display-plot").forEach((item, index) => {
+                        item.checked = false;
+                        removeHighChart(secondContainer, index);
+                    });
+                    plots.forEach((item, index) => {
+                        item.addEventListener("change", () => {
+                            const ul = item.closest("ul"); 
+                            if (!ul) return;
+
+                            const liItems = ul.querySelectorAll("li");
+                            if (liItems.length < 3) {
+                                console.warn("Not enough li items");
+                                return;
+                            }
+
+                            const startDate = englishToPersianNumber(liItems[1].querySelector(".greg-date")?.innerText?.trim());
+                            const endDate = englishToPersianNumber(liItems[2].querySelector(".greg-date")?.innerText?.trim());
+                            
+                            if (item.checked) {
+                                console.log("✅ Checkbox checked", { startDate, endDate });
+                                addHighlight(secondContainer, startDate, endDate, randomPlotBandColor(), index);
+                            } else {
+                                console.log("❌ Checkbox unchecked");
+                                removeHighChart(secondContainer, index);
+                            }
+                        });
+                    });
+                }, 500);
+                // Line Chart By Branch Monthly Display Button Logic
+                // Line Chart By Branch Monthly Display Button Function
+                function handleBranchMonthlyDisplay() {
+                    const apiUrl = "/api/abnormal-monthly-display";
+                    const x = categories;
+                    const y = series;
+                    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                    fetch(apiUrl, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": csrftoken,
+                        },
+                        body: JSON.stringify({x: x, y: y})
+                    }).then(response => {
+                        if (!response.ok) throw new Error("Invalid Response");
+                        return response.json()
+                    }).then(data => {
+                        // Line Chart By Branch Update
+                        const secondContainer = Highcharts.chart("second-container", {
+                            chart: { type: "line",
+                                backgroundColor: '#ffffff',
+                                borderColor: '#e5e5e5',  
+                                borderWidth: 1,           
+                                borderRadius: 12,         
+                                spacing: [30, 20, 30, 20],
+                                style: {
+                                    fontFamily: 'Vazirmatn, sans-serif',
+                                    fontSize: '20px'
+                                    }
+                                },
+                            title: { text: "ترافیک تفکیکی",
+                                style: {
+                                    fontSize: '25px',
+                                    color: '#333',
+                                    fontFamily: 'Vazirmatn, sans-serif',
+                                } 
+                            },
+                            xAxis: { 
+                                categories: data.months,
+                                title: {
+                                text: "تاریخ",
+                                style: {
+                                fontSize: '20px',
+                                fontWeight: 'bold',
+                                fontFamily: 'Vazirmatn, sans-serif',
+                                    }
+                                },
+                                labels: {
+                                    useHTML: true,  
+                                    formatter: function () {
+                                            const value = this.value; 
+                                            if (holidayDates.includes(value)) {
+                                                return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                            }
+                                            if (fridays.includes(value)) {
+                                                return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                            }
+                                                return value; 
+                                        }
+                                    } 
+                                },
+                            yAxis: { title: { text: "ترافیک",
+                                style: {
+                                    fontSize: '20px',
+                                    fontWeight: 'bold'
+                                    } 
+                                } 
+                            },
+                            series: data.values,
+                        });
+                        // Remove Plot for Month Display
+                        setTimeout(() => {
+                            const plots = document.querySelectorAll(".display-plot");
+                            document.querySelectorAll(".display-plot").forEach((i, index) => {
+                                i.checked = false;
+                                removeHighChart(secondContainer, index);
+                            });
+                        }, 500);
+                    });
+                }
+                // Line Chart By Branch Monthly Display Event Listener
+                $("#second-container-tools .month").off("click").on("click", handleBranchMonthlyDisplay);
+                // Line Chart By Branch Weekly Display Button Logic
+                // Line Chart By Branch Weekly Display Button Function
+                function handleBranchWeeklyDisplay() {
+                    const apiUrl = "/api/abnormal-weekly-display";
+                    const x = categories;
+                    const y = series;
+                    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                    fetch(apiUrl, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": csrftoken,
+                        },
+                        body: JSON.stringify({x: x, y: y})
+                    }).then(response => {
+                        if (!response.ok) throw new Error("Invalid Response");
+                        return response.json()
+                    }).then(data => {
+                        // Line Chart By Branch Update
+                        const secondContainer = Highcharts.chart("second-container", {
+                            chart: { type: "line",
+                                backgroundColor: '#ffffff',
+                                borderColor: '#e5e5e5',  
+                                borderWidth: 1,           
+                                borderRadius: 12,         
+                                spacing: [30, 20, 30, 20],
+                                style: {
+                                    fontFamily: 'Vazirmatn, sans-serif',
+                                    fontSize: '20px'
+                                    }
+                                },
+                            title: { text: "ترافیک تفکیکی",
+                                style: {
+                                    fontSize: '25px',
+                                    color: '#333',
+                                    fontFamily: 'Vazirmatn, sans-serif',
+                                } 
+                            },
+                            xAxis: { 
+                                categories: data.weeks,
+                                title: {
+                                text: "تاریخ",
+                                style: {
+                                fontSize: '20px',
+                                fontWeight: 'bold',
+                                fontFamily: 'Vazirmatn, sans-serif',
+                                    }
+                                },
+                                labels: {
+                                    useHTML: true,  
+                                    formatter: function () {
+                                            const value = this.value; 
+                                            if (holidayDates.includes(value)) {
+                                                return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                            }
+                                            if (fridays.includes(value)) {
+                                                return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                            }
+                                                return value; 
+                                        }
+                                    } 
+                                },
+                            yAxis: { title: { text: "ترافیک",
+                                style: {
+                                    fontSize: '20px',
+                                    fontWeight: 'bold'
+                                    } 
+                                } 
+                            },
+                            series: data.values,
+                        });
+                        // Campaign Plot Bands
+                        setTimeout(() => {
+                            const plots = document.querySelectorAll(".display-plot");
+                            console.log("Found checkboxes:", plots.length);
+                            // Remove the plot bands on form reload
+                            document.querySelectorAll(".display-plot").forEach((item, index) => {
+                                item.checked = false;
+                                removeHighChart(secondContainer, index);
+                            });
+                            plots.forEach((item, index) => {
+                                item.addEventListener("change", () => {
+                                    const ul = item.closest("ul"); 
+                                    if (!ul) return;
+
+                                    const liItems = ul.querySelectorAll("li");
+                                    if (liItems.length < 3) {
+                                        console.warn("Not enough li items");
+                                        return;
+                                    }
+
+                                    const startDate = englishToPersianNumber(liItems[1].querySelector(".greg-date")?.innerText?.trim());
+                                    const endDate = englishToPersianNumber(liItems[2].querySelector(".greg-date")?.innerText?.trim());
+                                    const campaignWeeks = slicePersianDates(categories, startDate, endDate);
+                                    fetch(apiUrl, {
+                                        method: "POST",
+                                        headers: {
+                                            "Content-Type": "application/json",
+                                            "X-CSRFToken": csrftoken,
+                                        },
+                                        body: JSON.stringify({x: campaignWeeks, y: y})
+                                    }).then(response => {
+                                        if (!response.ok) throw new Error("Invalid Response");
+                                        return response.json()
+                                    }).then(x => {
+                                        let weeks  = x.weeks;
+                                        console.log(weeks)
+                                        const firstWeek = weeks[0];
+                                        const lastWeek = weeks[weeks.length - 1];
+                                        if (item.checked) {
+                                            console.log("✅ Checkbox checked", { firstWeek, lastWeek });
+                                            addWeeklyHighlight(secondContainer, firstWeek, lastWeek, randomPlotBandColor(), index);
+                                        } else {
+                                            console.log("❌ Checkbox unchecked");
+                                            removeHighChart(secondContainer, index);
+                                        }
+                                    });
+                                });
+                            });
+                        }, 500);
+                    });
+                }
+                // Line Chart By Branch Weekly Display Event Listener
+                $("#second-container-tools .week").off("click").on("click", handleBranchWeeklyDisplay);
+                // Line Chart By Branch Daily Display Logic
+                // Line Chart By Branch Daily Display Function
+                function handleBranchDailyDisplay() {
+                    const secondContainer = Highcharts.chart("second-container", {
+                        chart: { type: "line",
+                            backgroundColor: '#ffffff',
+                            borderColor: '#e5e5e5',  
+                            borderWidth: 1,           
+                            borderRadius: 12,         
+                            spacing: [30, 20, 30, 20],
+                            style: {
+                                fontFamily: 'Vazirmatn, sans-serif',
+                                fontSize: '20px'
+                                }
+                            },
+                        title: { text: "ترافیک تفکیکی",
+                            style: {
+                                fontSize: '25px',
+                                color: '#333',
+                                fontFamily: 'Vazirmatn, sans-serif',
+                            } 
+                        },
+                        xAxis: { categories,
+                            title: {
+                            text: "تاریخ",
+                            style: {
+                            fontSize: '20px',
+                            fontWeight: 'bold',
+                            fontFamily: 'Vazirmatn, sans-serif',
+                                }
+                            },
+                            labels: {
+                                useHTML: true,  
+                                formatter: function () {
+                                        const value = this.value; 
+                                        if (holidayDates.includes(value)) {
+                                            return `<span style="color:#ED4221; font-weight:bold;">${value}</span>`;
+                                        }
+                                        if (fridays.includes(value)) {
+                                            return `<span style="color:#6db076; font-weight:bold;">${value}</span>`;
+                                        }
+                                            return value; 
+                                    }
+                                } 
+                            },
+                        yAxis: { title: { text: "ترافیک",
+                            style: {
+                                fontSize: '20px',
+                                fontWeight: 'bold'
+                                } 
+                            } 
+                        },
+                        series: series,
+                        plotOptions: {
+                            series: {
+                                point: {
+                                    events: {
+                                        click: function () {
+                                            const apiUrl = "/api/get-campaign-each-point";
+                                            const date = this.category;
+                                            const branch = this.series.name;
+                                            const body = document.querySelector("body");
+                                            const infoModal = document.querySelector("#info-modal");
+                                            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                                            fetch(apiUrl, {
+                                                method: "POST",
+                                                headers: {
+                                                    "Content-Type": "application/json",
+                                                    "X-CSRFToken": csrftoken,
+                                                },
+                                                body: JSON.stringify({date: date, branch: branch.replace(/\(.*?\)/, "").trim()})
+                                            }).then(response => {
+                                                if (!response.ok) throw new Error("Invalid Response");
+                                                return response.json()
+                                            }).then(data => {
+                                                let htmlCampaigns = data.map((camp, index) =>
+                                                    `<p style='margin-bottom: 0px;' style='margin-bottom: 0px; margin-top: 0px;'>${index + 1}. ${camp.campaign_name}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${camp.campaign_type}</p>`
+                                                ).join('')
+                                                if (data.length === 0) {
+                                                    htmlCampaigns = `<p>هیچ کمپینی یافت نشد.</p>`
+                                                }
+                                                Swal.fire({
+                                                html: `<h3 style='margin-bottom: 0px;'>${this.y}</h3><p style='margin-bottom: 0px; margin-top: 0px;'>${this.series.name.replace(/\(.*?\)/, "").trim()}</p><p style='margin-top: 0px;'>${this.category}</p>
+                                                <p style='margin-bottom: 0px;'>کمپین ها:</p>
+                                                ${htmlCampaigns}
+                                                `,
+                                                confirmButtonText: 'بستن',
+                                                confirmButtonColor: '#5a8dee'
+                                            });
+                                            })
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                    // Campaign Plot Bands
+                    setTimeout(() => {
+                        const plots = document.querySelectorAll(".display-plot");
+                        console.log("Found checkboxes:", plots.length);
+                        // Remove the plot bands on form reload
+                        document.querySelectorAll(".display-plot").forEach((i, index) => {
+                            i.checked = false;
+                            removeHighChart(secondContainer, index);
+                        });
+                        plots.forEach((i, index) => {
+                            i.addEventListener("change", () => {
+                                const ul = i.closest("ul"); 
+                                if (!ul) return;
+
+                                const liItems = ul.querySelectorAll("li");
+                                if (liItems.length < 3) {
+                                    console.warn("Not enough li items");
+                                    return;
+                                }
+
+                                const startDate = englishToPersianNumber(liItems[1].querySelector(".greg-date")?.innerText?.trim());
+                                const endDate = englishToPersianNumber(liItems[2].querySelector(".greg-date")?.innerText?.trim());
+                                
+                                if (i.checked) {
+                                    console.log("✅ Checkbox checked", { startDate, endDate });
+                                    addHighlight(secondContainer, startDate, endDate, randomPlotBandColor(), index);
+                                } else {
+                                    console.log("❌ Checkbox unchecked");
+                                    removeHighChart(secondContainer, index);
+                                }
+                            });
+                        });
+                    }, 1000);
+                }
+                // Line Chart By Branch Daily Display Event Listener
+                $("#second-container-tools .day").off("click").on("click", handleBranchDailyDisplay);
+                // Pie Chart Update
+                Highcharts.chart('second-container-pie-chart', {
+                    chart: {
+                        type: 'pie',
+                        backgroundColor: '#ffffff',
+                        borderColor: '#e5e5e5',
+                        borderWidth: 1,
+                        borderRadius: 12,
+                        style: { fontFamily: 'Vazirmatn, sans-serif' }
+                    },
+                    title: {
+                        text: 'توزیع کل ترافیک شعب',
+                        style: { fontSize: '20px', fontFamily: 'Vazirmatn, sans-serif' }
+                    },
+                    subtitle: {
+                        text: `از ${categories[0]} تا ${categories[categories.length - 1]}`,
+                        style: { fontSize: '14px', fontFamily: 'Vazirmatn, sans-serif' }
+                    },
+                    tooltip: {
+                        pointFormat: '<b>{point.y}</b> ({point.percentage:.1f}%)'
+                    },
+                    plotOptions: {
+                        pie: {
+                            allowPointSelect: true,
+                            cursor: 'pointer',
+                            dataLabels: {
+                                enabled: true,
+                                format: '{point.name}: ({point.percentage:.1f}%)',
+                                style: { fontSize: '14px', fontFamily: 'Vazirmatn, sans-serif' }
+                            },
+                            showInLegend: true
+                        }
+                    },
+                    series: [{
+                        name: 'ترافیک',
+                        colorByPoint: true,
+                        data: pieData   // aggregated data here
+                    }]
+                });
+            },
+            error: function (xhr) {
+                console.error("Error loading data");
+            }
+        });
+    });
+</script>
+<!-- Display Toggles -->
+<script>
+    // Chart Button Functionalities
+    const containerBarChartToolsLine = document.querySelector("#container-bar-chart-tools .line-chart");
+    containerBarChartToolsLine.addEventListener("click", () => {
+        document.getElementById("container").style.display = '';
+        document.getElementById("container-tools").style.display = '';
+        document.getElementById("container-bar-chart").style.display = 'none';
+        document.getElementById("container-bar-chart-tools").style.display = 'none';
+    });
+    const containerToolsBar = document.querySelector("#container-tools .bar-chart");
+    containerToolsBar.addEventListener("click", () => {
+        document.getElementById("container").style.display = 'none';
+        document.getElementById("container-tools").style.display = 'none';
+        document.getElementById("container-bar-chart").style.display = '';
+        document.getElementById("container-bar-chart-tools").style.display = '';
+    });
+    const secondContainerToolsPie = document.querySelector("#second-container-tools .pie-chart");
+    secondContainerToolsPie.addEventListener("click", () => {
+        document.getElementById("second-container-pie-chart").style.display = '';
+        document.getElementById("second-container-pie-chart-tools").style.display = '';
+        document.getElementById("second-container").style.display = 'none';
+        document.getElementById("second-container-tools").style.display = 'none';
+    });
+    const secondContainerPieChartTool = document.querySelector("#second-container-pie-chart-tools .line-chart");
+    secondContainerPieChartTool.addEventListener("click", () => {
+        document.getElementById("second-container-pie-chart").style.display = 'none';
+        document.getElementById("second-container-pie-chart-tools").style.display = 'none';
+        document.getElementById("second-container").style.display = '';
+        document.getElementById("second-container-tools").style.display = '';
+    });
+    // Overall vs Branch By Branch Toggle
+    const chartDisplayToggle = document.getElementById("chart-display-toggle");
+    chartDisplayToggle.addEventListener("change", () => {
+        if (chartDisplayToggle.value === '1') {
+            document.getElementById("container-bar-chart").style.display = '';
+            document.getElementById("container-bar-chart-tools").style.display = '';
+            document.getElementById("second-container-pie-chart").style.display = 'none';
+            document.getElementById("second-container-pie-chart-tools").style.display = 'none';
+            document.getElementById("second-container").style.display = 'none';
+            document.getElementById("second-container-tools").style.display = 'none';
+        } else {
+            document.getElementById("container-bar-chart").style.display = 'none';
+            document.getElementById("container-bar-chart-tools").style.display = 'none';
+            document.getElementById("container").style.display = 'none';
+            document.getElementById("container-tools").style.display = 'none';
+            document.getElementById("second-container-pie-chart").style.display = '';
+            document.getElementById("second-container-pie-chart-tools").style.display = '';
+            
+        }
+    });
+</script>
+<!-- HighChart JS -->
+<script src="{% static 'assets/js/highcharts.js' %}"></script>
+<script src="{% static 'assets/js/exporting.js' %}"></script>
+<script src="{% static 'assets/js/export-data.js' %}"></script>
+<script src="{% static 'assets/js/accessibility.js' %}"></script>
+<!-- FlatPicker JS (Calendar) -->
+<script src="{% static 'assets/vendor/libs/jdate/jdate.js' %}"></script>
+<script src="{% static 'assets/vendor/libs/flatpickr/flatpickr-jdate.js' %}"></script>
+<script src="{% static 'assets/vendor/libs/moment/moment.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment-jalaali/build/moment-jalaali.js"></script>
+<script>
+    moment.loadPersian({usePersianDigits: false});
+</script>
+<script src="{% static 'assets/vendor/libs/flatpickr/l10n/fa-jdate.js' %}"></script>
+<script src="{% static 'assets/js/app-calendar-events.js' %}"></script>
+<script src="{% static 'assets/js/app-calendar.js' %}"></script>
+<!-- FlatPicker (JS Calendar) Persian Configuration / Form Checks -->
+<script src="{% static 'assets/js/persian-flatpicker-and-form-checks.js' %}"></script>
+<!-- Gregorian Jalali Conversion Raw JavaScript -->
+<script src="{% static 'assets/js/campaign-gregorian-to-jalali-date-convert.js' %}"></script>
+<!-- Sweet Alert CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- Date and Branch Modal Configuration -->
+<script>
+    document.getElementById("confirmDateBtn").addEventListener("click", function () {
+    // Close the date modal
+    var dateModal = bootstrap.Modal.getInstance(document.getElementById("dateModal"));
+    dateModal.hide();
+
+    // When it's fully hidden, open the branch modal
+    document.getElementById("dateModal").addEventListener("hidden.bs.modal", function () {
+        var branchModal = new bootstrap.Modal(document.getElementById("branchModal"));
+        branchModal.show();
+    }, { once: true });
+    });
+
+    document.querySelector(".btn-secondary").addEventListener("click", function () {
+    // Close the date modal
+    var dateModal = bootstrap.Modal.getInstance(document.getElementById("branchModal"));
+    dateModal.hide();
+
+    // When it's fully hidden, open the date modal
+    document.getElementById("branchModal").addEventListener("hidden.bs.modal", function () {
+        var branchModal = new bootstrap.Modal(document.getElementById("dateModal"));
+        branchModal.show();
+    }, { once: true });
+    });
+</script>
+<!-- Flatpickr Initial Date Range -->
+<script src="{% static 'assets/js/flatpickr-initial-date-range.js' %}"></script>
+<!-- AI Buttons -->
+<script src="{% static 'assets/js/ai-people-counter.js' %}"></script>
+{% endblock %}
+
+
+
+

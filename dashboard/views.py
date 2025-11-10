@@ -14,6 +14,7 @@ from .models import (
     Invoice,
     AlertCameraMalfunction,
     AlertCameraMalfunctionMessage,
+    PeopleCountingHourly
 )
 from django.db.models import Sum, F, Q, Min, Max
 from django.contrib.auth.models import User
@@ -1882,3 +1883,91 @@ def single_campaign_search_as_type(request):
     print(names_with_branches)
     return JsonResponse(names_with_branches, safe=False)
 
+
+def people_counting_hourly(request):
+    """This provides an overview for people counters in all branches on an hourly basis."""
+    # Rights
+    if not perm_to_open(request, url_hash):
+        return render(request, "401.html", status=401)
+    queryset = []
+    if request.user.profile.is_manager:
+        branches = Branch.objects.only("name", "pk").filter(merchant__url_hash=url_hash)
+    else:
+        permitted_branches = (
+            PermissionToViewBranch.objects.defer("date_created", "last_modified")
+            .select_related("branch")
+            .filter(user__pk=request.user.profile.pk)
+        )
+        permitted_branches_list = []
+        for permitted_branch in permitted_branches:
+            permitted_branches_list.append(permitted_branch.branch.pk)
+        branches = Branch.objects.only("name", "pk").filter(
+            merchant__url_hash=url_hash, pk__in=permitted_branches_list
+        )
+    selected_branches_str = request.GET.getlist("branch")
+    start_date_str = str(jalali_to_gregorian(request.GET.get("start-date")))
+    end_date_str = str(jalali_to_gregorian(request.GET.get("end-date")))
+    start_date = 0
+    end_date = 0
+    entry_totals = []
+    selected_branches = []
+    if start_date_str != "None" and end_date_str != "None":
+        try:
+            start_date = datetime.strptime(start_date_str, "%Y-%m-%d").date()
+            end_date = datetime.strptime(end_date_str, "%Y-%m-%d").date()
+        except Exception as e:
+            print(e)
+        queryset = (
+            PeopleCountingHourly.objects.defer("date_created", "last_modified", "cam")
+            .filter(merchant__url_hash=url_hash, date__range=(start_date, end_date))
+            .values("hour")
+            .annotate(total_entry=Sum("entry"))
+            .order_by("date", "hour")
+        )
+        permissions = (
+            PermissionToViewBranch.objects.defer("date_created", "last_modified")
+            .select_related("branch")
+            .filter(user__pk=request.user.profile.pk)
+        )
+        if len(permissions) == 0 and not request.user.profile.is_manager:
+            return render(request, "401.html", status=401)
+        else:
+            permitted_branches = (
+                PermissionToViewBranch.objects.defer("date_created", "last_modified")
+                .select_related("branch")
+                .filter(user__pk=request.user.profile.pk)
+            )
+            permitted_branches_list = []
+            for permitted_branch in permitted_branches:
+                permitted_branches_list.append(permitted_branch.branch.pk)
+            branches = Branch.objects.only("name", "pk").filter(
+                merchant__url_hash=url_hash, pk__in=permitted_branches_list
+            )
+            queryset = queryset.filter(branch__pk__in=permitted_branches_list)
+    if selected_branches_str:
+        selected_branches = [int(pk) for pk in selected_branches_str]
+        try:
+            queryset = queryset.filter(branch__pk__in=selected_branches)
+            entry_totals = [float(row["total_entry"]) for row in queryset]
+        except Exception as e:
+            print(e)
+
+    entry_totals = [float(row["total_entry"]) for row in queryset]
+    hours = [str(row["hour"].strftime("%H-%M-%S")) for row in queryset]
+
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return JsonResponse(
+            {
+                "hours": hours,
+                "entry_totals": entry_totals,
+            }
+        )
+    return render(
+        request,
+        "people-counter-hourly.html",
+        {
+            "hours": json.dumps(hours),
+            "entry_totals": json.dumps(entry_totals),
+            "branches": branches
+        },
+    )
