@@ -37,7 +37,7 @@ class Command(BaseCommand):
         for ip in ips:
             if ping_ip(ip['ip']):
                 try:
-                    data = get_custom_date_camera_data_hourly(ip["ip"], "2025-01-20", "2025-10-10")
+                    data = get_custom_date_camera_data_hourly(ip["ip"], "2025-11-11", "2025-11-11")
                     update_or_create_camera_data_hourly(data, ip["cam_id"], ip["merchant_id"], ip["branch_id"])
                 except Exception as e:
                     print(e)

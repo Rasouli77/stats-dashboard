@@ -1090,7 +1090,7 @@ class AI(APIView):
 class MultipleBranchesHourly(APIView):
     def get(self, request):
         queryset = (
-            PeopleCounting.objects.filter(
+            PeopleCountingHourly.objects.filter(
                 merchant__url_hash=request.user.profile.merchant.url_hash
             )
             .values("hour")
@@ -1112,16 +1112,23 @@ class MultipleBranchesHourly(APIView):
 
         hours = sorted(set(queryset.values_list("hour", flat=True)))
         response = {"hours": hours, "branches": {}}
+        hours_len = len(response["hours"])
         branches = Branch.objects.filter(pk__in=selected_branches)
         for branch in branches:
             entry_totals = []
             for row in queryset.filter(branch=branch):
                 count = row["entry_totals"]
                 entry_totals.append(count)
+            list_chunks = [entry_totals[i:i+hours_len] for i in range(0, len(entry_totals), hours_len)]
+            base_list = [0]*hours_len
+            for item in list_chunks:
+                base_list = [x + y for x, y in zip(base_list, item)]
+            entry_totals = base_list
             response["branches"][str(branch.pk)] = {
                 "name": branch.name,
                 "entry_totals": entry_totals,
             }
+        print(response)
         return Response(response)
 
         

@@ -154,7 +154,7 @@ urlpatterns = [
     path("dashboard/account/profile/<int:user_id>/", profile, name="profile"),
     path("dashboard/<str:url_hash>", home, name="home"),
     path("api/multi-branch-data", MultipleBranches.as_view(), name="multi_branch_data"),
-    path("api/multi-branch-data", MultipleBranchesHourly.as_view(), name="multi_branch_data_hourly"),
+    path("api/multi-branch-data-hourly", MultipleBranchesHourly.as_view(), name="multi_branch_data_hourly"),
     path(
         "api/multi-branch-invoice-data",
         MultiBranchesInvoice.as_view(),

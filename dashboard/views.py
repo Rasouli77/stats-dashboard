@@ -1884,7 +1884,7 @@ def single_campaign_search_as_type(request):
     return JsonResponse(names_with_branches, safe=False)
 
 
-def people_counting_hourly(request):
+def people_counting_hourly(request, url_hash):
     """This provides an overview for people counters in all branches on an hourly basis."""
     # Rights
     if not perm_to_open(request, url_hash):
@@ -1910,6 +1910,7 @@ def people_counting_hourly(request):
     start_date = 0
     end_date = 0
     entry_totals = []
+    today = datetime.now().date()
     selected_branches = []
     if start_date_str != "None" and end_date_str != "None":
         try:
@@ -1954,7 +1955,15 @@ def people_counting_hourly(request):
 
     entry_totals = [float(row["total_entry"]) for row in queryset]
     hours = [str(row["hour"].strftime("%H-%M-%S")) for row in queryset]
-
+    hours = hours[:23]
+    hours_len = len(hours)
+    if hours_len == 0: 
+        hours_len = 1
+    base_list = [0]*hours_len
+    list_chunks  = [entry_totals[i:i + hours_len] for i in range(0, len(entry_totals), hours_len)]
+    for lst in list_chunks:
+        base_list = [x + y for x, y in zip(base_list, lst)]
+    entry_totals = base_list
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
         return JsonResponse(
             {
