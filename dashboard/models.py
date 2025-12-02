@@ -441,3 +441,53 @@ class PeopleCountingHourly(models.Model):
     class Meta:
         verbose_name = "شمارشگر ساعتی"
         verbose_name_plural = "شمارشگر ساعتی"
+
+
+class WebsiteVisit(models.Model):
+    merchant = models.ForeignKey(
+        Merchant,
+        on_delete=models.CASCADE,
+        verbose_name="مرچنت",
+        db_index=True,
+    )
+    date = models.DateField(verbose_name='تاریخ')
+    unique_visitors = models.IntegerField(verbose_name='ورودی')
+    visits = models.IntegerField(null=True, blank=True, verbose_name='بازدید')
+    bounce_rate = models.IntegerField(null=True, blank=True, verbose_name='نرخ پرش')
+    actions_count = models.IntegerField(null=True, blank=True, verbose_name='تعداد فعالیت')
+    sum_time_spent = models.IntegerField(null=True, blank=True, verbose_name='مجموع زمان')
+    avg_time_spent = models.IntegerField(null=True, blank=True, verbose_name='میانگین زمان')
+    actions_per_visit = models.DecimalField(max_digits=5 , decimal_places=2, blank=True, null=True, verbose_name='میانگین اکشن در هر بازدید')
+    date_created = models.DateTimeField(
+        null=True, default=datetime.now, verbose_name="تاریخ ساخت"
+    )
+    last_modified = models.DateTimeField(
+        auto_now=True, verbose_name="تاریخ آخرین تغییر"
+    )
+
+    class Meta:
+        verbose_name = 'ویزیت سایت'
+        verbose_name_plural = 'ویزیت سایت'
+
+
+class WebsiteSales(models.Model):
+    merchant = models.ForeignKey(
+        Merchant,
+        on_delete=models.CASCADE,
+        verbose_name="مرچنت",
+        db_index=True,
+    )
+    date = models.DateField(verbose_name='تاریخ')
+    invoice_amount = models.IntegerField(verbose_name='فروش')
+    invoice_count = models.IntegerField(verbose_name='تعداد فاکتور')
+    product_count = models.IntegerField(verbose_name='تعداد محصول')
+    date_created = models.DateTimeField(
+        null=True, default=datetime.now, verbose_name="تاریخ ساخت"
+    )
+    last_modified = models.DateTimeField(
+        auto_now=True, verbose_name="تاریخ آخرین تغییر"
+    )
+
+    class Meta:
+        verbose_name = 'فروش سایت'
+        verbose_name_plural = 'فروش سایت'

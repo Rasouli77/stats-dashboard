@@ -14,7 +14,9 @@ from .models import (
     Invoice,
     AlertCameraMalfunction,
     AlertCameraMalfunctionMessage,
-    PeopleCountingHourly
+    PeopleCountingHourly,
+    WebsiteSales,
+    WebsiteVisit
 )
 from django.db.models import Sum, F, Q, Min, Max
 from django.contrib.auth.models import User
@@ -1978,5 +1980,139 @@ def people_counting_hourly(request, url_hash):
             "hours": json.dumps(hours),
             "entry_totals": json.dumps(entry_totals),
             "branches": branches
+        },
+    )
+
+
+@login_required
+def website_visits(request, url_hash):
+    """This provides an overview for people counters in all branches."""
+    # Rights
+    if not perm_to_open(request, url_hash):
+        return render(request, "401.html", status=401)
+    queryset = []
+    if request.user.profile.is_manager:
+        branches = Branch.objects.only("name", "pk").filter(merchant__url_hash=url_hash)
+    else:
+        permitted_branches = (
+            PermissionToViewBranch.objects.defer("date_created", "last_modified")
+            .select_related("branch")
+            .filter(user__pk=request.user.profile.pk)
+        )
+        permitted_branches_list = []
+        for permitted_branch in permitted_branches:
+            permitted_branches_list.append(permitted_branch.branch.pk)
+        branches = Branch.objects.only("name", "pk").filter(
+            merchant__url_hash=url_hash, pk__in=permitted_branches_list
+        )
+    start_date_str = str(jalali_to_gregorian(request.GET.get("start-date")))
+    end_date_str = str(jalali_to_gregorian(request.GET.get("end-date")))
+    start_date = 0
+    end_date = 0
+    entry_totals = []
+    campaign_list = []
+    if start_date_str != "None" and end_date_str != "None":
+        try:
+            start_date = datetime.strptime(start_date_str, "%Y-%m-%d").date()
+            end_date = datetime.strptime(end_date_str, "%Y-%m-%d").date()
+        except Exception as e:
+            print(e)
+        queryset = (
+            WebsiteVisit.objects.defer("date_created", "last_modified")
+            .filter(merchant__url_hash=url_hash, date__range=(start_date, end_date))
+            .values("date")
+            .annotate(total_entry=Sum("unique_visitors"))
+            .order_by("date")
+        )
+        permissions = (
+            PermissionToViewBranch.objects.defer("date_created", "last_modified")
+            .select_related("branch")
+            .filter(user__pk=request.user.profile.pk)
+        )
+        if len(permissions) == 0 and not request.user.profile.is_manager:
+            return render(request, "401.html", status=401)
+        if request.user.profile.is_manager:
+            branches = Branch.objects.only("name", "pk").filter(
+                merchant__url_hash=url_hash
+            )
+            campaigns = (
+                Campaign.objects.filter(
+                    branch__merchant__url_hash=request.user.profile.merchant.url_hash
+                )
+                .filter(Q(start_date__lte=end_date) & Q(end_date__gte=start_date))
+                .values("group_id")
+                .annotate(
+                    campaign_name=Min("name"),
+                    campaign_start_date=Min("start_date"),
+                    campaign_end_date=Max("end_date"),
+                    campaign_cost=Sum("cost"),
+                    campaign_type=Min("campaign_type"),
+                    campaign_last_modified=Max("last_modified"),
+                    campaign_group_id=Min("group_id"),
+                )
+                .order_by("-campaign_last_modified")
+            )
+        else:
+            permitted_branches = (
+                PermissionToViewBranch.objects.defer("date_created", "last_modified")
+                .select_related("branch")
+                .filter(user__pk=request.user.profile.pk)
+            )
+            permitted_branches_list = []
+            for permitted_branch in permitted_branches:
+                permitted_branches_list.append(permitted_branch.branch.pk)
+            branches = Branch.objects.only("name", "pk").filter(
+                merchant__url_hash=url_hash, pk__in=permitted_branches_list
+            )
+            campaigns = (
+                Campaign.objects.filter(
+                    branch__merchant__url_hash=request.user.profile.merchant.url_hash
+                )
+                .filter(branch__pk__in=permitted_branches_list)
+                .filter(Q(start_date__lte=end_date) & Q(end_date__gte=start_date))
+                .values("group_id")
+                .annotate(
+                    campaign_name=Min("name"),
+                    campaign_start_date=Min("start_date"),
+                    campaign_end_date=Max("end_date"),
+                    campaign_cost=Sum("cost"),
+                    campaign_type=Min("campaign_type"),
+                    campaign_last_modified=Max("last_modified"),
+                    campaign_group_id=Min("group_id"),
+                )
+                .order_by("-campaign_last_modified")
+            )
+            campaign_list = []
+            dictionary = {}
+            for campaign in campaigns:
+                dictionary = {
+                    "campaign_name": campaign["campaign_name"],
+                    "campaign_start_date": campaign["campaign_start_date"],
+                    "campaign_end_date": campaign["campaign_end_date"],
+                    "campaign_cost": campaign["campaign_cost"],
+                    "campaign_type": campaign["campaign_type"],
+                }
+                campaign_list.append(dictionary)
+
+
+    entry_totals = [float(row["total_entry"]) for row in queryset]
+    dates = [str(row["date"].strftime("%Y-%m-%d")) for row in queryset]
+
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        print(campaign_list)
+        return JsonResponse(
+            {
+                "dates": dates,
+                "entry_totals": entry_totals,
+                "campaigns": campaign_list,
+            }
+        )
+    return render(
+        request,
+        "website_visits.html",
+        {
+            "dates": json.dumps(dates),
+            "entry_totals": json.dumps(entry_totals),
+            "campaigns": json.dumps(campaign_list),
         },
     )

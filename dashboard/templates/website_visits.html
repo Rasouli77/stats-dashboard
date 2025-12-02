@@ -1,0 +1,605 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}
+	شمارشگر
+{% endblock %}
+{% block meta_description %}
+	شمارشگر
+{% endblock %}
+{% block extra_css %}
+<!-- Style for Calendar, FlatPicker and Toastr -->
+<link rel="stylesheet" href="{% static 'assets/vendor/libs/fullcalendar/fullcalendar.css' %}">
+<link rel="stylesheet" href="{% static 'assets/vendor/libs/flatpickr/flatpickr.css' %}">
+<link rel="stylesheet" href="{% static 'assets/vendor/css/pages/app-calendar.css' %}">
+<link rel="stylesheet" href="{% static 'assets/vendor/libs/toastr/toastr.css' %}" />
+<!-- Custom Style for FlatPicker Calendar -->
+<style>
+    .light-style .flatpickr-calendar {
+        box-shadow: none !important;
+    }
+</style>
+<!-- Custom Style for the Loading Overlay / Additional CSS -->
+<style>
+    .loading-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+    }
+    .loader {
+        border: 8px solid #f3f3f3;
+        border-top: 8px solid #3498db;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .highcharts-credits {
+        display: none;
+    }
+
+    .demo-inline-spacing > * {
+        margin: 0px !important;
+    }
+    .box {
+        height: 25vh;  
+        overflow-y: auto;
+    }
+</style>
+<!-- Chart Tool Bar -->
+<style>
+    .icon-bar {
+        display: flex;
+        gap: 12px;
+        font-size: 24px;
+        margin-top: 25px;
+    }
+
+    .icon-wrapper {
+        position: relative;
+        cursor: pointer;
+        transition: color 0.3s ease;
+    }
+
+    /* Default color */
+    .icon-wrapper i {
+        color: #555;
+        transition: color 0.3s ease;
+    }
+
+    /* Hover colors for each one */
+    .bar-chart:hover i { color: #4caf50; } /* Green */
+    .pie-chart:hover i { color: #ff9800; } /* Orange */
+    .line-chart:hover i { color: #2196f3; } /* Blue */
+    .ai:hover i { color: #9c27b0; } /* Purple */
+
+    /* Tooltip styling */
+    .icon-wrapper::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        top: -32px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #333;
+        color: #fff;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 12px;
+        opacity: 0;
+        pointer-events: none;
+        white-space: nowrap;
+        transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    /* Show tooltip on hover */
+    .icon-wrapper:hover::after {
+        opacity: 1;
+        transform: translateX(-50%) translateY(4px);
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="loading-overlay" id="loading-overlay">
+    <div class="loader"></div>
+</div>
+<div class="calendar-container">
+    <div class="container">
+        <div class="row">
+            <!-- Date Picker Card -->
+            <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12" style="margin-bottom: 10px;">
+                <h1 style="color: #262626; font-size: 1.38rem; font-weight: 700;">گزارشات وب سایت</h1>
+            </div>
+            <div class="col-xl-2 col-lg-2 col-md-12 col-sm-12" style="margin-bottom: 10px;">
+                <h1 style="color: #262626; font-size: 1.125rem; font-weight: 700;">گزارش بر اساس:</h1>
+            </div>
+            <div class="col-xl-2 col-lg-2 col-md-12 col-sm-12" style="margin-bottom: 10px;">
+                <small><i class='bx bx-calendar'></i> بازه زمانی و شعب</small>
+                <div class="card mt-3">
+                    <div class="card-body" style="padding: 0px !important;">
+                        <button type="button" class="btn btn-outline-primary w-100" data-bs-toggle="modal" data-bs-target="#dateModal" style="border: none; color: black; background-color: #ccdbf1;">
+                            <i class="menu-icon tf-icons bx bx-filter"></i>
+                            فیلتر
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <!-- Date Picker Modal -->
+            <div class="modal fade" id="dateModal" tabindex="-1" aria-labelledby="dateModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="dateModalLabel">بازه زمانی گزارش</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="بستن"></button>
+                        </div>
+                        <div class="modal-body" style="display: flex; justify-content: center; align-items: center;">
+                            <!-- Your date range picker goes here -->
+                            <div id="date-range"></div>
+                        </div>
+                        <div class="modal-footer">
+                            <button 
+                                type="button" 
+                                class="btn btn-primary" 
+                                id="confirmDateBtn">
+                                بعدی
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Branch Selector Card -->
+            <!-- Branch Selector Modal -->
+            <div class="modal fade" id="branchModal" tabindex="-1" aria-labelledby="branchModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="branchModalLabel">انتخاب شعب</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="بستن"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="branches-grid">
+                            <div class="form-check mt-2">
+                                <input class="form-check-input" type="checkbox" id="select-all">
+                                <label class="form-check-label" for="select-all">انتخاب همه</label>
+                            </div>
+                            {% for branch in branches %}
+                            <div class="form-check mt-2">
+                                <input class="form-check-input fake-check" type="checkbox" value="{{ branch.pk }}" id="branch-{{ branch.pk }}">
+                                <label class="form-check-label" for="branch-{{ branch.pk }}">{{ branch.name }}</label>
+                            </div>
+                            {% endfor %}
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary">قبلی</button>
+                            <form action="" method="get" id="filter-form">
+                                <label style="display: none;" for="start-date">از تاریخ</label>
+                                <input type="text" name="start-date" id="start-date" style="display: none;">
+                                <label style="display: none;" for="end-date">تا</label>
+                                <input type="text" name="end-date" id="end-date" style="display: none;">
+                                {% for branch in branches %}
+                                <div class="form-check mt-3" style="display: none;">
+                                    <input class="form-check-input real-check" type="checkbox" value="{{ branch.pk }}" name="branch">
+                                    <label class="form-check-label" for="defaultCheck1">{{ branch.name }}</label>
+                                </div>
+                                {% endfor %}
+                                <button class="btn btn-primary btn-md" type="submit" id="filter-proxy-button" data-bs-dismiss="modal">فیلتر</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="demo-inline-spacing mt-3">
+                    <div class="tab-content px-0 pt-2">
+                        <!-- total traffic aggregation line chart -->
+                        <div id="container-tools" class="icon-bar" style="display: none;">
+                            <div class="icon-wrapper bar-chart" data-tooltip="Bar Chart">
+                                <i class="bx bx-bar-chart"></i>
+                            </div>
+                        </div>
+                        <div id="container" style="width: 100%; height: 400px; display: none;"></div>
+                        <!-- total traffic aggregation bar chart -->
+                        <div id="container-bar-chart-tools" class="icon-bar">
+                            <div class="icon-wrapper line-chart" data-tooltip="Line Chart">
+                                <i class="bx bx-line-chart"></i>
+                            </div>
+                        </div>
+                        <div id="container-bar-chart" style="width: 100%; height: 400px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div><br>
+</div>
+<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" style="display: none;">
+{% endblock %}
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/jalaali-js/dist/jalaali.min.js"></script>
+<!-- JQuery and Toastr Scripts -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment-jalaali@0.10.4/build/moment-jalaali.min.js"></script>
+<!-- Jdatetime -->
+<script src="https://cdn.jsdelivr.net/npm/jalaali-js@1.2.6/dist/jalaali.min.js"></script>
+<!-- Error Handling  -->
+<script>
+    document.querySelector("#filter-proxy-button").addEventListener("click", (e) => {
+        let m = 0;
+        if (document.getElementById("select-all").checked) {
+            m += 1
+        }
+        document.querySelectorAll(".fake-check").forEach(
+        element => {
+                if (element.checked) {
+                    m += 1
+                }
+            }
+        );
+        if (m === 0) {
+            Swal.fire({
+                icon: "error",
+                title: "خطا",
+                text: "یک مورد را انتخاب کنید",
+                confirmButtonColor: '#5a8dee',
+                confirmButtonText: 'بستن' 
+            });
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    });
+</script>
+<!-- Initial HighChart Chart Paint (Aggregation) Raw JavaScript -->
+<script>
+    // getJalaliDateRange returns the last 7 days
+        function getJalaliDateRange() {
+        const today = new Date();
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(today.getDate() - 7);
+
+        function toJalaliStr(date) {
+            const { jy, jm, jd } = jalaali.toJalaali(date);
+            return `${jy}-${String(jm).padStart(2, "0")}-${String(jd).padStart(2, "0")}`;
+        }
+
+        const inStartDate = toJalaliStr(sevenDaysAgo);
+        const inEndDate = toJalaliStr(today);
+
+        return { inStartDate, inEndDate };
+    }
+    
+    // This triggers on page load
+    document.addEventListener("DOMContentLoaded", () => {
+        // The last 7 days: start and end
+        const {inStartDate, inEndDate} = getJalaliDateRange();
+        console.log(inStartDate, inEndDate)
+        // Holidays in the last 7 days
+        const startDate = inStartDate;
+        const endDate = inEndDate;
+        // This takes care of people counting data
+        fetch(`{% url 'website_stats' url_hash=request.user.profile.merchant.url_hash %}?start-date=${inStartDate}&end-date=${inEndDate}`, {
+            method: 'GET',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.json();
+        })
+        .then(data => {
+            const total = data.entry_totals.reduce((a, b) => a + b, 0);
+            const newCategories = data.dates.map(dateStr => {
+                const date = new Date(dateStr);
+                return date.toLocaleDateString('fa-IR', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit'
+                });
+            });
+            // Initial Line Chart 
+            lineChart.update({
+                xAxis: { 
+                    categories: newCategories,
+                    },
+                series: [{ name: `ورودی سایت (${Number(total).toLocaleString('fa-IR')})`, data: data.entry_totals}
+                ],
+            });
+            // Bar Line Chart 
+            barChart.update({
+                xAxis: { 
+                    categories: newCategories,
+                    },
+                series: [{ name: `ورودی سایت (${Number(total).toLocaleString('fa-IR')})`, data: data.entry_totals}
+                ],
+            });
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('خطا در بارگذاری داده‌ها. لطفاً دوباره تلاش کنید.');
+        });
+    });
+</script>
+<!-- HighChart Chart Paint (Aggregation) Raw JavaScript / Invoices Paint Display Raw Javascript -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const categories = JSON.parse('{{ dates|safe }}');  
+        const entry_totals = JSON.parse('{{ entry_totals|safe }}');
+        lineChart = Highcharts.chart('container', {
+        chart: {
+            type: 'line',
+            backgroundColor: '#ffffff',
+            borderColor: '#e5e5e5',  
+            borderWidth: 1,           
+            borderRadius: 12,         
+            spacing: [30, 20, 30, 20],
+            style: {
+                fontFamily: 'Vazirmatn, sans-serif',
+                fontSize: '20px'
+            }
+        },
+        title: {
+            text: "ورودی سایت",
+            style: {
+                fontSize: '25px',
+                color: '#333',
+                fontFamily: 'Vazirmatn, sans-serif',
+            }
+        },
+        xAxis: {
+            categories: categories,
+            title: {
+                text: "تاریخ",
+                style: {
+                    fontSize: '20px',
+                    fontWeight: 'bold',
+                    fontFamily: 'Vazirmatn, sans-serif',
+                }
+            }
+        },
+        yAxis: {
+            title: {
+                text: "ترافیک",
+                style: {
+                    fontSize: '20px',
+                    fontWeight: 'bold',
+                    fontFamily: 'Vazirmatn, sans-serif',
+                }
+            }
+        },
+        tooltip: {
+            backgroundColor: 'white',
+            borderColor: '#ccc',
+            borderRadius: 8,
+            shadow: true,
+            style: { fontSize: '15px' },
+            shared: true, 
+        },
+        plotOptions: {
+            series: {
+                lineWidth: 3, 
+                marker: {
+                    enabled: true,
+                    radius: 5,
+                    states: { hover: { radius: 7.5 } }
+                },
+                states: {
+                    hover: { lineWidthPlus: 1 }
+                },
+            }
+        },
+        series: [
+            {   
+                name: `ترافیک`,
+                data: entry_totals
+            }
+        ]
+        });
+        barChart = Highcharts.chart('container-bar-chart', {
+        chart: {
+            type: 'column',
+            backgroundColor: '#ffffff',
+            borderColor: '#e5e5e5',  
+            borderWidth: 1,           
+            borderRadius: 12,         
+            spacing: [30, 20, 30, 20],
+            style: {
+                fontFamily: 'Vazirmatn, sans-serif',
+                fontSize: '20px'
+            }
+        },
+        title: {
+            text: "ورودی سایت",
+            style: {
+                fontSize: '25px',
+                color: '#333',
+                fontFamily: 'Vazirmatn, sans-serif',
+            }
+        },
+        xAxis: {
+            categories: categories,
+            title: {
+                text: "تاریخ",
+                style: {
+                    fontSize: '20px',
+                    fontWeight: 'bold',
+                    fontFamily: 'Vazirmatn, sans-serif',
+                }
+            }
+        },
+        yAxis: {
+            title: {
+                text: "ترافیک",
+                style: {
+                    fontSize: '20px',
+                    fontWeight: 'bold',
+                    fontFamily: 'Vazirmatn, sans-serif',
+                }
+            }
+        },
+        tooltip: {
+            backgroundColor: 'white',
+            borderColor: '#ccc',
+            borderRadius: 8,
+            shadow: true,
+            style: { fontSize: '15px' },
+            shared: true, 
+        },
+        plotOptions: {
+            series: {
+                lineWidth: 3, 
+                marker: {
+                    enabled: true,
+                    radius: 5,
+                    states: { hover: { radius: 7.5 } }
+                },
+                states: {
+                    hover: { lineWidthPlus: 1 }
+                },
+            }
+        },
+        series: [
+            {   
+                name: `ترافیک`,
+                data: entry_totals
+            }
+        ]
+        });
+        document.getElementById('filter-form').addEventListener('submit', function(event) {
+            event.preventDefault(); 
+            const form = this;
+            const formData = new FormData(form);
+            const queryString = new URLSearchParams(formData).toString();
+            const params = new URLSearchParams(formData);
+            aiStartDate = params.get("start-date");
+            aiEndDate = params.get("end-date");
+            const loadingOverlay = document.getElementById('loading-overlay');
+            loadingOverlay.style.display = 'flex';
+            fetch(`{% url 'website_stats' url_hash=request.user.profile.merchant.url_hash %}?${queryString}`, {
+                method: 'GET',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            })
+            .then(data => {
+                // Overall Category Update
+                const total = data.entry_totals.reduce((a, b) => a + b, 0);
+                const categories = data.dates.map(dateStr => {
+                const date = new Date(dateStr);
+                return date.toLocaleDateString('fa-IR', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit'
+                });
+            });
+                // Overall Line Chart Update
+                lineChart.update({
+                    xAxis: { 
+                        categories: categories,
+                        },
+                    series: [{ name: `ورودی سایت (${Number(total).toLocaleString('fa-IR')})`, data: data.entry_totals},
+                    ],
+                });
+                // Overall Bar Chart Update
+                barChart.update({
+                    xAxis: { 
+                        categories: categories,
+                        },
+                    series: [{ name: `ورودی سایت (${Number(total).toLocaleString('fa-IR')})`, data: data.entry_totals},
+                    {data: data.exit_totals}
+                    ],
+                });
+                loadingOverlay.style.display = 'none';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                loadingOverlay.style.display = 'none';
+                alert('خطا در بارگذاری داده‌ها. لطفاً دوباره تلاش کنید.');
+            });
+        });
+    });
+</script>
+<!-- Display Toggles -->
+<script>
+    // Chart Button Functionalities
+    const containerBarChartToolsLine = document.querySelector("#container-bar-chart-tools .line-chart");
+    containerBarChartToolsLine.addEventListener("click", () => {
+        document.getElementById("container").style.display = '';
+        document.getElementById("container-tools").style.display = '';
+        document.getElementById("container-bar-chart").style.display = 'none';
+        document.getElementById("container-bar-chart-tools").style.display = 'none';
+    });
+    const containerToolsBar = document.querySelector("#container-tools .bar-chart");
+    containerToolsBar.addEventListener("click", () => {
+        document.getElementById("container").style.display = 'none';
+        document.getElementById("container-tools").style.display = 'none';
+        document.getElementById("container-bar-chart").style.display = '';
+        document.getElementById("container-bar-chart-tools").style.display = '';
+    });
+</script>
+<!-- HighChart JS -->
+<script src="{% static 'assets/js/highcharts.js' %}"></script>
+<script src="{% static 'assets/js/exporting.js' %}"></script>
+<script src="{% static 'assets/js/export-data.js' %}"></script>
+<script src="{% static 'assets/js/accessibility.js' %}"></script>
+<!-- FlatPicker JS (Calendar) -->
+<script src="{% static 'assets/vendor/libs/jdate/jdate.js' %}"></script>
+<script src="{% static 'assets/vendor/libs/flatpickr/flatpickr-jdate.js' %}"></script>
+<script src="{% static 'assets/vendor/libs/moment/moment.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment-jalaali/build/moment-jalaali.js"></script>
+<script>
+    moment.loadPersian({usePersianDigits: false});
+</script>
+<script src="{% static 'assets/vendor/libs/flatpickr/l10n/fa-jdate.js' %}"></script>
+<script src="{% static 'assets/js/app-calendar-events.js' %}"></script>
+<script src="{% static 'assets/js/app-calendar.js' %}"></script>
+<!-- FlatPicker (JS Calendar) Persian Configuration / Form Checks -->
+<script src="{% static 'assets/js/persian-flatpicker-and-form-checks.js' %}"></script>
+<!-- Gregorian Jalali Conversion Raw JavaScript -->
+<script src="{% static 'assets/js/campaign-gregorian-to-jalali-date-convert.js' %}"></script>
+<!-- Sweet Alert CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- Date and Branch Modal Configuration -->
+<script>
+    document.getElementById("confirmDateBtn").addEventListener("click", function () {
+    // Close the date modal
+    var dateModal = bootstrap.Modal.getInstance(document.getElementById("dateModal"));
+    dateModal.hide();
+
+    // When it's fully hidden, open the branch modal
+    document.getElementById("dateModal").addEventListener("hidden.bs.modal", function () {
+        var branchModal = new bootstrap.Modal(document.getElementById("branchModal"));
+        branchModal.show();
+    }, { once: true });
+    });
+
+    document.querySelector(".btn-secondary").addEventListener("click", function () {
+    // Close the date modal
+    var dateModal = bootstrap.Modal.getInstance(document.getElementById("branchModal"));
+    dateModal.hide();
+
+    // When it's fully hidden, open the date modal
+    document.getElementById("branchModal").addEventListener("hidden.bs.modal", function () {
+        var branchModal = new bootstrap.Modal(document.getElementById("dateModal"));
+        branchModal.show();
+    }, { once: true });
+    });
+</script>
+<!-- Flatpickr Initial Date Range -->
+<script src="{% static 'assets/js/flatpickr-initial-date-range.js' %}"></script>
+{% endblock %}
+
+
+
+

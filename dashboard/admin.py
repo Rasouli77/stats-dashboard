@@ -16,7 +16,9 @@ from .models import (
     HolidayDescription,
     AlertCameraMalfunction,
     AlertCameraMalfunctionMessage,
-    PeopleCountingHourly
+    PeopleCountingHourly,
+    WebsiteSales,
+    WebsiteVisit
 )
 from rangefilter.filters import DateRangeFilter
 
@@ -193,6 +195,18 @@ class AlertCameraMalfunctionMessageAdmin(admin.ModelAdmin):
     exclude = ["date_created", "last_modified"]
 
 
+class WebsiteVisitAdmin(admin.ModelAdmin):
+    list_display = ["date", "unique_visitors", "visits", "date_created", "last_modified"]
+    exclude = ["date_created", "last_modified"]
+    list_filter = ["date_created"]
+
+
+class WebsiteSalesAdmin(admin.ModelAdmin):
+    list_display = ["date", "invoice_amount", "invoice_count", "product_count"]
+    exclude = ["date_created", "last_modified"]
+    list_filter = ["date_created"]
+
+
 admin.site.register(PeopleCounting, PeopleCountingAdmin)
 admin.site.register(Cam, CamAdmin)
 admin.site.register(Country, CountryAdmin)
@@ -210,3 +224,5 @@ admin.site.register(HolidayDescription)
 admin.site.register(AlertCameraMalfunction, AlertCameraMalfunctionAdmin)
 admin.site.register(AlertCameraMalfunctionMessage, AlertCameraMalfunctionMessageAdmin)
 admin.site.register(PeopleCountingHourly, PeopleCountingHourlyAdmin)
+admin.site.register(WebsiteSales, WebsiteSalesAdmin)
+admin.site.register(WebsiteVisit, WebsiteVisitAdmin)

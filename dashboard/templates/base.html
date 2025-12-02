@@ -105,6 +105,11 @@
                     </a>
                   </li>
                   <li class="menu-item">
+                    <a href="{% url 'people_counting_hourly' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
+                      <div data-i18n="List">ترافیک ساعتی</div>
+                    </a>
+                  </li>
+                  <li class="menu-item">
                     <a href="{% url 'invoice_counter' url_hash=request.user.profile.merchant.url_hash|default:'defaulthash' %}" class="menu-link">
                       <div data-i18n="Preview">فروش</div>
                     </a>

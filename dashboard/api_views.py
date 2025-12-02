@@ -1130,8 +1130,3 @@ class MultipleBranchesHourly(APIView):
             }
         print(response)
         return Response(response)
-
-        
-
-
-
