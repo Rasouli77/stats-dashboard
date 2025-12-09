@@ -478,7 +478,7 @@ class WebsiteSales(models.Model):
         db_index=True,
     )
     date = models.DateField(verbose_name='تاریخ')
-    invoice_amount = models.IntegerField(verbose_name='فروش')
+    invoice_amount = models.BigIntegerField(verbose_name='فروش')
     invoice_count = models.IntegerField(verbose_name='تعداد فاکتور')
     product_count = models.IntegerField(verbose_name='تعداد محصول')
     date_created = models.DateTimeField(

@@ -29,7 +29,7 @@ merchant = Merchant.objects.get(pk=1)
 class Command(BaseCommand):
     help = "run updates for website data"
     def handle(self, *args, **kwargs):
-        matomo_data_dictionary = get_matomo_daily(MATOMO_URL, MATOMO_API_TOKEN, ID_SITE, today_str, today_str)
+        matomo_data_dictionary = get_matomo_daily(MATOMO_URL, MATOMO_API_TOKEN, ID_SITE, "2025-10-01", "2025-12-06")
         print(matomo_data_dictionary)
         for key, value in matomo_data_dictionary.items():
             WebsiteVisit.objects.update_or_create(
@@ -38,7 +38,7 @@ class Command(BaseCommand):
                 defaults = {
                     'unique_visitors': int(value['nb_uniq_visitors']) if value != [] else 0,
                     'visits': int(value['nb_visits']) if value != [] else 0,
-                    'bounce_rate': int(value['bounce_count']) if value != [] else 0,
+                    'bounce_rate': int(str(value['bounce_rate'])[:2]) if value != [] else 0,
                     'actions_count': int(value['nb_actions']) if value != [] else 0,
                     'sum_time_spent': int(value['sum_visit_length']) if value != [] else 0,
                     'avg_time_spent': int(value['avg_time_on_site']) if value != [] else 0,

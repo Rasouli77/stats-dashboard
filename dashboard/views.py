@@ -1985,12 +1985,13 @@ def people_counting_hourly(request, url_hash):
 
 
 @login_required
-def website_visits(request, url_hash):
+def website_stats(request, url_hash):
     """This provides an overview for people counters in all branches."""
     # Rights
     if not perm_to_open(request, url_hash):
         return render(request, "401.html", status=401)
     queryset = []
+    queryset_sales = []
     if request.user.profile.is_manager:
         branches = Branch.objects.only("name", "pk").filter(merchant__url_hash=url_hash)
     else:
@@ -2021,7 +2022,14 @@ def website_visits(request, url_hash):
             WebsiteVisit.objects.defer("date_created", "last_modified")
             .filter(merchant__url_hash=url_hash, date__range=(start_date, end_date))
             .values("date")
-            .annotate(total_entry=Sum("unique_visitors"))
+            .annotate(total_entry=Sum("unique_visitors"), visits=Sum("visits"), bounce_rate=Sum('bounce_rate'), actions_count=Sum('actions_count'), sum_time_spent=Sum('sum_time_spent'), avg_time_spent=Sum('avg_time_spent'), actions_per_visit=Sum('actions_per_visit'))
+            .order_by("date")
+        )
+        queryset_sales = (
+            WebsiteSales.objects.defer("date_created", "last_modified")
+            .filter(merchant__url_hash=url_hash, date__range=(start_date, end_date))
+            .values("date")
+            .annotate(invoice_amount=Sum("invoice_amount"), invoice_count=Sum("invoice_count"), product_count=Sum("product_count"))
             .order_by("date")
         )
         permissions = (
@@ -2094,8 +2102,16 @@ def website_visits(request, url_hash):
                 }
                 campaign_list.append(dictionary)
 
-
     entry_totals = [float(row["total_entry"]) for row in queryset]
+    visits = [float(row['visits']) for row in queryset]
+    bounce_rate = [float(row['bounce_rate']) for row in queryset]
+    actions_count = [float(row['actions_count']) for row in queryset]
+    sum_time_spent = [float(row['sum_time_spent']) for row in queryset]
+    avg_time_spent = [float(row['avg_time_spent']) for row in queryset]
+    actions_per_visit = [float(row['actions_per_visit']) for row in queryset]
+    invoice_amount = [float(row['invoice_amount']) for row in queryset_sales]
+    invoice_count = [float(row['invoice_count']) for row in queryset_sales]
+    product_count = [float(row['product_count']) for row in queryset_sales]
     dates = [str(row["date"].strftime("%Y-%m-%d")) for row in queryset]
 
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
@@ -2105,14 +2121,32 @@ def website_visits(request, url_hash):
                 "dates": dates,
                 "entry_totals": entry_totals,
                 "campaigns": campaign_list,
+                "visits": visits,
+                "bounce_rate": bounce_rate,
+                "actions_count": actions_count,
+                "sum_time_spent": sum_time_spent,
+                "avg_time_spent": avg_time_spent,
+                "actions_per_visit": actions_per_visit,
+                "invoice_amount": invoice_amount,
+                "invoice_count": invoice_count,
+                "product_count": product_count
             }
         )
     return render(
         request,
-        "website_visits.html",
+        "website_stats.html",
         {
             "dates": json.dumps(dates),
             "entry_totals": json.dumps(entry_totals),
+            "visits": json.dumps(visits),
+            "bounce_rate": json.dumps(bounce_rate),
+            "actions_count": json.dumps(actions_count),
+            "sum_time_spent": json.dumps(sum_time_spent),
+            "avg_time_spent": json.dumps(avg_time_spent),
+            "actions_per_visit": json.dumps(actions_per_visit),
             "campaigns": json.dumps(campaign_list),
+            "invoice_amount": json.dumps(invoice_amount),
+            "invoice_count": json.dumps(invoice_count),
+            "product_count": json.dumps(product_count)
         },
     )

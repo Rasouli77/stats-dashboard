@@ -50,7 +50,7 @@ from dashboard.views import (
     grouped_campaign_search_as_type,
     single_campaign_search_as_type,
     people_counting_hourly,
-    website_visits
+    website_stats
 )
 from dashboard.api_views import (
     MultipleBranches,
@@ -86,7 +86,7 @@ urlpatterns = [
         "dashboard/people-counter-hourly/<str:url_hash>", people_counting_hourly, name="people_counting_hourly"
     ),
     path(
-        "dashboard/website-stats/<str:url_hash>", website_visits, name="website_stats"
+        "dashboard/website-stats/<str:url_hash>", website_stats, name="website_stats"
     ),
     path("dashboard/users/<str:url_hash>", users_list, name="users"),
     path("dashboard/generate-user/<str:url_hash>", generate_user, name="generate_user"),
