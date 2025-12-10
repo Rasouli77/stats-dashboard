@@ -135,48 +135,111 @@
                 </div>
             </div>
             <!-- Date Picker Modal -->
-            <div class="modal fade" id="dateModal" tabindex="-1" aria-labelledby="dateModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="dateModalLabel">بازه زمانی گزارش</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="بستن"></button>
-                        </div>
-                        <div class="modal-body" style="display: flex; justify-content: center; align-items: center;">
-                            <!-- Your date range picker goes here -->
-                            <div id="date-range"></div>
-                        </div>
-                        <div class="modal-footer">
-                            <form action="" method="get" id="filter-form">
-                                <label style="display: none;" for="start-date">از تاریخ</label>
-                                <input type="text" name="start-date" id="start-date" style="display: none;">
-                                <label style="display: none;" for="end-date">تا</label>
-                                <input type="text" name="end-date" id="end-date" style="display: none;">
-                                <button class="btn btn-primary btn-md" type="submit" id="filter-proxy-button" data-bs-dismiss="modal">فیلتر</button>
-                            </form>
-                        </div>
+        <div class="modal fade" id="dateModal" tabindex="-1" aria-labelledby="dateModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="dateModalLabel">بازه زمانی گزارش</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="بستن"></button>
+                    </div>
+                    <div class="modal-body" style="display: flex; justify-content: center; align-items: center;">
+                        <!-- Your date range picker goes here -->
+                        <div id="date-range"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button 
+                            type="button" 
+                            class="btn btn-primary" 
+                            id="confirmDateBtn">
+                            بعدی
+                        </button>
                     </div>
                 </div>
             </div>
+        </div>
+        <!-- Branch Selector Card -->
+        <!-- Branch Selector Modal -->
+        <div class="modal fade" id="branchModal" tabindex="-1" aria-labelledby="branchModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="branchModalLabel">انتخاب نمودار</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="بستن"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="branches-grid">
+                        <div class="form-check mt-2">
+                            <input class="form-check-input" type="checkbox" id="select-all">
+                            <label class="form-check-label" for="select-all">انتخاب همه</label>
+                        </div>
+                        <div class="form-check mt-2">
+                            <input class="form-check-input fake-check" type="checkbox" value="1" id="traffic-check">
+                            <label class="form-check-label" for="branch-{{ branch.pk }}">ورودی سایت</label>
+                        </div>
+                        <div class="form-check mt-2">
+                            <input class="form-check-input fake-check" type="checkbox" value="2" id="visits-check">
+                            <label class="form-check-label" for="branch-{{ branch.pk }}">بازدید سایت</label>
+                        </div>
+                        <div class="form-check mt-2">
+                            <input class="form-check-input fake-check" type="checkbox" value="3" id="bounce-check">
+                            <label class="form-check-label" for="branch-{{ branch.pk }}">نرخ پرش</label>
+                        </div>
+                        <div class="form-check mt-2">
+                            <input class="form-check-input fake-check" type="checkbox" value="4" id="time-check">
+                            <label class="form-check-label" for="branch-{{ branch.pk }}">میانگین زمان</label>
+                        </div>
+                        <div class="form-check mt-2">
+                            <input class="form-check-input fake-check" type="checkbox" value="5" id="count-check">
+                            <label class="form-check-label" for="branch-{{ branch.pk }}">تعداد فاکتور</label>
+                        </div>
+                        <div class="form-check mt-2">
+                            <input class="form-check-input fake-check" type="checkbox" value="6" id="amount-check">
+                            <label class="form-check-label" for="branch-{{ branch.pk }}">مبلغ فروش</label>
+                        </div>
+                        <div class="form-check mt-2">
+                            <input class="form-check-input fake-check" type="checkbox" value="7" id="product-check">
+                            <label class="form-check-label" for="branch-{{ branch.pk }}">تعداد محصولات</label>
+                        </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary">قبلی</button>
+                        <form action="" method="get" id="filter-form">
+                            <label style="display: none;" for="start-date">از تاریخ</label>
+                            <input type="text" name="start-date" id="start-date" style="display: none;">
+                            <label style="display: none;" for="end-date">تا</label>
+                            <input type="text" name="end-date" id="end-date" style="display: none;">
+                            {% for branch in branches %}
+                            <div class="form-check mt-3" style="display: none;">
+                                <input class="form-check-input real-check" type="checkbox" value="{{ branch.pk }}" name="branch">
+                                <label class="form-check-label" for="defaultCheck1">{{ branch.name }}</label>
+                            </div>
+                            {% endfor %}
+                            <button class="btn btn-primary btn-md" type="submit" id="filter-proxy-button" data-bs-dismiss="modal">فیلتر</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
         </div>
         <div class="row">
             <div class="col-lg-12">
                 <div class="demo-inline-spacing mt-3">
                     <div class="tab-content px-0 pt-2">
                         <!-- website traffic line chart -->
-                        <div id="container-tools" class="icon-bar">
+                        <div id="container-tools" class="icon-bar" style="display: none;">
                             <div class="icon-wrapper bar-chart" data-tooltip="Bar Chart">
                                 <i class="bx bx-bar-chart"></i>
                             </div>
                         </div>
-                        <div id="container" style="width: 100%; height: 400px;"></div>
+                        <div id="container" style="width: 100%; height: 400px; display: none;"></div>
                         <!-- website traffic bar chart -->
-                        <div id="container-bar-chart-tools" class="icon-bar" style="display: none;">
+                        <div id="container-bar-chart-tools" class="icon-bar">
                             <div class="icon-wrapper line-chart" data-tooltip="Line Chart">
                                 <i class="bx bx-line-chart"></i>
                             </div>
                         </div>
-                        <div id="container-bar-chart" style="width: 100%; height: 400px; display: none;"></div>
+                        <div id="container-bar-chart" style="width: 100%; height: 400px;"></div>
                         
 
 
@@ -533,6 +596,12 @@
             });
             // Populate Data
             populateTraffic('ورودی سایت', data.entry_totals, newCategories, total);
+            populateVisits('بازدید سایت', data.visits, newCategories, totalVisits);
+            populateBounce('نرخ پرش', data.bounce_rate, newCategories, totalBounceRate);
+            populateTime('میانگین زمان هر کاربر', data.avg_time_spent, newCategories, totalAvgTimeSpent);
+            populateCount('تعداد فاکتور سایت', data.invoice_count, newCategories, totalCount);
+            populateAmount('فروش سایت', data.invoice_amount, newCategories, totalAmount);
+            populateProduct('تعداد محصول فروخته شده', data.product_count, newCategories, totalProduct);
         })
         .catch(error => {
             console.error('Error:', error);
@@ -583,7 +652,7 @@
         },
         yAxis: {
             title: {
-                text: "واحد",
+                text: "ورودی",
                 style: {
                     fontSize: '20px',
                     fontWeight: 'bold',
@@ -614,7 +683,7 @@
         },
         series: [
             {   
-                name: `واحد`,
+                name: `ورودی`,
                 data: []
             }
         ]
@@ -655,7 +724,7 @@
         },
         yAxis: {
             title: {
-                text: "واحد",
+                text: "بازدید",
                 style: {
                     fontSize: '20px',
                     fontWeight: 'bold',
@@ -686,7 +755,7 @@
         },
         series: [
             {   
-                name: `واحد`,
+                name: `بازدید`,
                 data: []
             }
         ]
@@ -727,7 +796,7 @@
         },
         yAxis: {
             title: {
-                text: "واحد",
+                text: "درصد ٪",
                 style: {
                     fontSize: '20px',
                     fontWeight: 'bold',
@@ -758,7 +827,7 @@
         },
         series: [
             {   
-                name: `واحد`,
+                name: `درصد ٪`,
                 data: []
             }
         ]
@@ -799,7 +868,7 @@
         },
         yAxis: {
             title: {
-                text: "واحد",
+                text: 'ثانیه',
                 style: {
                     fontSize: '20px',
                     fontWeight: 'bold',
@@ -830,7 +899,7 @@
         },
         series: [
             {   
-                name: `واحد`,
+                name: 'ثانیه',
                 data: []
             }
         ]
@@ -871,7 +940,7 @@
         },
         yAxis: {
             title: {
-                text: "واحد",
+                text: "تعداد",
                 style: {
                     fontSize: '20px',
                     fontWeight: 'bold',
@@ -902,7 +971,7 @@
         },
         series: [
             {   
-                name: `واحد`,
+                name: `تعداد`,
                 data: []
             }
         ]
@@ -943,7 +1012,7 @@
         },
         yAxis: {
             title: {
-                text: "واحد",
+                text: "تومان",
                 style: {
                     fontSize: '20px',
                     fontWeight: 'bold',
@@ -974,7 +1043,7 @@
         },
         series: [
             {   
-                name: `واحد`,
+                name: `تومان`,
                 data: []
             }
         ]
@@ -1015,7 +1084,7 @@
         },
         yAxis: {
             title: {
-                text: "واحد",
+                text: "تعداد",
                 style: {
                     fontSize: '20px',
                     fontWeight: 'bold',
@@ -1046,7 +1115,7 @@
         },
         series: [
             {   
-                name: `واحد`,
+                name: `تعداد`,
                 data: []
             }
         ]
@@ -1087,7 +1156,7 @@
         },
         yAxis: {
             title: {
-                text: "واحد",
+                text: "ورودی",
                 style: {
                     fontSize: '20px',
                     fontWeight: 'bold',
@@ -1118,7 +1187,7 @@
         },
         series: [
             {   
-                name: `واحد`,
+                name: `ورودی`,
                 data: []
             }
         ]
@@ -1159,7 +1228,7 @@
         },
         yAxis: {
             title: {
-                text: "واحد",
+                text: "بازدید",
                 style: {
                     fontSize: '20px',
                     fontWeight: 'bold',
@@ -1190,7 +1259,7 @@
         },
         series: [
             {   
-                name: `واحد`,
+                name: `بازدید`,
                 data: []
             }
         ]
@@ -1231,7 +1300,7 @@
         },
         yAxis: {
             title: {
-                text: "واحد",
+                text: "درصد ٪",
                 style: {
                     fontSize: '20px',
                     fontWeight: 'bold',
@@ -1262,7 +1331,7 @@
         },
         series: [
             {   
-                name: `واحد`,
+                name: `درصد ٪`,
                 data: []
             }
         ]
@@ -1303,7 +1372,7 @@
         },
         yAxis: {
             title: {
-                text: "واحد",
+                text: "ثانیه",
                 style: {
                     fontSize: '20px',
                     fontWeight: 'bold',
@@ -1334,7 +1403,7 @@
         },
         series: [
             {   
-                name: `واحد`,
+                name: `ثانیه`,
                 data: []
             }
         ]
@@ -1375,7 +1444,7 @@
         },
         yAxis: {
             title: {
-                text: "واحد",
+                text: "تعداد",
                 style: {
                     fontSize: '20px',
                     fontWeight: 'bold',
@@ -1406,7 +1475,7 @@
         },
         series: [
             {   
-                name: `واحد`,
+                name: `تعداد`,
                 data: []
             }
         ]
@@ -1447,7 +1516,7 @@
         },
         yAxis: {
             title: {
-                text: "واحد",
+                text: "تومان",
                 style: {
                     fontSize: '20px',
                     fontWeight: 'bold',
@@ -1478,7 +1547,7 @@
         },
         series: [
             {   
-                name: `واحد`,
+                name: `تومان`,
                 data: []
             }
         ]
@@ -1519,7 +1588,7 @@
         },
         yAxis: {
             title: {
-                text: "واحد",
+                text: "تعداد",
                 style: {
                     fontSize: '20px',
                     fontWeight: 'bold',
@@ -1550,7 +1619,7 @@
         },
         series: [
             {   
-                name: `واحد`,
+                name: `تعداد`,
                 data: []
             }
         ]
@@ -1577,6 +1646,12 @@
             .then(data => {
                 // Overall Category Update
                 const total = data.entry_totals.reduce((a, b) => a + b, 0);
+                const totalAmount = data.invoice_amount.reduce((a, b) => a + b, 0);
+                const totalAvgTimeSpent = data.avg_time_spent.reduce((a, b) => a + b, 0);
+                const totalVisits = data.visits.reduce((a, b) => a + b, 0);
+                const totalBounceRate = data.bounce_rate.reduce((a, b) => a + b, 0);
+                const totalCount = data.invoice_count.reduce((a, b) => a + b, 0);
+                const totalProduct = data.product_count.reduce((a, b) => a + b, 0);
                 const categories = data.dates.map(dateStr => {
                 const date = new Date(dateStr);
                 return date.toLocaleDateString('fa-IR', {
@@ -1586,6 +1661,12 @@
                 });
             });
                 populateTraffic('ورودی سایت', data.entry_totals, categories, total);
+                populateVisits('بازدید سایت', data.visits, categories, totalVisits);
+                populateBounce('نرخ پرش', data.bounce_rate, categories, totalBounceRate);
+                populateTime('میانگین زمان هر کاربر', data.avg_time_spent, categories, totalAvgTimeSpent);
+                populateCount('تعداد فاکتور سایت', data.invoice_count, categories, totalCount);
+                populateAmount('فروش سایت', data.invoice_amount, categories, totalAmount);
+                populateProduct('تعداد محصول فروخته شده', data.product_count, categories, totalProduct);
                 loadingOverlay.style.display = 'none';
             })
             .catch(error => {
@@ -1598,21 +1679,83 @@
 </script>
 <!-- Display Toggles -->
 <script>
-    // Chart Button Functionalities
+    // Elements
+
+    // Chart Toggles
+    // Bar Buttons
+    const containerToolsBar = document.querySelector("#container-tools .bar-chart");
+    const visitsToolsBar = document.querySelector("#visits-tools .bar-chart");
+    const bounceToolsBar = document.querySelector("#bounce-tools .bar-chart");
+    const timeToolsBar = document.querySelector("#time-tools .bar-chart");
+    const countToolsBar = document.querySelector("#count-tools .bar-chart");
+    const amountToolsBar = document.querySelector("#amount-tools .bar-chart");
+    const productToolsBar = document.querySelector("#product-tools .bar-chart");
+    // Line Buttons
     const containerBarChartToolsLine = document.querySelector("#container-bar-chart-tools .line-chart");
+    const visitsBarChartToolsLine = document.querySelector("#visits-bar-chart-tools .line-chart");
+    const bounceBarChartToolsLine = document.querySelector("#bounce-bar-chart-tools .line-chart");
+    const timeBarChartToolsLine = document.querySelector("#time-bar-chart-tools .line-chart");
+    const countBarChartToolsLine = document.querySelector("#count-bar-chart-tools .line-chart");
+    const amountBarChartToolsLine = document.querySelector("#amount-bar-chart-tools .line-chart");
+    const productBarChartToolsLine = document.querySelector("#product-bar-chart-tools .line-chart");
+
+    // Charts
+    // Line Charts
+    const containerLine = document.querySelector("#container");
+    const visitsLine = document.querySelector("#visits");
+    const bounceLine = document.querySelector("#bounce");
+    const timeLine = document.querySelector("#time");
+    const countLine = document.querySelector("#count");
+    const amountLine = document.querySelector("#amount");
+    const productLine = document.querySelector("#product");
+    // Bar Charts
+    const containerBarChart = document.querySelector("#container-bar-chart");
+    const visitsBarChart = document.querySelector("#visits-bar-chart");
+    const bounceBarChart = document.querySelector("#bounce-bar-chart");
+    const timeBarChart = document.querySelector("#time-bar-chart");
+    const countBarChart = document.querySelector("#count-bar-chart");
+    const amountBarChart = document.querySelector("#amount-bar-chart");
+    const productBarChart = document.querySelector("#product-bar-chart");
+
+    // Tools
+    // Bar Chart Tools
+    const containerBarChartTools = document.querySelector("#container-bar-chart-tools");
+    const visitsBarChartTools = document.querySelector("#visits-bar-chart-tools");
+    const bounceBarChartTools = document.querySelector("#bounce-bar-chart-tools");
+    const timeBarChartTools = document.querySelector("#time-bar-chart-tools");
+    const countBarChartTools = document.querySelector("#count-bar-chart-tools");
+    const amountBarChartTools = document.querySelector("#amount-bar-chart-tools");
+    const productBarChartTools = document.querySelector("#product-bar-chart-tools");
+    // Line Chart Tools
+    const containerTools = document.querySelector("#container-tools");
+    const visitsTools = document.querySelector("#visits-tools");
+    const bounceTools = document.querySelector("#bounce-tools");
+    const timeTools = document.querySelector("#time-tools");
+    const countTools = document.querySelector("#count-tools");
+    const amountTools = document.querySelector("#amount-tools");
+    const productTools = document.querySelector("#product-tools");
+
+    // Chart Button Functionalities
+    function toggleChartTypes() {
+
+    }
+    
     containerBarChartToolsLine.addEventListener("click", () => {
         document.getElementById("container").style.display = '';
         document.getElementById("container-tools").style.display = '';
         document.getElementById("container-bar-chart").style.display = 'none';
         document.getElementById("container-bar-chart-tools").style.display = 'none';
     });
-    const containerToolsBar = document.querySelector("#container-tools .bar-chart");
+    
     containerToolsBar.addEventListener("click", () => {
         document.getElementById("container").style.display = 'none';
         document.getElementById("container-tools").style.display = 'none';
         document.getElementById("container-bar-chart").style.display = '';
         document.getElementById("container-bar-chart-tools").style.display = '';
     });
+
+
+    
 </script>
 <!-- HighChart JS -->
 <script src="{% static 'assets/js/highcharts.js' %}"></script>
@@ -1638,6 +1781,32 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <!-- Flatpickr Initial Date Range -->
 <script src="{% static 'assets/js/flatpickr-initial-date-range.js' %}"></script>
+ <!-- Date and Branch Modal Configuration -->
+<script>
+    document.getElementById("confirmDateBtn").addEventListener("click", function () {
+    // Close the date modal
+    var dateModal = bootstrap.Modal.getInstance(document.getElementById("dateModal"));
+    dateModal.hide();
+
+    // When it's fully hidden, open the branch modal
+    document.getElementById("dateModal").addEventListener("hidden.bs.modal", function () {
+        var branchModal = new bootstrap.Modal(document.getElementById("branchModal"));
+        branchModal.show();
+    }, { once: true });
+    });
+
+    document.querySelector(".btn-secondary").addEventListener("click", function () {
+    // Close the date modal
+    var dateModal = bootstrap.Modal.getInstance(document.getElementById("branchModal"));
+    dateModal.hide();
+
+    // When it's fully hidden, open the date modal
+    document.getElementById("branchModal").addEventListener("hidden.bs.modal", function () {
+        var branchModal = new bootstrap.Modal(document.getElementById("dateModal"));
+        branchModal.show();
+    }, { once: true });
+    });
+</script>
 {% endblock %}
 
 

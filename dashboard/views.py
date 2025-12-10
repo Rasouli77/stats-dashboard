@@ -2109,7 +2109,7 @@ def website_stats(request, url_hash):
     sum_time_spent = [float(row['sum_time_spent']) for row in queryset]
     avg_time_spent = [float(row['avg_time_spent']) for row in queryset]
     actions_per_visit = [float(row['actions_per_visit']) for row in queryset]
-    invoice_amount = [float(row['invoice_amount']) for row in queryset_sales]
+    invoice_amount = [float(row['invoice_amount']) / 10 for row in queryset_sales]
     invoice_count = [float(row['invoice_count']) for row in queryset_sales]
     product_count = [float(row['product_count']) for row in queryset_sales]
     dates = [str(row["date"].strftime("%Y-%m-%d")) for row in queryset]
