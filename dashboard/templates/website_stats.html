@@ -108,6 +108,132 @@
         transform: translateX(-50%) translateY(4px);
     }
 </style>
+<!-- AI UI -->
+<style>
+    /* ---------- MODAL OVERLAY ---------- */
+    .ai-modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.4);
+        backdrop-filter: blur(6px);
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        animation: fadeIn 0.4s ease forwards;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    /* ---------- MODAL BOX ---------- */
+    .ai-modal-content {
+        background: #1e1e2f;
+        color: #fff;
+        border-radius: 10px;
+        width: 550px;
+        max-width: 90%;
+        padding: 24px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+        transform: scale(0.9);
+        animation: scaleUp 0.4s ease forwards;
+    }
+    @keyframes scaleUp {
+        to { transform: scale(1); }
+    }
+
+    #aiResponse {
+        height: 500px;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    #aiResponse {
+        scrollbar-width: thin;           
+        scrollbar-color: #1E1E2F #0F0F1A; 
+    }
+
+    /* Chrome, Edge, Safari */
+    #aiResponse::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    #aiResponse::-webkit-scrollbar-track {
+        background: #0F0F1A; 
+    }
+
+    #aiResponse::-webkit-scrollbar-thumb {
+        background-color: #1E1E2F; 
+        border-radius: 4px;
+        border: 1px solid #2A2A3B; 
+    }
+
+    #aiResponse::-webkit-scrollbar-thumb:hover {
+        background-color: #2E2E4A; 
+    }
+
+    /* ---------- CLOSE BUTTON ---------- */
+    .ai-close {
+        position: absolute;
+        top: 1px;
+        right: 22px;
+        font-size: 26px;
+        cursor: pointer;
+        color: #ccc;
+        transition: color 0.3s ease;
+    }
+    .ai-close:hover {
+        color: #fff;
+    }
+
+    /* ---------- LOADING ANIMATION ---------- */
+    .ai-loading {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 80px;
+    }
+    .ai-loading::before {
+        content: '';
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 30% 30%, #6c63ff, #483dff);
+        animation: pulse 1.6s infinite ease-in-out;
+        box-shadow: 0 0 20px rgba(108,99,255,0.6);
+    }
+    @keyframes pulse {
+        0%, 100% { transform: scale(0.9); opacity: 0.8; box-shadow: 0 0 10px rgba(108,99,255,0.3); }
+        50% { transform: scale(1.2); opacity: 1; box-shadow: 0 0 30px rgba(108,99,255,0.7); }
+    }
+
+    /* ---------- RESPONSE TEXT ---------- */
+    .ai-response {
+        display: none;
+        font-size: 15px;
+        line-height: 1.6;
+        white-space: pre-wrap;
+        border-top: 1px solid #333;
+        margin-top: 15px;
+        padding-top: 10px;
+        min-height: 100px;
+    }
+</style>
+<!-- Campaign Card Style -->
+<style>
+    #campaign-fill {
+        background-clip: padding-box;
+        border-style: solid;
+        box-shadow: none;
+        border-width: 1px;
+        border-color: #e5e5e5;
+        border-radius: 12px;
+        height: 100%;
+        padding: 5px;
+        background-color: white;
+    }
+</style>
 {% endblock %}
 {% block content %}
 <div class="loading-overlay" id="loading-overlay">
@@ -169,10 +295,6 @@
                     <div class="modal-body">
                         <div class="branches-grid">
                         <div class="form-check mt-2">
-                            <input class="form-check-input" type="checkbox" id="select-all">
-                            <label class="form-check-label" for="select-all">انتخاب همه</label>
-                        </div>
-                        <div class="form-check mt-2">
                             <input class="form-check-input fake-check" type="checkbox" value="1" id="traffic-check">
                             <label class="form-check-label" for="branch-{{ branch.pk }}">ورودی سایت</label>
                         </div>
@@ -226,125 +348,204 @@
             <div class="col-lg-12">
                 <div class="demo-inline-spacing mt-3">
                     <div class="tab-content px-0 pt-2">
-                        <!-- website traffic line chart -->
-                        <div id="container-tools" class="icon-bar" style="display: none;">
-                            <div class="icon-wrapper bar-chart" data-tooltip="Bar Chart">
-                                <i class="bx bx-bar-chart"></i>
+
+                        <!-- AI Modal -->
+                        <div id="aiModal" class="ai-modal">
+                            <div class="ai-modal-content">
+                                <span id="aiClose" class="ai-close">&times;</span>
+                                <div id="aiLoading" class="ai-loading"></div>
+                                <div id="aiResponse" class="ai-response">
+                                </div>
                             </div>
                         </div>
-                        <div id="container" style="width: 100%; height: 400px; display: none;"></div>
-                        <!-- website traffic bar chart -->
-                        <div id="container-bar-chart-tools" class="icon-bar">
-                            <div class="icon-wrapper line-chart" data-tooltip="Line Chart">
-                                <i class="bx bx-line-chart"></i>
+
+                        <div id="traffic-container">
+                            <!-- website traffic line chart -->
+                            <div id="container-tools" class="icon-bar" style="display: none;">
+                                <div class="icon-wrapper bar-chart" data-tooltip="Bar Chart">
+                                    <i class="bx bx-bar-chart"></i>
+                                </div>
+                                <div class="icon-wrapper ai" data-tooltip="AI">
+                                    <img src="{% static 'assets/img/icons/misc/gemini-logo.png' %}" alt="Gemini" class="gemini-icon" style="width: 24px;">
+                                </div>
                             </div>
-                        </div>
-                        <div id="container-bar-chart" style="width: 100%; height: 400px;"></div>
-                        
-
-
-
-                        <!-- website visits line chart -->
-                        <div id="visits-tools" class="icon-bar">
-                            <div class="icon-wrapper bar-chart" data-tooltip="Bar Chart">
-                                <i class="bx bx-bar-chart"></i>
+                            <div id="container" style="width: 100%; height: 400px; display: none;"></div>
+                            <!-- website traffic bar chart -->
+                            <div id="container-bar-chart-tools" class="icon-bar">
+                                <div class="icon-wrapper line-chart" data-tooltip="Line Chart">
+                                    <i class="bx bx-line-chart"></i>
+                                </div>
+                                <div class="icon-wrapper ai" data-tooltip="AI">
+                                    <img src="{% static 'assets/img/icons/misc/gemini-logo.png' %}" alt="Gemini" class="gemini-icon" style="width: 24px;">
+                                </div>
                             </div>
+                            <div id="container-bar-chart" style="width: 100%; height: 400px;"></div>
                         </div>
-                        <div id="visits" style="width: 100%; height: 400px;"></div>
-                        <!-- website visits bar chart -->
-                        <div id="visits-bar-chart-tools" class="icon-bar" style="display: none;">
-                            <div class="icon-wrapper line-chart" data-tooltip="Line Chart">
-                                <i class="bx bx-line-chart"></i>
+
+
+                        <div id="visits-container">
+                            <!-- website visits line chart -->
+                            <div id="visits-tools" class="icon-bar">
+                                <div class="icon-wrapper bar-chart" data-tooltip="Bar Chart">
+                                    <i class="bx bx-bar-chart"></i>
+                                </div>
+                                <div class="icon-wrapper ai" data-tooltip="AI">
+                                    <img src="{% static 'assets/img/icons/misc/gemini-logo.png' %}" alt="Gemini" class="gemini-icon" style="width: 24px;">
+                                </div>
                             </div>
-                        </div>
-                        <div id="visits-bar-chart" style="width: 100%; height: 400px; display: none;"></div>
-
-
-
-                        <!-- website bounce rate line chart -->
-                        <div id="bounce-tools" class="icon-bar">
-                            <div class="icon-wrapper bar-chart" data-tooltip="Bar Chart">
-                                <i class="bx bx-bar-chart"></i>
+                            <div id="visits" style="width: 100%; height: 400px;"></div>
+                            <!-- website visits bar chart -->
+                            <div id="visits-bar-chart-tools" class="icon-bar" style="display: none;">
+                                <div class="icon-wrapper line-chart" data-tooltip="Line Chart">
+                                    <i class="bx bx-line-chart"></i>
+                                </div>
+                                <div class="icon-wrapper ai" data-tooltip="AI">
+                                    <img src="{% static 'assets/img/icons/misc/gemini-logo.png' %}" alt="Gemini" class="gemini-icon" style="width: 24px;">
+                                </div>
                             </div>
+                            <div id="visits-bar-chart" style="width: 100%; height: 400px; display: none;"></div>
                         </div>
-                        <div id="bounce" style="width: 100%; height: 400px;"></div>
-                        <!-- website visits bar chart -->
-                        <div id="bounce-bar-chart-tools" class="icon-bar" style="display: none;">
-                            <div class="icon-wrapper line-chart" data-tooltip="Line Chart">
-                                <i class="bx bx-line-chart"></i>
+
+                        <div id="bounce-container">
+                            <!-- website bounce rate line chart -->
+                            <div id="bounce-tools" class="icon-bar">
+                                <div class="icon-wrapper bar-chart" data-tooltip="Bar Chart">
+                                    <i class="bx bx-bar-chart"></i>
+                                </div>
+                                <div class="icon-wrapper ai" data-tooltip="AI">
+                                    <img src="{% static 'assets/img/icons/misc/gemini-logo.png' %}" alt="Gemini" class="gemini-icon" style="width: 24px;">
+                                </div>
                             </div>
-                        </div>
-                        <div id="bounce-bar-chart" style="width: 100%; height: 400px; display: none;"></div>
-
-
-
-                        <!-- website time line chart -->
-                        <div id="time-tools" class="icon-bar">
-                            <div class="icon-wrapper bar-chart" data-tooltip="Bar Chart">
-                                <i class="bx bx-bar-chart"></i>
+                            <div id="bounce" style="width: 100%; height: 400px;"></div>
+                            <!-- website visits bar chart -->
+                            <div id="bounce-bar-chart-tools" class="icon-bar" style="display: none;">
+                                <div class="icon-wrapper line-chart" data-tooltip="Line Chart">
+                                    <i class="bx bx-line-chart"></i>
+                                </div>
+                                <div class="icon-wrapper ai" data-tooltip="AI">
+                                    <img src="{% static 'assets/img/icons/misc/gemini-logo.png' %}" alt="Gemini" class="gemini-icon" style="width: 24px;">
+                                </div>
                             </div>
+                            <div id="bounce-bar-chart" style="width: 100%; height: 400px; display: none;"></div>
                         </div>
-                        <div id="time" style="width: 100%; height: 400px;"></div>
-                        <!-- website time bar chart -->
-                        <div id="time-bar-chart-tools" class="icon-bar" style="display: none;">
-                            <div class="icon-wrapper line-chart" data-tooltip="Line Chart">
-                                <i class="bx bx-line-chart"></i>
+
+
+                        <div id="time-container">
+                            <!-- website time line chart -->
+                            <div id="time-tools" class="icon-bar">
+                                <div class="icon-wrapper bar-chart" data-tooltip="Bar Chart">
+                                    <i class="bx bx-bar-chart"></i>
+                                </div>
+                                <div class="icon-wrapper ai" data-tooltip="AI">
+                                    <img src="{% static 'assets/img/icons/misc/gemini-logo.png' %}" alt="Gemini" class="gemini-icon" style="width: 24px;">
+                                </div>
                             </div>
-                        </div>
-                        <div id="time-bar-chart" style="width: 100%; height: 400px; display: none;"></div>
-
-
-
-                        <!-- website count line chart -->
-                        <div id="count-tools" class="icon-bar">
-                            <div class="icon-wrapper bar-chart" data-tooltip="Bar Chart">
-                                <i class="bx bx-bar-chart"></i>
+                            <div id="time" style="width: 100%; height: 400px;"></div>
+                            <!-- website time bar chart -->
+                            <div id="time-bar-chart-tools" class="icon-bar" style="display: none;">
+                                <div class="icon-wrapper line-chart" data-tooltip="Line Chart">
+                                    <i class="bx bx-line-chart"></i>
+                                </div>
+                                <div class="icon-wrapper ai" data-tooltip="AI">
+                                    <img src="{% static 'assets/img/icons/misc/gemini-logo.png' %}" alt="Gemini" class="gemini-icon" style="width: 24px;">
+                                </div>
                             </div>
+                            <div id="time-bar-chart" style="width: 100%; height: 400px; display: none;"></div>
                         </div>
-                        <div id="count" style="width: 100%; height: 400px;"></div>
-                        <!-- website count bar chart -->
-                        <div id="count-bar-chart-tools" class="icon-bar" style="display: none;">
-                            <div class="icon-wrapper line-chart" data-tooltip="Line Chart">
-                                <i class="bx bx-line-chart"></i>
+
+
+                        <div id="count-container">
+                            <!-- website count line chart -->
+                            <div id="count-tools" class="icon-bar">
+                                <div class="icon-wrapper bar-chart" data-tooltip="Bar Chart">
+                                    <i class="bx bx-bar-chart"></i>
+                                </div>
+                                <div class="icon-wrapper ai" data-tooltip="AI">
+                                    <img src="{% static 'assets/img/icons/misc/gemini-logo.png' %}" alt="Gemini" class="gemini-icon" style="width: 24px;">
+                                </div>
                             </div>
-                        </div>
-                        <div id="count-bar-chart" style="width: 100%; height: 400px; display: none;"></div>
-
-
-
-                        <!-- website amount line chart -->
-                        <div id="amount-tools" class="icon-bar">
-                            <div class="icon-wrapper bar-chart" data-tooltip="Bar Chart">
-                                <i class="bx bx-bar-chart"></i>
+                            <div id="count" style="width: 100%; height: 400px;"></div>
+                            <!-- website count bar chart -->
+                            <div id="count-bar-chart-tools" class="icon-bar" style="display: none;">
+                                <div class="icon-wrapper line-chart" data-tooltip="Line Chart">
+                                    <i class="bx bx-line-chart"></i>
+                                </div>
+                                <div class="icon-wrapper ai" data-tooltip="AI">
+                                    <img src="{% static 'assets/img/icons/misc/gemini-logo.png' %}" alt="Gemini" class="gemini-icon" style="width: 24px;">
+                                </div>
                             </div>
+                            <div id="count-bar-chart" style="width: 100%; height: 400px; display: none;"></div>
                         </div>
-                        <div id="amount" style="width: 100%; height: 400px;"></div>
-                        <!-- website amount bar chart -->
-                        <div id="amount-bar-chart-tools" class="icon-bar" style="display: none;">
-                            <div class="icon-wrapper line-chart" data-tooltip="Line Chart">
-                                <i class="bx bx-line-chart"></i>
+
+
+                        <div id="amount-container">
+                            <!-- website amount line chart -->
+                            <div id="amount-tools" class="icon-bar">
+                                <div class="icon-wrapper bar-chart" data-tooltip="Bar Chart">
+                                    <i class="bx bx-bar-chart"></i>
+                                </div>
+                                <div class="icon-wrapper ai" data-tooltip="AI">
+                                    <img src="{% static 'assets/img/icons/misc/gemini-logo.png' %}" alt="Gemini" class="gemini-icon" style="width: 24px;">
+                                </div>
                             </div>
-                        </div>
-                        <div id="amount-bar-chart" style="width: 100%; height: 400px; display: none;"></div>
-
-
-
-                        <!-- website product line chart -->
-                        <div id="product-tools" class="icon-bar">
-                            <div class="icon-wrapper bar-chart" data-tooltip="Bar Chart">
-                                <i class="bx bx-bar-chart"></i>
+                            <div id="amount" style="width: 100%; height: 400px;"></div>
+                            <!-- website amount bar chart -->
+                            <div id="amount-bar-chart-tools" class="icon-bar" style="display: none;">
+                                <div class="icon-wrapper line-chart" data-tooltip="Line Chart">
+                                    <i class="bx bx-line-chart"></i>
+                                </div>
+                                <div class="icon-wrapper ai" data-tooltip="AI">
+                                    <img src="{% static 'assets/img/icons/misc/gemini-logo.png' %}" alt="Gemini" class="gemini-icon" style="width: 24px;">
+                                </div>
                             </div>
+                            <div id="amount-bar-chart" style="width: 100%; height: 400px; display: none;"></div>
                         </div>
-                        <div id="product" style="width: 100%; height: 400px;"></div>
-                        <!-- website product bar chart -->
-                        <div id="product-bar-chart-tools" class="icon-bar" style="display: none;">
-                            <div class="icon-wrapper line-chart" data-tooltip="Line Chart">
-                                <i class="bx bx-line-chart"></i>
-                            </div>
-                        </div>
-                        <div id="product-bar-chart" style="width: 100%; height: 400px; display: none;"></div>
 
+
+                        <div id="product-container">
+                            <!-- website product line chart -->
+                            <div id="product-tools" class="icon-bar">
+                                <div class="icon-wrapper bar-chart" data-tooltip="Bar Chart">
+                                    <i class="bx bx-bar-chart"></i>
+                                </div>
+                                <div class="icon-wrapper ai" data-tooltip="AI">
+                                    <img src="{% static 'assets/img/icons/misc/gemini-logo.png' %}" alt="Gemini" class="gemini-icon" style="width: 24px;">
+                                </div>
+                            </div>
+                            <div id="product" style="width: 100%; height: 400px;"></div>
+                            <!-- website product bar chart -->
+                            <div id="product-bar-chart-tools" class="icon-bar" style="display: none;">
+                                <div class="icon-wrapper line-chart" data-tooltip="Line Chart">
+                                    <i class="bx bx-line-chart"></i>
+                                </div>
+                                <div class="icon-wrapper ai" data-tooltip="AI">
+                                    <img src="{% static 'assets/img/icons/misc/gemini-logo.png' %}" alt="Gemini" class="gemini-icon" style="width: 24px;">
+                                </div>
+                            </div>
+                            <div id="product-bar-chart" style="width: 100%; height: 400px; display: none;"></div>
+                        </div>
                     </div>
+                </div>
+            </div>
+        </div>
+        <div class="row" style="margin-left: 0px;">
+            <div class="col-lg-3" id="holiday-container">
+                <div class="card" id="holiday-card" style="background-clip: padding-box;
+                border-style: solid;
+                box-shadow: none;
+                border-width: 1px;
+                border-color: #e5e5e5;
+                border-radius: 12px;
+                height: 100%;  
+                padding: 10px">
+                    <div class="demo-inline-spacing mt-3" style="margin-bottom: 25px;">
+                        <ul class="list-group list-group-timeline">
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-9">
+                <div class="row" id="campaign-fill">
                 </div>
             </div>
         </div>
@@ -359,11 +560,99 @@
 <script src="https://cdn.jsdelivr.net/npm/moment-jalaali@0.10.4/build/moment-jalaali.min.js"></script>
 <!-- Jdatetime -->
 <script src="https://cdn.jsdelivr.net/npm/jalaali-js@1.2.6/dist/jalaali.min.js"></script>
-<!-- Initial Website Traffic Raw JavaScript -->
+<!-- Holiday Spotter -->
 <script>
-
-
-
+    const holidayDates = []
+    const fridays = []
+    let timelineHolidays = []
+    $("#filter-form").on("submit", function (e) {
+        const events = [
+            "جشن نوروز/جشن سال نو",
+            "شب قدر",
+            "عید سعید فطر",
+            "روز جمهوری اسلامی",
+            "تعطیل به مناسبت عید سعید فطر",
+            "جشن سیزده به در",
+            "شهادت امام جعفر صادق علیه السلام",
+            "ولادت امام رضا علیه السلام",
+            "رحلت حضرت امام خمینی",
+            "شهادت امام محمد باقر علیه السلام",
+            "قیام 15 خرداد",
+            "عید سعید قربان",
+            "عید سعید غدیر خم",
+            "تاسوعای حسینی",
+            "عاشورای حسینی",
+            "اربعین حسینی",
+            "رحلت رسول اکرم؛شهادت امام حسن مجتبی علیه السلام",
+            "شهادت امام رضا علیه السلام",
+            "شهادت امام حسن عسکری علیه السلام",
+            "میلاد رسول اکرم و امام جعفر صادق علیه السلام",
+            "شهادت حضرت فاطمه زهرا سلام الله علیها",
+            "ولادت امام علی علیه السلام و روز پدر",
+            "مبعث رسول اکرم (ص)",
+            "ولادت حضرت قائم عجل الله تعالی فرجه و جشن نیمه شعبان",
+            "شهادت حضرت علی علیه السلام",
+            "روز ملی شدن صنعت نفت ایران"
+        ];
+        const startDate = $("#start-date").val();
+        const endDate = $("#end-date").val();
+        $.ajax({
+            url: "/api/holiday-spot",
+            data: {
+                "start-date": startDate,
+                "end-date": endDate
+            },
+            traditional: true,
+            success: function (data) {
+                data.forEach(item => {
+                    if (item.descriptions[0] !== 'جمعه') {
+                        holidayDates.push(item.date);
+                    }
+                });
+                data.forEach(item => {
+                    if (item.descriptions[0] === 'جمعه') {
+                        fridays.push(item.date);
+                    }
+                });
+                timelineHolidays = data;
+                if (timelineHolidays.length > 0) {
+                    timelineHolidays.forEach(item => {
+                        item.descriptions = item.descriptions.filter(i => events.includes(i));
+                        if (item.descriptions.length > 1) {
+                            item.descriptions.length = 1;
+                        }
+                    });
+                }
+                timelineHolidays = timelineHolidays.filter(i => i.descriptions.length > 0)
+                const holidayContainer = document.querySelector("#holiday-container");
+                if (timelineHolidays.length === 0) {
+                    document.querySelector(".list-group-timeline").innerHTML = "<p style='display: flex; justify-content: center; align-items: center; font-weight: bold;'>مناسبتی وجود ندارد</p>";
+                }
+                if (timelineHolidays.length > 0) {
+                    document.querySelector(".list-group-timeline").innerHTML = "";
+                }
+                if (timelineHolidays.length > 3) {
+                    document.getElementById("holiday-card").style.height = "";
+                } else {
+                    document.getElementById("holiday-card").style.height = "100%";
+                }
+                timelineHolidays.forEach(i => {
+                    if (i.descriptions.length !== 0) {
+                        const rowhtml = `
+                        <li class="list-group-item list-group-timeline-primary">
+                            <span class="holiday-date" style="background-color: #5a8dee; border-radius: 5px; color: white; padding-left: 5px; padding-right: 5px; padding-top: 2.5px; padding-bottom: 2.5px; margin-left: 25px;">${i.date}</span>
+                            <span class="description">${i.descriptions[0]}</span>
+                        </li> 
+                        `
+                        document.querySelector(".list-group-timeline").insertAdjacentHTML("beforeend", rowhtml);
+                    } 
+                });
+            }
+        });
+    });
+</script>
+<!-- Initial Raw JavaScript -->
+<script>
     // Populate Functions
     function populateTraffic(title, x, y, t) {
         // Line Chart 
@@ -540,8 +829,6 @@
         });
     }
 
-
-
     // getJalaliDateRange returns the last 7 days
         function getJalaliDateRange() {
         const today = new Date();
@@ -558,8 +845,220 @@
 
         return { inStartDate, inEndDate };
     }
-    
-    // This triggers on page load
+
+    // This triggers all campaigns on page load
+    document.addEventListener("DOMContentLoaded", () => {
+        // The last 7 days: start and end
+        const {inStartDate, inEndDate} = getJalaliDateRange();
+        // This takes care of campaigns in the last 7 days
+        fetch(`{% url 'invoice_counter' url_hash=request.user.profile.merchant.url_hash %}?start-date=${inStartDate}&end-date=${inEndDate}`, {
+                method: 'GET',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.json();
+        })
+        .then(data => {
+            document.querySelector("#campaign-fill").innerHTML = "";
+            if (data.campaigns.length === 0) {
+                const card = document.createElement("div");
+                card.classList.add("card");
+                card.classList.add("h-100");
+                card.setAttribute("style", "border-radius: 12px; border-color: #e5e5e5; box-shadow: none !important; border-width: 1px; display: flex; justify-content: center; align-items: center; font-weight: bold;");
+                const i = document.createElement("i");
+                i.classList.add("bx");
+                i.classList.add("bx-box");
+                i.style.fontSize = "48px";
+                const p = document.createElement("p");
+                p.innerText = "هیچ کمپینی یافت نشد";
+                card.appendChild(i);
+                card.appendChild(p);
+                document.querySelector("#campaign-fill").appendChild(card);
+            } else {
+                document.querySelector("#campaign-fill").innerHTML = "";
+                data.campaigns.forEach(campaign => {
+                    const rowhtml = `
+                            <div class="col-lg-4" style="margin-top: 10px; margin-bottom: 10px;">
+                            <div class="card" style="
+                            background-clip: padding-box;
+                            border-style: solid;
+                            box-shadow: none;
+                            border-width: 1px;
+                            border-color: #e5e5e5;
+                            background-color: #F9F9F9;
+                            border-radius: 12px;
+                            padding: 10px;">
+                                <div class="card-header d-flex align-items-center justify-content-between">
+                                    <h5 class="card-title mb-0">${campaign.campaign_name}</h5>
+                                </div>
+                                <div class="card-body pb-3">
+                                    <ul class="p-0 m-0">
+                                    <li class="d-flex align-items-center mb-3">
+                                        <div class="avatar avatar-sm flex-shrink-0 me-3">
+                                        <span class="avatar-initial rounded-circle bg-label-primary"><i class="bx bx-time"></i></span>
+                                        </div>
+                                        <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                        <div class="me-2">
+                                            <p class="mb-0">شروع</p>
+                                            <small class="text-muted">تاریخ شروع کمپین</small>
+                                        </div>
+                                        <div class="item-progress greg-date">${campaign.campaign_start_date}</div>
+                                        </div>
+                                    </li>
+                                    <li class="d-flex align-items-center mb-3">
+                                        <div class="avatar avatar-sm flex-shrink-0 me-3">
+                                        <span class="avatar-initial rounded-circle bg-label-info"><i class="bx bx-stopwatch"></i></span>
+                                        </div>
+                                        <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                        <div class="me-2">
+                                            <p class="mb-0">پایان</p>
+                                            <small class="text-muted">تاریخ پایان کمپین</small>
+                                        </div>
+                                        <div class="item-progress greg-date">${campaign.campaign_end_date}</div>
+                                        </div>
+                                    </li>
+                                    <li class="d-flex align-items-center mb-3">
+                                        <div class="avatar avatar-sm flex-shrink-0 me-3">
+                                        <span class="avatar-initial rounded-circle bg-label-danger"><i class="bx bx-tag"></i></span>
+                                        </div>
+                                        <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                        <div class="me-2">
+                                            <p class="mb-0">نوع</p>
+                                            <small class="text-muted">مثال: فروش و ...</small>
+                                        </div>
+                                        <div class="item-progress">${campaign.campaign_type}</div>
+                                        </div>
+                                    </li>
+                                    <li class="d-flex align-items-center">
+                                        <div class="avatar avatar-sm flex-shrink-0 me-3">
+                                        <span class="avatar-initial rounded-circle bg-label-success"><i class="bx bx-dollar"></i></span>
+                                        </div>
+                                        <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                        <div class="me-2">
+                                            <p class="mb-0">هزینه</p>
+                                            <small class="text-muted">مجموع هزینه‌ها</small>
+                                        </div>
+                                        <div class="item-progress campaign-cost">${campaign.campaign_cost}</div>
+                                        </div>
+                                    </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        `
+                    document.querySelector("#campaign-fill").insertAdjacentHTML("beforeend", rowhtml);
+                });
+            }
+            
+            function jalaliDateConvertor() {
+                document.querySelectorAll(".greg-date").forEach(el => {
+                    const gregorian = el.innerHTML.split("-");
+                    const gYear = parseInt(gregorian[0]);
+                    const gMonth = parseInt(gregorian[1]);
+                    const gDay = parseInt(gregorian[2]);
+                    const jdate = jalaali.toJalaali(gYear, gMonth, gDay);
+                    el.innerText = `${jdate.jy}/${String(jdate.jm).padStart(2, '0')}/${String(jdate.jd).padStart(2, '0')}`;
+                    });
+            }
+            document.querySelectorAll(".campaign-cost").forEach(el => {
+                const cost = Number(el.innerText);
+                const separatedCost = cost.toLocaleString('fa-IR');
+                el.innerText = separatedCost;
+            })
+            setTimeout(jalaliDateConvertor, 500);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+        });
+        // Selected events for holiday display
+        const inevents = [
+            "جشن نوروز/جشن سال نو",
+            "شب قدر",
+            "عید سعید فطر",
+            "روز جمهوری اسلامی",
+            "تعطیل به مناسبت عید سعید فطر",
+            "جشن سیزده به در",
+            "شهادت امام جعفر صادق علیه السلام",
+            "ولادت امام رضا علیه السلام",
+            "رحلت حضرت امام خمینی",
+            "شهادت امام محمد باقر علیه السلام",
+            "قیام 15 خرداد",
+            "عید سعید قربان",
+            "عید سعید غدیر خم",
+            "تاسوعای حسینی",
+            "عاشورای حسینی",
+            "اربعین حسینی",
+            "رحلت رسول اکرم؛شهادت امام حسن مجتبی علیه السلام",
+            "شهادت امام رضا علیه السلام",
+            "شهادت امام حسن عسکری علیه السلام",
+            "میلاد رسول اکرم و امام جعفر صادق علیه السلام",
+            "شهادت حضرت فاطمه زهرا سلام الله علیها",
+            "ولادت امام علی علیه السلام و روز پدر",
+            "مبعث رسول اکرم (ص)",
+            "ولادت حضرت قائم عجل الله تعالی فرجه و جشن نیمه شعبان",
+            "شهادت حضرت علی علیه السلام",
+            "روز ملی شدن صنعت نفت ایران"
+        ];
+        // Holidays in the last 7 days
+        const startDate = inStartDate;
+        const endDate = inEndDate;
+        // Takes care of holiday display
+        $.ajax({
+            url: "/api/holiday-spot",
+            data: {
+                "start-date": startDate,
+                "end-date": endDate
+            },
+            traditional: true,
+            success: function (data) {
+                data.forEach(item => {
+                    if (item.descriptions[0] !== 'جمعه') {
+                        holidayDates.push(item.date);
+                    }
+                });
+                data.forEach(item => {
+                    if (item.descriptions[0] === 'جمعه') {
+                        fridays.push(item.date);
+                    }
+                });
+                timelineHolidays = data;
+                if (timelineHolidays.length > 0) {
+                    timelineHolidays.forEach(item => {
+                        item.descriptions = item.descriptions.filter(i => inevents.includes(i));
+                        if (item.descriptions.length > 1) {
+                            item.descriptions.length = 1;
+                        }
+                    });
+                }
+                timelineHolidays = timelineHolidays.filter(i => i.descriptions.length > 0)
+                const holidayContainer = document.querySelector("#holiday-container");
+                if (timelineHolidays.length === 0) {
+                    document.querySelector(".list-group-timeline").innerHTML = "<p style='display: flex; justify-content: center; align-items: center; font-weight: bold;'>مناسبتی وجود ندارد</p>";
+                }
+                if (timelineHolidays.length > 0) {
+                    document.querySelector(".list-group-timeline").innerHTML = "";
+                }
+                if (timelineHolidays.length > 3) {
+                    document.getElementById("holiday-card").style.height = "";
+                } else {
+                    document.getElementById("holiday-card").style.height = "100%";
+                }
+                timelineHolidays.forEach(i => {
+                    if (i.descriptions.length !== 0) {
+                        const rowhtml = `
+                        <li class="list-group-item list-group-timeline-primary">
+                            <span class="holiday-date" style="background-color: #5a8dee; border-radius: 5px; color: white; padding-left: 5px; padding-right: 5px; padding-top: 2.5px; padding-bottom: 2.5px; margin-left: 25px;">${i.date}</span>
+                            <span class="description">${i.descriptions[0]}</span>
+                        </li> 
+                        `
+                        document.querySelector(".list-group-timeline").insertAdjacentHTML("beforeend", rowhtml);
+                    } 
+                });
+            }
+        });
+    });
+    // This triggers on page load for charts
     document.addEventListener("DOMContentLoaded", () => {
         // The last 7 days: start and end
         const {inStartDate, inEndDate} = getJalaliDateRange();
@@ -609,7 +1108,7 @@
         });
     });
 </script>
-<!-- Filter Website Traffic -->
+<!-- Filter -->
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const categories = JSON.parse('{{ dates|safe }}');  
@@ -684,6 +1183,7 @@
         series: [
             {   
                 name: `ورودی`,
+                color: "#3A86FF",
                 data: []
             }
         ]
@@ -756,6 +1256,7 @@
         series: [
             {   
                 name: `بازدید`,
+                color: '#00B4D8',
                 data: []
             }
         ]
@@ -828,6 +1329,7 @@
         series: [
             {   
                 name: `درصد ٪`,
+                color: '#EF233C',
                 data: []
             }
         ]
@@ -900,6 +1402,7 @@
         series: [
             {   
                 name: 'ثانیه',
+                color: '#7209B7',
                 data: []
             }
         ]
@@ -972,6 +1475,7 @@
         series: [
             {   
                 name: `تعداد`,
+                color: '#FB8500',
                 data: []
             }
         ]
@@ -1044,6 +1548,7 @@
         series: [
             {   
                 name: `تومان`,
+                color: '#2EC4B6',
                 data: []
             }
         ]
@@ -1116,6 +1621,7 @@
         series: [
             {   
                 name: `تعداد`,
+                color: '#4361EE',
                 data: []
             }
         ]
@@ -1630,11 +2136,111 @@
             const form = this;
             const formData = new FormData(form);
             const queryString = new URLSearchParams(formData).toString();
+            console.log(queryString)
             const params = new URLSearchParams(formData);
             aiStartDate = params.get("start-date");
             aiEndDate = params.get("end-date");
             const loadingOverlay = document.getElementById('loading-overlay');
             loadingOverlay.style.display = 'flex';
+            fetch(`{% url 'invoice_counter' url_hash=request.user.profile.merchant.url_hash %}?${queryString}`, {
+                method: 'GET',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.json();
+                }).then(data => {
+                document.querySelector("#campaign-fill").innerHTML = "";
+                if (data.campaigns.length === 0) {
+                    const card = document.createElement("div");
+                    card.classList.add("card");
+                    card.classList.add("h-100");
+                    card.setAttribute("style", "border-radius: 12px; border-color: #e5e5e5; box-shadow: none !important; border-width: 1px; display: flex; justify-content: center; align-items: center; font-weight: bold;");
+                    const i = document.createElement("i");
+                    i.classList.add("bx");
+                    i.classList.add("bx-box");
+                    i.style.fontSize = "48px";
+                    const p = document.createElement("p");
+                    p.innerText = "هیچ کمپینی یافت نشد";
+                    card.appendChild(i);
+                    card.appendChild(p);
+                    document.querySelector("#campaign-fill").appendChild(card);
+                } else {
+                    document.querySelector("#campaign-fill").innerHTML = "";
+                    data.campaigns.forEach(campaign => {
+                        const rowhtml = `
+                                <div class="col-lg-4" style="margin-top: 10px; margin-bottom: 10px;">
+                                <div class="card" style="
+                                background-clip: padding-box;
+                                border-style: solid;
+                                box-shadow: none;
+                                border-width: 1px;
+                                border-color: #e5e5e5;
+                                background-color: #F9F9F9;
+                                border-radius: 12px;
+                                padding: 10px;">
+                                    <div class="card-header d-flex align-items-center justify-content-between">
+                                        <h5 class="card-title mb-0">${campaign.campaign_name}</h5>
+                                    </div>
+                                    <div class="card-body pb-3">
+                                        <ul class="p-0 m-0">
+                                        <li class="d-flex align-items-center mb-3">
+                                            <div class="avatar avatar-sm flex-shrink-0 me-3">
+                                            <span class="avatar-initial rounded-circle bg-label-primary"><i class="bx bx-time"></i></span>
+                                            </div>
+                                            <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                            <div class="me-2">
+                                                <p class="mb-0">شروع</p>
+                                                <small class="text-muted">تاریخ شروع کمپین</small>
+                                            </div>
+                                            <div class="item-progress greg-date">${campaign.campaign_start_date}</div>
+                                            </div>
+                                        </li>
+                                        <li class="d-flex align-items-center mb-3">
+                                            <div class="avatar avatar-sm flex-shrink-0 me-3">
+                                            <span class="avatar-initial rounded-circle bg-label-info"><i class="bx bx-stopwatch"></i></span>
+                                            </div>
+                                            <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                            <div class="me-2">
+                                                <p class="mb-0">پایان</p>
+                                                <small class="text-muted">تاریخ پایان کمپین</small>
+                                            </div>
+                                            <div class="item-progress greg-date">${campaign.campaign_end_date}</div>
+                                            </div>
+                                        </li>
+                                        <li class="d-flex align-items-center mb-3">
+                                            <div class="avatar avatar-sm flex-shrink-0 me-3">
+                                            <span class="avatar-initial rounded-circle bg-label-danger"><i class="bx bx-tag"></i></span>
+                                            </div>
+                                            <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                            <div class="me-2">
+                                                <p class="mb-0">نوع</p>
+                                                <small class="text-muted">مثال: فروش و ...</small>
+                                            </div>
+                                            <div class="item-progress">${campaign.campaign_type}</div>
+                                            </div>
+                                        </li>
+                                        <li class="d-flex align-items-center">
+                                            <div class="avatar avatar-sm flex-shrink-0 me-3">
+                                            <span class="avatar-initial rounded-circle bg-label-success"><i class="bx bx-dollar"></i></span>
+                                            </div>
+                                            <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                            <div class="me-2">
+                                                <p class="mb-0">هزینه</p>
+                                                <small class="text-muted">مجموع هزینه‌ها</small>
+                                            </div>
+                                            <div class="item-progress campaign-cost">${campaign.campaign_cost}</div>
+                                            </div>
+                                        </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            `
+                        document.querySelector("#campaign-fill").insertAdjacentHTML("beforeend", rowhtml);
+                    });
+                }
+            });
             fetch(`{% url 'website_stats' url_hash=request.user.profile.merchant.url_hash %}?${queryString}`, {
                 method: 'GET',
                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -1655,11 +2261,11 @@
                 const categories = data.dates.map(dateStr => {
                 const date = new Date(dateStr);
                 return date.toLocaleDateString('fa-IR', {
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit'
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit'
+                    });
                 });
-            });
                 populateTraffic('ورودی سایت', data.entry_totals, categories, total);
                 populateVisits('بازدید سایت', data.visits, categories, totalVisits);
                 populateBounce('نرخ پرش', data.bounce_rate, categories, totalBounceRate);
@@ -1676,6 +2282,48 @@
             });
         });
     });
+</script>
+<!-- Select All Data Check -->
+<script>
+document.querySelectorAll('.fake-check').forEach(i => {
+    i.checked = true;
+}); 
+</script>
+<!-- Select/ Display Checks -->
+<script>
+    // Check Boxes
+    const trafficheck = document.getElementById("traffic-check");
+    const visitsCheck = document.getElementById("visits-check");
+    const bounceCheck = document.getElementById("bounce-check");
+    const timeCheck = document.getElementById("time-check");
+    const countCheck = document.getElementById("count-check");
+    const amountCheck = document.getElementById("amount-check");
+    const productCheck = document.getElementById("product-check");
+    // Containers
+    const trafficContainer = document.getElementById("traffic-container");
+    const visitsContainer = document.getElementById("visits-container");
+    const bounceContainer = document.getElementById("bounce-container");
+    const timeContainer = document.getElementById("time-container");
+    const countContainer = document.getElementById("count-container");
+    const amountContainer = document.getElementById("amount-container");
+    const productContainer = document.getElementById("product-container");
+
+    function displayToggle(checkbox, container) {
+        checkbox.addEventListener("change", () => {
+            if (checkbox.checked === true) {
+                container.style.display = '';
+            } else {
+                container.style.display = 'none';
+            }
+        });
+    }
+    displayToggle(trafficheck, trafficContainer);
+    displayToggle(visitsCheck, visitsContainer);
+    displayToggle(bounceCheck, bounceContainer);
+    displayToggle(timeCheck, timeContainer);
+    displayToggle(countCheck, countContainer);
+    displayToggle(amountCheck, amountContainer);
+    displayToggle(productCheck, productContainer);
 </script>
 <!-- Display Toggles -->
 <script>
@@ -1736,23 +2384,64 @@
     const productTools = document.querySelector("#product-tools");
 
     // Chart Button Functionalities
-    function toggleChartTypes() {
-
+    function toggleChartTypes(btnToClick, lineTools, lineChart, barTools, barChart, show_bar) {
+        btnToClick.addEventListener("click", () => {
+            if (show_bar === true) {
+                barTools.style.display = '';
+                barChart.style.display = '';
+                lineTools.style.display = 'none';
+                lineChart.style.display = 'none';
+            } else {
+                barTools.style.display = 'none';
+                barChart.style.display = 'none';
+                lineTools.style.display = '';
+                lineChart.style.display = '';
+            }
+        });
     }
+
+    // traffic
+    toggleChartTypes(containerBarChartToolsLine, containerLine, containerTools, containerBarChart, containerBarChartTools, false);
+    toggleChartTypes(containerToolsBar, containerLine, containerTools, containerBarChart, containerBarChartTools, true);
+
+    // visits
+    toggleChartTypes(visitsBarChartToolsLine, visitsLine, visitsTools, visitsBarChart, visitsBarChartTools, false);
+    toggleChartTypes(visitsToolsBar, visitsLine, visitsTools, visitsBarChart, visitsBarChartTools, true);
+
+    // bounce
+    toggleChartTypes(bounceBarChartToolsLine, bounceLine, bounceTools, bounceBarChart, bounceBarChartTools, false);
+    toggleChartTypes(bounceToolsBar, bounceLine, bounceTools, bounceBarChart, bounceBarChartTools, true);
+
+    // time
+    toggleChartTypes(timeBarChartToolsLine, timeLine, timeTools, timeBarChart, timeBarChartTools, false);
+    toggleChartTypes(timeToolsBar, timeLine, timeTools, timeBarChart, timeBarChartTools, true);
+
+    // count
+    toggleChartTypes(countBarChartToolsLine, countLine, countTools, countBarChart, countBarChartTools, false);
+    toggleChartTypes(countToolsBar, countLine, countTools, countBarChart, countBarChartTools, true);
+
+    // amount
+    toggleChartTypes(amountBarChartToolsLine, amountLine, amountTools, amountBarChart, amountBarChartTools, false);
+    toggleChartTypes(amountToolsBar, amountLine, amountTools, amountBarChart, amountBarChartTools, true);
+
+    // product
+    toggleChartTypes(productBarChartToolsLine, productLine, productTools, productBarChart, productBarChartTools, false);
+    toggleChartTypes(productToolsBar, productLine, productTools, productBarChart, productBarChartTools, true);
+
+
+    // containerBarChartToolsLine.addEventListener("click", () => { // the line icon in the bar chart tools
+    //     containerLine.style.display = ''; // line chart
+    //     containerTools.style.display = ''; // line chart tools
+    //     containerBarChart.style.display = 'none'; // bar chart
+    //     containerBarChartTools.style.display = 'none'; // bar chart tools
+    // });
     
-    containerBarChartToolsLine.addEventListener("click", () => {
-        document.getElementById("container").style.display = '';
-        document.getElementById("container-tools").style.display = '';
-        document.getElementById("container-bar-chart").style.display = 'none';
-        document.getElementById("container-bar-chart-tools").style.display = 'none';
-    });
-    
-    containerToolsBar.addEventListener("click", () => {
-        document.getElementById("container").style.display = 'none';
-        document.getElementById("container-tools").style.display = 'none';
-        document.getElementById("container-bar-chart").style.display = '';
-        document.getElementById("container-bar-chart-tools").style.display = '';
-    });
+    // containerToolsBar.addEventListener("click", () => { // the bar icon in the line chart tools
+    //     containerLine.style.display = 'none';
+    //     containerTools.style.display = 'none';
+    //     containerBarChart.style.display = '';
+    //     containerBarChartTools.style.display = '';
+    // });
 
 
     

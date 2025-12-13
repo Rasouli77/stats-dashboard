@@ -8,7 +8,9 @@ from .models import (
     Campaign,
     HolidayDate,
     Cam,
-    PeopleCountingHourly
+    PeopleCountingHourly,
+    WebsiteSales,
+    WebsiteVisit
 )
 from django.db.models import Sum, Q, Min, Max, Avg, F
 from .views import jalali_to_gregorian
@@ -956,6 +958,271 @@ class AI(APIView):
                 print("complete_holiday_dates", complete_holiday_dates)
                 print("campaign_list", campaign_list)
                 print("dates", dates)
+
+                messages = [
+                    {
+                        "role": "system",
+                        "content": (
+                            "You are a professional data analyst who responds only in Persian."
+                            "Do not talk about specific dates. Only focus on Averages over the course of periods of time. Never Focus on specific dates."
+                            "Turn all dates to jalali. Do not mention gregorian dates."
+                            "Traffic entering the branches is represented by total_entries."
+                            "All dates are ordered from left to right, and each value in every list corresponds to the same day in the dates list. "
+                            "The data also includes campaigns and holidays with their respective dates or date ranges."
+                            "As a data expert, analyze the data carefully: identify trends, patterns, and anomalies;"
+                            "explain averages, percentage changes, and growth rates when relevant;"
+                            "and always consider the effects of campaigns and holidays."
+                            "Mention each campaign specifically and judge them"
+                            "Finish your response with exactly two practical business suggestions."
+                            "Do not use HTML in your response — use plain text styling instead."
+                            "At the end, make sure your final Persian response contains no English or Chinese words or characters; remove them if necessary."
+                        )
+                    },
+                    {
+                        "role": "user",
+                        "content": (
+                            f"Analyze this data:\n"
+                            f"total_entries (traffic) = {json.dumps(total_entries, ensure_ascii=False)}\n"
+                            f"invoice_items (number of invoices) = {json.dumps(invoice_items, ensure_ascii=False)}\n"
+                            f"invoice_products (number of sold products) = {json.dumps(invoice_products, ensure_ascii=False)}\n"
+                            f"invoice_amounts (sales amounts in million tomans) = {json.dumps(invoice_amounts, ensure_ascii=False)}\n"
+                            f"complete_holiday_dates = {json.dumps(complete_holiday_dates, ensure_ascii=False)}\n"
+                            f"campaign_list = {json.dumps(campaign_list, ensure_ascii=False)}\n"
+                            f"dates = {json.dumps(dates, ensure_ascii=False)}\n"
+                            f"The focus of your analysis must be on: {e}. 30% must be on other data above."
+                            "Do not talk about specific dates. Only focus on Averages over the course of periods of time. Never Focus on specific dates."
+                        )
+                    }
+                ]
+                ai_response = ai_give_answers(messages, 0.5)
+                return Response({"ai": ai_response})
+            except Exception as e:
+                print(e)
+                return Response({"error": f"{e}"})
+        else:
+            try:
+                traffic = (
+                    PeopleCounting.objects.filter(
+                        merchant__url_hash=url_hash, date__range=(start_date, end_date)
+                    )
+                    .values("date")
+                    .annotate(entry_totals=Sum("entry"))
+                    .order_by("date")
+                )
+                invoices = Invoice.objects.filter(branch__merchant__url_hash=url_hash, date__range=(start_date, end_date))
+                dates = sorted(set(traffic.values_list("date", flat=True)))
+                dates = [date.isoformat() for date in dates]
+                traffic_response = {"dates": dates, "branches": {}}
+                invoice_response = {"dates": dates, "invoice_data": {}}
+
+                branches = Branch.objects.filter(merchant__url_hash=url_hash, pk__in=branch_ids)
+                for branch in branches:
+                    entry_totals = []
+                    total_amounts = []
+                    total_items = []
+                    total_products = []
+                    # traffic loop
+                    for row in traffic.filter(branch=branch):
+                        count = row["entry_totals"]
+                        entry_totals.append(count)
+                    # Data for AI
+                    traffic_response["branches"][str(branch.pk)] = {
+                        "name": branch.name,
+                        "entry_totals": entry_totals,
+                    }
+                    # invoice loop
+                    for invoice in invoices.filter(branch=branch):
+                        amount = invoice.total_amount
+                        items = invoice.total_items
+                        products = invoice.total_product
+                        total_amounts.append(float(amount // 10000000))
+                        total_items.append(float(items))
+                        total_products.append(float(products))
+                    # Data for AI
+                    invoice_response["invoice_data"][str(branch.pk)] = {
+                        "name": branch.name,
+                        "total_amounts": total_amounts,
+                        "total_items": total_items,
+                        "total_products": total_products,
+                    }
+                # AI Integration
+                print("traffic_response", traffic_response)
+                print("invoice_response", invoice_response)
+                print("complete_holiday_dates", complete_holiday_dates)
+                print("campaign_list", campaign_list)
+                messages = [
+                    {
+                        "role": "system",
+                        "content": (
+                            "You are a professional data analyst who responds only in Persian."
+                            "Do not talk about specific dates. Only focus on Averages over the course of periods of time. Never Focus on specific dates."
+                            "Turn all dates to jalali. Do not mention gregorian dates."
+                            "Traffic entering the branches is represented by total_entries."
+                            "All dates are ordered from left to right, and each value in every list corresponds to the same day in the dates list."
+                            "The data also includes campaigns and holidays with their respective dates or date ranges."
+                            "As a data expert, analyze the data carefully: identify trends, patterns, and anomalies"
+                            "explain averages, percentage changes, and growth rates when relevant;"
+                            "and always consider the effects of campaigns and holidays."
+                            "Mention each campaign specifically and judge them"
+                            "Finish your response with exactly two practical business suggestions."
+                            "Do not use HTML in your response — use plain text styling instead."
+                            "At the end, make sure your final Persian response contains no English or Chinese words or characters; remove them if necessary."
+                        )
+                    },
+                    {
+                        "role": "user",
+                        "content": (
+                            f"Analyze this data:\n"
+                            f"traffic_response (traffic) separated by branch = {json.dumps(traffic_response, ensure_ascii=False)}\n"
+                            f"invoice_response (total_amounts: sales amounts in million tomans) (total_items: number of invoices) (total_products: number of sold products) = {json.dumps(invoice_response, ensure_ascii=False)}\n"
+                            f"complete_holiday_dates = {json.dumps(complete_holiday_dates, ensure_ascii=False)}\n"
+                            f"campaign_list = {json.dumps(campaign_list, ensure_ascii=False)}\n"
+                            f"dates = {json.dumps(dates, ensure_ascii=False)}\n"
+                            f"70% of your focus must be on: {e}. 30% must be on other data above. "
+                            "Do not talk about specific dates. Only focus on Averages over the course of periods of time. Never Focus on specific dates."
+                        )
+                    }
+                ]
+                ai_response = ai_give_answers(messages, 0.5)
+                return Response({"ai": ai_response})
+            except Exception as e:
+                return Response({"error": f"{e}"})
+
+
+class AIWebsite(APIView):
+    def post(self, request):
+        """
+        We have 4 variables that get posted to this API:
+        1. Which area to focus on: (traffic, sales, conversion rate)
+        2. What is the type of the said chart: a stands for aggregated: true or false
+        3. No matter what they want, we always send all data associated with the specified time period
+        4. As well as holidays
+        5. And campaigns
+        (only the emphasis shifts based on the variable e)
+        The data we send within the specified time line for both types (the t variable):
+        1. invoice count 
+        2. invoice amount
+        3. invoice product count
+        4. traffic
+        """
+        # Emphasis
+        e = request.data.get("e")
+        # Type: a stands for aggregated: true or false
+        a = request.data.get("a")
+        # Start Date
+        raw_start_date = request.data.get("aiStartDate")
+        # End Date
+        raw_end_date = request.data.get("aiEndDate")
+        # Branch ID
+        branch_ids = [int(x) for x in request.data.get("aiBranchIds")]
+
+        # Dates
+        start_jdate = persian_date_eng_digit_to_jdate(raw_start_date)
+        end_jdate = persian_date_eng_digit_to_jdate(raw_end_date)
+        start_date = start_jdate.togregorian()
+        end_date = end_jdate.togregorian()
+
+        # Difference
+        difference = (end_date - start_date).days
+        print(difference)
+        if difference < 10:
+            return Response({"ai":"برای تحلیل هوش مصنوعی نیاز است که بازه ای بیشتر از 10 روز انتخاب شود."})
+
+        # Database
+        # url hash
+        url_hash = request.user.profile.merchant.url_hash
+        # all branches count for the account
+        branch_count = Branch.objects.filter(merchant__url_hash=url_hash).count()
+
+        # Campaigns
+        campaigns = (
+            Campaign.objects.filter(
+                branch__merchant__url_hash=request.user.profile.merchant.url_hash
+            )
+            .filter(Q(start_date__lte=end_date) & Q(end_date__gte=start_date))
+            .values("group_id")
+            .annotate(
+                campaign_name=Min("name"),
+                campaign_start_date=Min("start_date"),
+                campaign_end_date=Max("end_date"),
+                campaign_cost=Sum("cost"),
+                campaign_type=Min("campaign_type"),
+                campaign_last_modified=Max("last_modified"),
+                campaign_group_id=Min("group_id"),
+            )
+            .order_by("-campaign_last_modified")
+        )
+        for campaign in campaigns:
+            branch_names = (
+                Campaign.objects.filter(group_id=campaign["campaign_group_id"])
+                .values_list("branch__name", flat=True)
+                .distinct()
+            )
+            campaign["branch_names"] = ", ".join(branch_names)
+        campaign_list = []
+        dictionary = {}
+        for campaign in campaigns:
+            dictionary = {
+                "campaign_name": campaign["campaign_name"],
+                "campaign_start_date": campaign["campaign_start_date"],
+                "campaign_end_date": campaign["campaign_end_date"],
+                "branches": campaign["branch_names"],
+                "campaign_cost": campaign["campaign_cost"],
+                "campaign_type": campaign["campaign_type"],
+            }
+            campaign_list.append(dictionary)
+        for i in campaign_list:
+            i["campaign_start_date"] = i["campaign_start_date"].isoformat()
+            i["campaign_end_date"] = i["campaign_end_date"].isoformat()
+        # Holidays
+        holidays = HolidayDate.objects.filter(
+            gregorian_date__range=(start_date, end_date)
+        )
+        complete_holiday_dates = []
+        dictionary = {}
+        descriptions_for_each_holiday = []
+        for holiday in holidays:
+            dictionary = {}
+            dictionary["date"] = to_persian_digits(holiday.date)
+            descriptions_for_each_holiday = []
+            descriptions = holiday.holidaydsc.all()
+            if descriptions:
+                for x in descriptions:
+                    descriptions_for_each_holiday.append(x.description)
+                dictionary["descriptions"] = descriptions_for_each_holiday
+            complete_holiday_dates.append(dictionary)
+
+        # aggregated
+        if a:
+            try:
+                queryset = (
+                    WebsiteVisit.objects.defer("date_created", "last_modified")
+                    .filter(merchant__url_hash=url_hash, date__range=(start_date, end_date))
+                    .values("date")
+                    .annotate(total_entry=Sum("unique_visitors"), visits=Sum("visits"), bounce_rate=Sum('bounce_rate'), actions_count=Sum('actions_count'), sum_time_spent=Sum('sum_time_spent'), avg_time_spent=Sum('avg_time_spent'), actions_per_visit=Sum('actions_per_visit'))
+                    .order_by("date")
+                )
+                queryset_sales = (
+                    WebsiteSales.objects.defer("date_created", "last_modified")
+                    .filter(merchant__url_hash=url_hash, date__range=(start_date, end_date))
+                    .values("date")
+                    .annotate(invoice_amount=Sum("invoice_amount"), invoice_count=Sum("invoice_count"), product_count=Sum("product_count"))
+                    .order_by("date")
+                )
+
+                # if some branches are selected
+                if len(branch_ids) != branch_count:
+                    traffic = traffic.filter(branch__pk__in=branch_ids)
+                    invoices = invoices.filter(branch__pk__in=branch_ids)
+
+                # Dates
+                dates = [str(row["date"].strftime("%Y-%m-%d")) for row in invoices]
+
+                # Data for AI
+                total_entries = [float(row["total_entry"]) for row in traffic]
+                invoice_items = [float(row["sum_total_items"]) for row in invoices]
+                invoice_amounts = [float(row["sum_total_amount"] // 10000000) for row in invoices]
+                invoice_products = [float(row["sum_total_products"]) for row in invoices]
 
                 messages = [
                     {
