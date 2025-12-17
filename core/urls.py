@@ -67,6 +67,7 @@ from dashboard.api_views import (
     abNormalWeeklyDisplay,
     abNormalMonthlyDisplay,
     AI,
+    AIWebsite,
     MultipleBranchesHourly
 )
 from django.contrib.auth import views as auth_views
@@ -182,6 +183,7 @@ urlpatterns = [
     path("api/abnormal-weekly-display", abNormalWeeklyDisplay.as_view(), name="abnormal-weekly-display"),
     path("api/abnormal-monthly-display", abNormalMonthlyDisplay.as_view(), name="abnormal-monthly-display"),
     path("api/ai", AI.as_view(), name='ai'),
+    path("api/ai-website", AIWebsite.as_view(), name='ai-website'),
     path("dashboard/alert-menu/<str:url_hash>", alert_menu, name="alert_menu"),
     path("dashboard/alert-form-sms/<str:url_hash>", alert_form_sms, name="alert_form_sms"),
     path("dahsboard/alert-form-social/<str:url_hash>", alert_form_social, name="alert_form_social"),
