@@ -157,6 +157,12 @@
                             <!-- Your date range picker goes here -->
                             <div id="date-range"></div>
                         </div>
+                        <div style="display: flex; flex-direction: column; padding: 24px;">
+                            <label for="start-hour-fake">از ساعت:</label>
+                            <input id="start-hour-fake" placeholder="از ساعت 1 تا 23" type="text" minlength="1" maxlength="2" step="1" name="start-hour" style="border-radius: 8px; width: 35%; padding: 5px 10px;">
+                            <label for="start-hour-fake">تا ساعت:</label>
+                            <input id="end-hour-fake" placeholder="از ساعت 1 تا 23" type="text" minlength="1" maxlength="2" name="end-hour" style="border-radius: 8px; width: 35%; padding: 5px 10px;">
+                        </div>
                         <div class="modal-footer">
                             <button 
                                 type="button" 
@@ -198,6 +204,8 @@
                                 <input type="text" name="start-date" id="start-date" style="display: none;">
                                 <label style="display: none;" for="end-date">تا</label>
                                 <input type="text" name="end-date" id="end-date" style="display: none;">
+                                <input id="start-hour" type="number" name="start-hour" style="display: none;">
+                                <input id="end-hour" type="number" name="end-hour" style="display: none;">
                                 {% for branch in branches %}
                                 <div class="form-check mt-3" style="display: none;">
                                     <input class="form-check-input real-check" type="checkbox" value="{{ branch.pk }}" name="branch">
@@ -262,6 +270,13 @@
 <!-- Error Handling  -->
 <script>
     document.querySelector("#filter-proxy-button").addEventListener("click", (e) => {
+        // Here we go for hours
+        const startHour = document.getElementById("start-hour");
+        const endHour = document.getElementById("end-hour");
+        const startHourFake = document.getElementById("start-hour-fake");
+        const endHourFake = document.getElementById("end-hour-fake");
+        startHour.value = startHourFake.value;
+        endHour.value = endHourFake.value;
         let m = 0;
         if (document.getElementById("select-all").checked) {
             m += 1
@@ -320,6 +335,7 @@
         })
         .then(data => {
             const total = data.entry_totals.reduce((a, b) => a + b, 0);
+            console.log(`initial total for aggregation ${data.entry_totals}`)
             const newCategories = data.hours;
             // Initial Line Chart 
             lineChart.update({
@@ -370,6 +386,7 @@
                 const categories = data.hours;
                 const series = Object.entries(data.branches).map(([id, branchData]) => {
                     const total = branchData.entry_totals.reduce((a, b) => a + b, 0);
+                    console.log(`initial total for each branch ${branchData.entry_totals}`)
                     return {
                     name: `${branchData.name} (${Number(total).toLocaleString('fa-IR')})`,
                     data: branchData.entry_totals
@@ -615,6 +632,7 @@
             const form = this;
             const formData = new FormData(form);
             const queryString = new URLSearchParams(formData).toString();
+            console.log(queryString)
             const params = new URLSearchParams(formData);
             aiStartDate = params.get("start-date");
             aiEndDate = params.get("end-date");
@@ -632,6 +650,7 @@
             .then(data => {
                 // Overall Category Update
                 const total = data.entry_totals.reduce((a, b) => a + b, 0);
+                console.log(`aggregation upon form submit ${data.entry_totals}`)
                 const categories = data.hours;
                 // Overall Line Chart Update
                 lineChart.update({
@@ -671,6 +690,8 @@
     $("#filter-form").on("submit", function (e) {
         const startDate = $("#start-date").val();
         const endDate = $("#end-date").val();
+        const startHour = $("#start-hour").val();
+        const endHour = $("#end-hour").val();
         const selectedBranches = $(".real-check:checked").map(function () {
             return $(this).val();
         }).get();
@@ -702,6 +723,8 @@
             data: {
                 "start-date": startDate,
                 "end-date": endDate,
+                "start-hour": startHour,
+                "end-hour": endHour,
                 "branch": selectedBranches
             },
             traditional: true, 
@@ -709,6 +732,7 @@
                 const categories = data.hours;
                 const series = Object.entries(data.branches).map(([id, branchData]) => {
                     const total = branchData.entry_totals.reduce((a, b) => a + b, 0);
+                    console.log(`each branch upon form submit ${branchData.entry_totals}`)
                     return {
                     name: `${branchData.name} (${Number(total).toLocaleString('fa-IR')})`,
                     data: branchData.entry_totals

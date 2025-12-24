@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse, HttpResponse
 from django.urls import reverse
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
 import uuid
 import openpyxl.styles
 from .models import (
@@ -1911,6 +1911,16 @@ def people_counting_hourly(request, url_hash):
     end_date_str = str(jalali_to_gregorian(request.GET.get("end-date")))
     start_date = 0
     end_date = 0
+    try:
+        start_hour = int(request.GET.get("start-hour"))
+        end_hour = int(request.GET.get("end-hour"))
+    except Exception as e:
+        print(e)
+        start_hour, end_hour = 0, 0
+    
+    if start_hour > end_hour:
+        start_hour, end_hour = 0, 0
+    
     entry_totals = []
     today = datetime.now().date()
     selected_branches = []
@@ -1927,6 +1937,17 @@ def people_counting_hourly(request, url_hash):
             .annotate(total_entry=Sum("entry"))
             .order_by("date", "hour")
         )
+        if start_hour and end_hour:
+            if start_hour <= end_hour:
+                start_hour = time(start_hour, 0)
+                end_hour = time(end_hour, 0)
+                queryset = (
+                    PeopleCountingHourly.objects.defer("date_created", "last_modified", "cam")
+                    .filter(merchant__url_hash=url_hash, date__range=(start_date, end_date), hour__gte=start_hour, hour__lte=end_hour)
+                    .values("hour")
+                    .annotate(total_entry=Sum("entry"))
+                    .order_by("hour")
+                )
         permissions = (
             PermissionToViewBranch.objects.defer("date_created", "last_modified")
             .select_related("branch")

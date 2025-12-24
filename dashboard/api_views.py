@@ -14,7 +14,7 @@ from .models import (
 )
 from django.db.models import Sum, Q, Min, Max, Avg, F
 from .views import jalali_to_gregorian
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
 import math
 import re
 import subprocess
@@ -1265,14 +1265,7 @@ class AIWebsite(APIView):
 
 class MultipleBranchesHourly(APIView):
     def get(self, request):
-        queryset = (
-            PeopleCountingHourly.objects.filter(
-                merchant__url_hash=request.user.profile.merchant.url_hash
-            )
-            .values("hour")
-            .annotate(entry_totals=Sum("entry"))
-            .order_by("date", "hour")
-        )
+        queryset = []
         start_date_str = str(jalali_to_gregorian(request.GET.get("start-date")))
         end_date_str = str(jalali_to_gregorian(request.GET.get("end-date")))
         selected_branches = request.GET.getlist("branch")
@@ -1280,29 +1273,59 @@ class MultipleBranchesHourly(APIView):
         end_date = 0
         start_date = datetime.strptime(start_date_str, "%Y-%m-%d").date()
         end_date = datetime.strptime(end_date_str, "%Y-%m-%d").date()
+        try:
+            start_hour = int(request.GET.get("start-hour"))
+            end_hour = int(request.GET.get("end-hour"))
+        except Exception as e:
+            print(e)
+            start_hour, end_hour = 0, 0
+    
+        if start_hour > end_hour:
+            start_hour, end_hour = 0, 0
+
         if start_date and end_date:
             try:
-                queryset = queryset.filter(date__range=(start_date, end_date))
+                queryset = (
+                    PeopleCountingHourly.objects.filter(
+                        merchant__url_hash=request.user.profile.merchant.url_hash, date__range=(start_date, end_date)
+                    )
+                    .values("hour")
+                    .annotate(entry_totals=Sum("entry"))
+                    .order_by("date", "hour")
+                )
             except Exception as e:
                 print("error", e)
+            if start_hour and end_hour:
+                if start_hour <= end_hour:
+                    start_hour = time(start_hour, 0)
+                    end_hour = time(end_hour, 0)
+                    queryset = (
+                        PeopleCountingHourly.objects.filter(
+                            merchant__url_hash=request.user.profile.merchant.url_hash, date__range=(start_date, end_date), hour__gte=start_hour, hour__lte=end_hour
+                        )
+                        .values("hour")
+                        .annotate(entry_totals=Sum("entry"))
+                        .order_by("date", "hour")
+                    )
+                
 
-        hours = sorted(set(queryset.values_list("hour", flat=True)))
-        response = {"hours": hours, "branches": {}}
-        hours_len = len(response["hours"])
-        branches = Branch.objects.filter(pk__in=selected_branches)
-        for branch in branches:
-            entry_totals = []
-            for row in queryset.filter(branch=branch):
-                count = row["entry_totals"]
-                entry_totals.append(count)
-            list_chunks = [entry_totals[i:i+hours_len] for i in range(0, len(entry_totals), hours_len)]
-            base_list = [0]*hours_len
-            for item in list_chunks:
-                base_list = [x + y for x, y in zip(base_list, item)]
-            entry_totals = base_list
-            response["branches"][str(branch.pk)] = {
-                "name": branch.name,
-                "entry_totals": entry_totals,
-            }
-        print(response)
-        return Response(response)
+            hours = sorted(set(queryset.values_list("hour", flat=True)))
+            response = {"hours": hours, "branches": {}}
+            hours_len = len(response["hours"])
+            branches = Branch.objects.filter(pk__in=selected_branches)
+            for branch in branches:
+                entry_totals = []
+                for row in queryset.filter(branch=branch):
+                    count = row["entry_totals"]
+                    entry_totals.append(count)
+                list_chunks = [entry_totals[i:i+hours_len] for i in range(0, len(entry_totals), hours_len)]
+                base_list = [0]*hours_len
+                for item in list_chunks:
+                    base_list = [x + y for x, y in zip(base_list, item)]
+                entry_totals = base_list
+                response["branches"][str(branch.pk)] = {
+                    "name": branch.name,
+                    "entry_totals": entry_totals,
+                }
+            print(response)
+            return Response(response)
